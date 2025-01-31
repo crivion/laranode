@@ -48,12 +48,15 @@ export default function Dashboard() {
                 {/* CPU Usage*/}
                 <div className="mt-8 px-4">
                     <CPULive cpuStats={liveStats.cpuStats} />
+
+                    <div className="mt-5 w-full md:w-1/2">
+                        {/* Memory Usage*/}
+                        <MemoryLive memoryStats={liveStats.memoryStats} />
+                    </div>
                 </div>
 
-                <div className="mt-8 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="mt-5 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                    {/* Memory Usage*/}
-                    <MemoryLive memoryStats={liveStats.memoryStats} />
 
                     {/* Disk Usage */}
                     <DiskLive diskStats={liveStats.diskStats} />
