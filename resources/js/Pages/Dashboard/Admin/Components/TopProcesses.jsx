@@ -1,17 +1,33 @@
 import { Tooltip } from 'react-tooltip'
 import { useEffect, useState } from "react";
+import { FaSitemap, FaArrowDown91 } from 'react-icons/fa6';
+import { ImSpinner9 } from "react-icons/im";
 
 
 const TopProcesses = () => {
     const [topStats, setTopStats] = useState([]);
+    const [sortBy, setSortBy] = useState("cpu");
+    const [spinner, showSpinner] = useState(false);
 
     const echo = window.Echo;
     const topStatsChannel = echo.private("topstats");
 
+    const setSortPreferrence = (sortBy) => {
+        window.axios.patch("/dashboard/admin/set/top-sort", { sortBy }).then((response) => {
+            setSortBy(response.data.sortBy);
+            showSpinner(true);
+        });
+    }
+
     useEffect(() => {
+
+        window.axios.get("/dashboard/admin/get/top-sort").then((response) => {
+            setSortBy(response.data.sortBy);
+        });
 
         topStatsChannel.listen("TopStatsEvent", (data) => {
             setTopStats(data);
+            showSpinner(false);
         });
 
         // Set interval to "whisper" every 2 seconds
@@ -29,16 +45,29 @@ const TopProcesses = () => {
 
     { topStats?.error && <ShowError error={topStats?.error} /> }
 
-    return (
-        <div className="relative overflow-x-auto pt-2 pb-12">
-            <div className="flex items-center justify-between flex-wrap">
-                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400">Top 20 Processes</h3>
-                <div>
-                    TOGGLE CPu | MEm
-                </div>
+    return (<>
+        <div className="flex items-center justify-between flex-wrap mt-3">
+            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 flex items-center">
+                <FaSitemap className="text-pink-400 w-6 h-6 flex-shrink-0 mr-1" />
+                Top 20 Processes
+            </h3>
+            <div class="inline-flex">
+                {spinner ? <ImSpinner9 className="animate-spin w-4 h-4 mr-1" /> :
+                    (<>
+                        <button class={`flex items-center ${sortBy === "memory" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("memory")}>
+                            <FaArrowDown91 className='mr-1.5' />
+                            Memory
+                        </button>
+                        <button class={`ml-1.5 flex items-center ${sortBy === "cpu" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("cpu")}>
+                            <FaArrowDown91 className='mr-1.5' />
+                            CPU
+                        </button>
+                    </>)}
             </div>
-            <table className="w-full  text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-5">
-                <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300">
+        </div>
+        <div className="relative overflow-x-auto pb-12 bg-white dark:bg-gray-850 mt-3">
+            <table className="w-full  text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
                     <tr>
                         <th className="px-6 py-3">PID</th>
                         <th className="px-6 py-3">%CPU</th>
@@ -47,7 +76,7 @@ const TopProcesses = () => {
                         <th className="px-6 py-3">COMMAND</th>
                     </tr>
                 </thead>
-                <tbody className="">
+                <tbody className="text-sm">
                     {topStats?.length > 0 ? (
                         topStats?.map((process, index) => (
                             <tr key={`proc-${index}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
@@ -86,7 +115,8 @@ const TopProcesses = () => {
                     )}
                 </tbody>
             </table>
-        </div>);
+        </div>
+    </>);
 }
 
 export default TopProcesses

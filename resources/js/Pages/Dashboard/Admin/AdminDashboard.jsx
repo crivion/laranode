@@ -45,26 +45,33 @@ export default function Dashboard() {
 
             <div className="max-w-7xl">
 
-                {/* CPU Usage*/}
                 <div className="mt-8 px-4">
+
+                    {/* CPU Usage*/}
                     <CPULive cpuStats={liveStats.cpuStats} />
 
-                    <div className="mt-5 w-full md:w-1/2">
+                    <div className='flex items-center flex-col xl:flex-row xl:space-x-4'>
                         {/* Memory Usage*/}
-                        <MemoryLive memoryStats={liveStats.memoryStats} />
+                        <div className="mt-5 w-full xl:w-1/2">
+                            <MemoryLive memoryStats={liveStats.memoryStats} />
+                        </div>
+
+
+                        {/* Disk Usage */}
+                        <div className="mt-5 w-full xl:w-1/2">
+                            <DiskLive diskStats={liveStats.diskStats} />
+                        </div>
                     </div>
+
                 </div>
 
                 <div className="mt-5 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
 
-                    {/* Disk Usage */}
-                    <DiskLive diskStats={liveStats.diskStats} />
-
                 </div>
 
 
-                <div className="bg-white dark:bg-gray-850 p-6 mx-4 rounded-lg shadow-md mt-10">
+                <div className="mx-4">
                     <TopProcesses />
                 </div>
 
