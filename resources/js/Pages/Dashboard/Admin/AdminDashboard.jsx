@@ -43,10 +43,14 @@ export default function Dashboard() {
         >
             <Head title="Dashboard" />
 
+
+            {/* CPU Usage*/}
+            <div className="mt-8 px-4">
+                <CPULive cpuStats={liveStats.cpuStats} />
+            </div>
+
             <div className="mt-8 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                {/* CPU Usage*/}
-                <CPULive cpuStats={liveStats.cpuStats} />
 
                 {/* Memory Usage*/}
                 <MemoryLive memoryStats={liveStats.memoryStats} />
