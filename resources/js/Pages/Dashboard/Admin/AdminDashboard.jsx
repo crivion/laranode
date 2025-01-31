@@ -43,26 +43,28 @@ export default function Dashboard() {
         >
             <Head title="Dashboard" />
 
+            <div className="max-w-7xl">
 
-            {/* CPU Usage*/}
-            <div className="mt-8 px-4">
-                <CPULive cpuStats={liveStats.cpuStats} />
-            </div>
+                {/* CPU Usage*/}
+                <div className="mt-8 px-4">
+                    <CPULive cpuStats={liveStats.cpuStats} />
+                </div>
 
-            <div className="mt-8 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="mt-8 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    {/* Memory Usage*/}
+                    <MemoryLive memoryStats={liveStats.memoryStats} />
+
+                    {/* Disk Usage */}
+                    <DiskLive diskStats={liveStats.diskStats} />
+
+                </div>
 
 
-                {/* Memory Usage*/}
-                <MemoryLive memoryStats={liveStats.memoryStats} />
+                <div className="bg-white dark:bg-gray-850 p-6 mx-4 rounded-lg shadow-md mt-10">
+                    <TopProcesses />
+                </div>
 
-                {/* Disk Usage */}
-                <DiskLive diskStats={liveStats.diskStats} />
-
-            </div>
-
-
-            <div className="bg-white dark:bg-gray-850 p-6 mx-4 rounded-lg shadow-md mt-10">
-                <TopProcesses />
             </div>
 
         </AuthenticatedLayout>
