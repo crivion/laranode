@@ -19,38 +19,47 @@ class SystemStatsService
     /**
      * Fetch memory usage.
      */
-    public function getMemoryUsage(): string
+    public function getMemoryUsage(): array
     {
         $memory = Process::pipe([
             'free -m',
-            "awk '/Mem:/ {print $3 \"MB / \"$2\"\" }'"
+            "awk '/Mem:/ {print $4,$3,$6,$2}'"
         ]);
 
         if ($memory->failed()) {
-            return $memory->errorOutput();
+            return ['error' => $memory->errorOutput()];
         }
 
-        return $memory->output();
+        $stats = $memory->output();
+        $stats = explode(" ", $stats);
+
+        return [
+            'free' => $stats[0],
+            'used' => $stats[1],
+            'buffcache' => $stats[2],
+            'total' => $stats[3]
+        ];
     }
 
     /**
      * Fetch disk usage.
      */
-    public function getDiskUsage(): string
+    public function getDiskUsage(): array
     {
         // Fetch disk usage details
-        $diskUsage = Process::run('df -h / | awk \'/\\// {print $3 " " $4 " " $5}\'')->output();
+        $diskUsage = Process::run('df -h / | awk \'/\\// {print $2, $3, $4, $5}\'')->output();
         $diskUsageParts = preg_split('/\s+/', trim($diskUsage));
 
-        if (count($diskUsageParts) >= 3) {
-            $usedSpace = $diskUsageParts[0];
-            $availableSpace = $diskUsageParts[1];
-            $usagePercentage = $diskUsageParts[2];
-
-            return "{$usedSpace} / {$availableSpace} ({$usagePercentage})";
+        if (count($diskUsageParts) >= 4) {
+            return [
+                'size' => $diskUsageParts[0],
+                'used' => $diskUsageParts[1],
+                'free' => $diskUsageParts[2],
+                'percent' => $diskUsageParts[3]
+            ];
         }
 
-        return 'N/A';
+        return [];
     }
 
     /**
@@ -228,19 +237,23 @@ class SystemStatsService
     {
         $stats = [
             'whoami' => $this->getWhoami(),
-            'cpuUsage' => $this->getCpuUsage(),
-            'memoryUsage' => $this->getMemoryUsage(),
-            'diskUsage' => $this->getDiskUsage(),
-            'loadTimes' => $this->getLoadTimes(),
-            'uptime' => $this->getUptime(),
-            'processCount' => $this->getProcessCount(),
-            'userCount' => $this->getUserCount(),
+            'cpuStats' => [
+                'usage' => $this->getCpuUsage(),
+                'loadTimes' => $this->getLoadTimes(),
+                'uptime' => $this->getUptime(),
+                'processCount' => $this->getProcessCount(),
+            ],
+            'diskStats' => $this->getDiskUsage(),
+            'memoryStats' => $this->getMemoryUsage(),
             'nginxStatus' => $this->getNginxStatus(),
             'phpStatus' => $this->getPhpFpmStatus(),
             'sslStatus' => $this->getSslStatus(),
             'nginxPort' => $this->getNginxPort(),
             'apache' => $this->getApacheStatus(),
-            'mysql' => $this->getMysqlStatus()
+            'mysql' => $this->getMysqlStatus(),
+
+            'domainCount' => rand(1, 100),
+            'userCount' => $this->getUserCount(),
         ];
 
         return $stats;

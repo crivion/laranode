@@ -6,6 +6,7 @@ use App\Services\SystemStatsService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -21,10 +22,12 @@ class DashboardController extends Controller
 
     public function admin()
     {
-        // Get Top Sorting Option
-        $topSort = Cache::get('ps_aux_sort_by', 'cpu');
+        return Inertia::render('Dashboard/Admin/AdminDashboard');
+    }
 
-        return view('dashboard/admin', ['topSort' => $topSort]);
+    public function getTopSort()
+    {
+        return ['sortBy' => Cache::get('ps_aux_sort_by', 'cpu')];
     }
 
     public function setTopSort(Request $r)
@@ -33,11 +36,11 @@ class DashboardController extends Controller
 
         Cache::put('ps_aux_sort_by', $r->sortBy);
 
-        return response()->noContent();
+        return ['sortBy' => $r->sortBy];
     }
 
     public function user()
     {
-        return view('dashboard/user');
+        return Inertia::render('Dashboard/User/UserDashboard');
     }
 }
