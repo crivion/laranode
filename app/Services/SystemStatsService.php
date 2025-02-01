@@ -238,8 +238,31 @@ class SystemStatsService
         $procFile = File::get('/proc/net/dev');
         $lines = explode("\n", $procFile);
 
-        $stats = [];
+        /*
+        cat /proc/net/dev | awk '// {print $1,$2,$10}'                                                                                                      08:59:12
+        Inter-| Receive
+        face |bytes packets
+        lo: 1255453024 1255453024
+        enp1s0: 226070613 421595340
+        wlo1: 0 0
+        */
 
+        $cmd = Process::pipe([
+            'cat /proc/net/dev',
+            'awk \'// {print $1,$2,$10}\'',
+        ]);
+
+        if ($cmd->failed()) {
+            return [];
+        }
+
+        $output = $cmd->output();
+
+        $lines = explode("\n", $output);
+        $lines = array_map('trim', array_filter($lines));
+        $lines = array_slice($lines, 1);
+
+        $stats = [];
         // nerd way to do 1024*1024*1024
         $gb = 1 << 30;
 
