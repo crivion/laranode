@@ -41,7 +41,9 @@ export default function Dashboard() {
                         <RiDashboard3Fill className='mr-2' />
                         Dashboard
                     </h2>
-                    <NetworkLive networkStats={liveStats.network} />
+                    <div className="hidden xl:block">
+                        <NetworkLive networkStats={liveStats.network} />
+                    </div>
                 </div>
             }
         >
@@ -50,6 +52,10 @@ export default function Dashboard() {
             <div className="max-w-7xl">
 
                 <div className="mt-8 px-4">
+
+                    <div class="xl:hidden pb-5">
+                        <NetworkLive networkStats={liveStats.network} />
+                    </div>
 
                     {/* CPU Usage*/}
                     <CPULive cpuStats={liveStats.cpuStats} />
