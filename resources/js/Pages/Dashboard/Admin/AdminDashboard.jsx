@@ -6,6 +6,7 @@ import TopProcesses from './Components/TopProcesses';
 import CPULive from './Components/CPULive';
 import MemoryLive from './Components/MemoryLive';
 import DiskLive from './Components/DiskLive';
+import NetworkLive from './Components/NetworkLive';
 
 
 export default function Dashboard() {
@@ -35,10 +36,13 @@ export default function Dashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
-                    <RiDashboard3Fill className='mr-2' />
-                    Dashboard
-                </h2>
+                <div className="flex flex-col xl:justify-between xl:flex-row">
+                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
+                        <RiDashboard3Fill className='mr-2' />
+                        Dashboard
+                    </h2>
+                    <NetworkLive networkStats={liveStats.network} />
+                </div>
             }
         >
             <Head title="Dashboard" />

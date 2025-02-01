@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 
 class SystemStatsService
@@ -229,6 +230,32 @@ class SystemStatsService
         return $whoami;
     }
 
+    /*
+ *  Get Network Stats
+ */
+    public function getNetworkStats()
+    {
+        $procFile = File::get('/proc/net/dev');
+        $lines = explode("\n", $procFile);
+
+        $stats = [];
+
+        // nerd way to do 1024*1024*1024
+        $gb = 1 << 30;
+
+        foreach ($lines as $line) {
+            if (preg_match('/^\s*(\S+):\s*(\d+)\s+(\d+)/', trim($line), $matches)) {
+                $stats[] = [
+                    'interface' => rtrim($matches[1], ":"),
+                    'rx' => round($matches[2] / $gb, 2),
+                    'tx' => round($matches[3] / $gb, 2),
+                ];
+            }
+        }
+
+        return $stats;
+    }
+
 
     /**
      * Fetch all system stats.
@@ -236,24 +263,24 @@ class SystemStatsService
     public function getAllStats(): array
     {
         $stats = [
-            'whoami' => $this->getWhoami(),
-            'cpuStats' => [
-                'usage' => $this->getCpuUsage(),
-                'loadTimes' => $this->getLoadTimes(),
-                'uptime' => $this->getUptime(),
+            'whoami'           => $this->getWhoami(),
+            'cpuStats'         => [
+                'usage'        => $this->getCpuUsage(),
+                'loadTimes'    => $this->getLoadTimes(),
+                'uptime'       => $this->getUptime(),
                 'processCount' => $this->getProcessCount(),
             ],
-            'diskStats' => $this->getDiskUsage(),
-            'memoryStats' => $this->getMemoryUsage(),
-            'nginxStatus' => $this->getNginxStatus(),
-            'phpStatus' => $this->getPhpFpmStatus(),
-            'sslStatus' => $this->getSslStatus(),
-            'nginxPort' => $this->getNginxPort(),
-            'apache' => $this->getApacheStatus(),
-            'mysql' => $this->getMysqlStatus(),
-
-            'domainCount' => rand(1, 100),
-            'userCount' => $this->getUserCount(),
+            'diskStats'        => $this->getDiskUsage(),
+            'memoryStats'      => $this->getMemoryUsage(),
+            'nginxStatus'      => $this->getNginxStatus(),
+            'phpStatus'        => $this->getPhpFpmStatus(),
+            'sslStatus'        => $this->getSslStatus(),
+            'nginxPort'        => $this->getNginxPort(),
+            'apache'           => $this->getApacheStatus(),
+            'mysql'            => $this->getMysqlStatus(),
+            'network'          => $this->getNetworkStats(),
+            'domainCount'      => rand(1, 100),
+            'userCount'        => $this->getUserCount(),
         ];
 
         return $stats;
