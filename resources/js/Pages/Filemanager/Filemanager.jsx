@@ -7,6 +7,7 @@ import { RiFolderReceivedLine } from "react-icons/ri";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { ToastContainer, toast } from 'react-toastify';
 import { MdInfoOutline } from "react-icons/md";
+import Dropdown from '@/Components/Dropdown';
 
 
 const Filemanager = () => {
@@ -59,50 +60,38 @@ const Filemanager = () => {
         }
     };
 
+    const [selectedPaths, setSelectedPaths] = useState([]);
+    const [lastSelected, setLastSelected] = useState(null);
 
-    const cdIntoPathOK = async (path) => {
-        setPath(path);
-        showSpinner(true);
+    const handleFileClick = (e, file) => {
+        const isCtrlClick = e.ctrlKey || e.metaKey;
+        const isShiftClick = e.shiftKey;
 
-        const response = await fetch(`/filemanager/get-contents?path=${path}`);
-
-        if (!response.ok) {
-            // Parse the error message from the response body
-            const errorData = await response.json();
-            const errorMessage = errorData.error || response.statusText;
-
-            // Display the error message in a toast
-            toast(errorMessage, { type: 'error' });
-            showSpinner(false);
-            return;
+        if (isCtrlClick) {
+            // Ctrl+Click: Add or remove the clicked file from the selection
+            setSelectedPaths((prevSelected) =>
+                prevSelected.includes(file.path)
+                    ? prevSelected.filter((path) => path !== file.path)
+                    : [...prevSelected, file.path]
+            );
+        } else if (isShiftClick && lastSelected !== null) {
+            // Shift+Click: Select all files between lastSelected and the clicked file
+            const startIndex = files.findIndex((f) => f.path === lastSelected);
+            const endIndex = files.findIndex((f) => f.path === file.path);
+            const range = files.slice(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex) + 1);
+            const pathsInRange = range.map((f) => f.path);
+            setSelectedPaths((prevSelected) => [
+                ...new Set([...prevSelected, ...pathsInRange]), // Remove duplicates
+            ]);
+        } else {
+            // Normal click: Select only the clicked file
+            setSelectedPaths([file.path]);
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let chunks = '';
-
-        // Read the stream progressively
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            try {
-                chunks += decoder.decode(value, { stream: true });
-
-                const data = JSON.parse(chunks);
-                setFiles(data.files);
-                setGoBack(data.goBack);
-
-                console.log(data);
-            } catch (error) {
-                console.log(error.toString());
-                toast(error.toString(), { type: 'error' });
-            }
-
-        }
-
-        showSpinner(false);
+        // Update last selected file
+        setLastSelected(file.path);
     };
+
 
     if (spinner) {
         return (
@@ -122,7 +111,7 @@ const Filemanager = () => {
                         <div>
                             <ImSpinner9 className="animate-spin w-5 h-5 mr-2" />
                         </div>
-                        <div class="text-gray-600 dark:text-gray-400 text-sm">Loading files list...</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-sm">Loading files list...</div>
                     </div>
                 </div>
             </AuthenticatedLayout>
@@ -147,13 +136,13 @@ const Filemanager = () => {
                 <div className="mt-8 px-4">
 
                     <div className="text-xs mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        <MdInfoOutline className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" /> Double-Click on a directory icon to enter / cd into it
+                        Rename, Cut, Copy, Delete
                     </div>
 
                     {goBack && goBack != "" && (
                         <div className="bg-white dark:bg-gray-850 shadow py-3 px-6">
 
-                            <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onClick={() => cdIntoPath(goBack)}>
+                            <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onDoubleClick={() => cdIntoPath(goBack)}>
                                 <RiFolderReceivedLine className="text-gray-500 dark:text-gray-300 w-5 h-5 flex-shrink-0 mr-1" />
                                 Back
                             </button>
@@ -167,19 +156,25 @@ const Filemanager = () => {
                         if (a.type !== 'dir' && b.type === 'dir') return 1;
                         return 0;
                     }).map((file, index) => (
-                        <div key={`file-${index}`} className="flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 bg-white dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 shadow space-x-2">
+                        <div
+                            key={`file-${index}`}
+                            className={`flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 bg-white dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 shadow space-x-2 ${selectedPaths.includes(file.path)
+                                ? 'bg-sky-200 text-sky-700 hover:text-sky-700 hover:bg-sky-200 dark:hover:bg-sky-200 dark:hover:text-sky-700 dark:bg-sky-200 dark:text-sky-700'
+                                : ''
+                                }`}
+                            onClick={(e) => handleFileClick(e, file)}
+                            onDoubleClick={(e) => file.type === "dir" ? cdIntoPath(file.path) : editFile(file.path)}
+                        >
                             {file.type === "dir" ? (<>
-                                <button className="" onDoubleClick={() => cdIntoPath(file.path)}>
-                                    <FaFolderClosed className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" />
-                                </button>
+                                <FaFolderClosed className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1 cursor-pointer" />
                             </>
                             ) : (
                                 <div className="w-5 h-5">
-                                    <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="mr-1" />
+                                    <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="mr-1 cursor-pointer" />
                                 </div>
                             )}
 
-                            <div className="text-center text-sm -1.5">
+                            <div className="text-sm cursor-pointer">
                                 {file.path}
                             </div>
                         </div>

@@ -8,7 +8,7 @@ const CPULive = ({ cpuStats }) => {
 
     return (
         <div>
-            <div class="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
                 <div>
                     <FaMicrochip className="text-indigo-500 w-5 h-5 flex-shrink-0" />
                 </div>

@@ -11,7 +11,7 @@ const NetworkLive = ({ networkStats }) => {
                 <div>
                     <BsHddNetwork className="text-green-400 w-5 h-5 flex-shrink-0" />
                 </div>
-                <div className="text-gray-600 dark:text-gray-400 text-lg">Network Traffic <span class="text-xs">since boot</span></div>
+                <div className="text-gray-600 dark:text-gray-400 text-lg">Network Traffic <span className="text-xs">since boot</span></div>
             </div>
             <div className="flex flex-col xl:flex-row xl:space-x-2 space-y-2 xl:space-y-0 xl:bg-transparent xl:dark:bg-transparent xl:py-0 xl:px-0 bg-white dark:bg-gray-850 shadow rounded-lg py-3 px-6 xl:shadow-none">
                 {!networkStats?.length && (

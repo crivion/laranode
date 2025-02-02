@@ -51,14 +51,14 @@ const TopProcesses = () => {
                 <FaSitemap className="text-pink-400 w-6 h-6 flex-shrink-0 mr-1" />
                 Top 20 Processes
             </h3>
-            <div class="inline-flex">
+            <div className="inline-flex">
                 {spinner ? <ImSpinner9 className="animate-spin w-4 h-4 mr-1" /> :
                     (<>
-                        <button class={`flex items-center ${sortBy === "memory" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("memory")}>
+                        <button className={`flex items-center ${sortBy === "memory" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("memory")}>
                             <FaArrowDown91 className='mr-1.5' />
                             Memory
                         </button>
-                        <button class={`ml-1.5 flex items-center ${sortBy === "cpu" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("cpu")}>
+                        <button className={`ml-1.5 flex items-center ${sortBy === "cpu" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("cpu")}>
                             <FaArrowDown91 className='mr-1.5' />
                             CPU
                         </button>

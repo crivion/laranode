@@ -53,7 +53,7 @@ export default function Dashboard() {
 
                 <div className="mt-8 px-4">
 
-                    <div class="xl:hidden pb-5">
+                    <div className="xl:hidden pb-5">
                         <NetworkLive networkStats={liveStats.network} />
                     </div>
 
