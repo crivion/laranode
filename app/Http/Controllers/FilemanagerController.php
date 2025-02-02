@@ -20,7 +20,7 @@ class FilemanagerController extends Controller
     {
 
         // @todo: here we'll get the actual user path from db
-        $path = '/Users/crivion/Sites/laranode-inertia';
+        $path = base_path();
         $goBack = false;
 
 
