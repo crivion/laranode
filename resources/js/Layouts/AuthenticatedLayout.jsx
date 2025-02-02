@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import TopNavi from './Partials/TopNavi';
 import SidebarNavi from './Partials/SidebarNavi';
+import { ToastContainer } from 'react-toastify';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -9,7 +10,6 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiase bg-gray-100 dark:bg-gray-900">
-
             <TopNavi />
             <SidebarNavi />
 

@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import { ImProfile } from "react-icons/im";
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function Edit({ mustVerifyEmail, status }) {
     return (
@@ -16,6 +17,7 @@ export default function Edit({ mustVerifyEmail, status }) {
             }
         >
             <Head title="Profile" />
+
 
             <div className="pb-12 pt-8">
                 <div className="max-w-7xl space-y-6 px-4">
