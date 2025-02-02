@@ -20,8 +20,47 @@ const Filemanager = () => {
         cdIntoPath('/');
     }, []);
 
-
     const cdIntoPath = async (path) => {
+        setPath(path);
+        showSpinner(true);
+
+        try {
+            const response = await fetch(`/filemanager/get-contents?path=${path}`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                const errorMessage = errorData.error || response.statusText;
+                toast(errorMessage, { type: 'error' });
+                showSpinner(false);
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                // Decode the chunk and append to the buffer
+                buffer += decoder.decode(value, { stream: true });
+            }
+
+            const json = JSON.parse(buffer.trim());
+            setFiles(json.files);
+            setGoBack(json.goBack);
+
+        } catch (error) {
+            // Handle network errors or other exceptions
+            toast(error.message, { type: 'error' });
+        } finally {
+            showSpinner(false);
+        }
+    };
+
+
+    const cdIntoPathOK = async (path) => {
         setPath(path);
         showSpinner(true);
 
