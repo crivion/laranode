@@ -104,6 +104,31 @@ const Filemanager = () => {
         showSpinner(false);
     };
 
+    if (spinner) {
+        return (
+            <AuthenticatedLayout
+                header={
+                    <div className="flex flex-col xl:justify-between xl:flex-row">
+                        <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
+                            <VscFileSubmodule className='mr-2' />
+                            Filemanager
+                        </h2>
+                        <ToastContainer />
+                    </div>
+                }
+            >
+                <div className="max-w-7xl bg-white dark:bg-gray-950 py-6 sm:px-6 lg:px-8">
+                    <div className="mt-8 flex items-center space-x-2">
+                        <div>
+                            <ImSpinner9 className="animate-spin w-5 h-5 mr-2" />
+                        </div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">Loading files list...</div>
+                    </div>
+                </div>
+            </AuthenticatedLayout>
+        )
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -125,12 +150,6 @@ const Filemanager = () => {
                         <MdInfoOutline className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" /> Double-Click on a directory icon to enter / cd into it
                     </div>
 
-                    {spinner && (
-                        <center>
-                            <ImSpinner9 className="animate-spin w-5 h-5" />
-                        </center>
-                    )}
-
                     {goBack && goBack != "" && (
                         <div className="bg-white dark:bg-gray-850 shadow py-3 px-6">
 
@@ -141,6 +160,7 @@ const Filemanager = () => {
 
                         </div>
                     )}
+
 
                     {files.sort((a, b) => {
                         if (a.type === 'dir' && b.type !== 'dir') return -1;
