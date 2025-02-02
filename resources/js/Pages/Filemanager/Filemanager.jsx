@@ -83,7 +83,7 @@ const Filemanager = () => {
                 <div className="mt-8 px-4">
 
                     <div className="text-xs mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        <MdInfoOutline className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" /> Click on a directory icon to enter / cd into it
+                        <MdInfoOutline className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" /> Double-Click on a directory icon to enter / cd into it
                     </div>
 
                     {spinner && (
@@ -110,7 +110,7 @@ const Filemanager = () => {
                     }).map((file, index) => (
                         <div key={`file-${index}`} className="flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 bg-white dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 shadow space-x-2">
                             {file.type === "dir" ? (<>
-                                <button className="" onClick={() => cdIntoPath(file.path)}>
+                                <button className="" onDoubleClick={() => cdIntoPath(file.path)}>
                                     <FaFolderClosed className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1" />
                                 </button>
                             </>
