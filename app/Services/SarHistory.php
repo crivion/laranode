@@ -26,6 +26,10 @@ abstract class SarHistory implements HistoricStatsContract
             return ['error' => 'No sar files found in /var/log/sysstat/sa[0-9]{2}', 'code' => 1];
         }
 
+        if (!count($this->runCommands())) {
+            return ['error' => 'No commands to run', 'code' => 1];
+        }
+
         $cmd = Process::pipe($this->runCommands());
 
         if ($cmd->failed()) {

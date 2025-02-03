@@ -136,7 +136,7 @@ const Filemanager = () => {
                 <div className="mt-8 px-4">
 
                     <div className="text-xs mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        Rename, Cut, Copy, Delete
+                        Upload | Create Directory | File | With Selected: Rename, Cut, Copy, Delete, Zip, Unzip (depending on the case)
                     </div>
 
                     {goBack && goBack != "" && (
