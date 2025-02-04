@@ -6,6 +6,11 @@ import { toast } from "react-toastify";
 const DeleteFiles = ({ files, setSelectedPaths, showConfirmDelete, setShowConfirmDelete, refreshFiles, path }) => {
 
     const confirmDelete = () => {
+        if (files.length === 0) {
+            toast('No files selected', { type: 'error' });
+            return;
+        }
+
 
         window.axios.post('/filemanager/delete-files', { filesToDelete: files }).then((response) => {
             toast(response.data.message, { type: 'success' });
@@ -26,12 +31,15 @@ const DeleteFiles = ({ files, setSelectedPaths, showConfirmDelete, setShowConfir
         setShowConfirmDelete(false);
     };
 
+
     return (
         <Modal show={showConfirmDelete} closeable={true} onClose={() => closeModal()}>
-            <div class="p-6">
+            <div className="p-6 text-gray-700 dark:text-gray-200">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Are you sure you want to delete these files?
                 </h2>
+
+                {files.length === 0 && (<div className='text-red-500'>No files selected</div>)}
 
                 <div className="mt-6 overflow-scroll">
                     <ul>
@@ -42,7 +50,7 @@ const DeleteFiles = ({ files, setSelectedPaths, showConfirmDelete, setShowConfir
                 </div>
 
                 <div className="mt-6 flex justify-end">
-                    <DangerButton className="mr-3" onClick={() => confirmDelete()}>
+                    <DangerButton className="mr-3" onClick={() => confirmDelete()} disabled={files.length === 0}>
                         Yes, delete them!
                     </DangerButton>
 
