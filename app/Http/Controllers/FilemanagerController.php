@@ -85,7 +85,7 @@ class FilemanagerController extends Controller
             }
 
             return response()->json([
-                'message' => $r->fileType . ' ' . $r->path . $r->fileName . ' created successfully!',
+                'message' => $r->fileType . ' ' . $r->path . '/' . $r->fileName . ' created successfully!',
             ]);
         } catch (\Exception $exception) {
             return response()->json([

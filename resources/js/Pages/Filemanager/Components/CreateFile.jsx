@@ -4,16 +4,27 @@ import InputLabel from "@/Components/InputLabel"
 import Modal from "@/Components/Modal"
 import TextInput from "@/Components/TextInput"
 import { useState } from "react"
-import Dropdown from '@/Components/Dropdown';
+import { toast } from "react-toastify"
 
-const CreateFile = ({ path, fileType, setCreateFileType }) => {
+const CreateFile = ({ path, fileType, setCreateFileType, refreshFiles }) => {
 
-    const [file, setFile] = useState('')
+    const [file, setFile] = useState('');
 
     const createFile = (e) => {
         e.preventDefault()
-        console.log(`create ${fileType} with name ${file} clicked`)
-    }
+
+        console.log(`create ${fileType} with name ${file} clicked`);
+
+        window.axios.post('/filemanager/create-file', { path, fileName: file, fileType }).then((response) => {
+            toast(response.data.message, { type: 'success' })
+            setCreateFileType(false)
+            refreshFiles(path);
+        }).catch((error) => {
+            toast('Error', { type: 'error' })
+            console.log(error);
+        })
+
+    };
 
     if (!fileType) {
         return;
@@ -58,7 +69,7 @@ const CreateFile = ({ path, fileType, setCreateFileType }) => {
                 </form>
             </Modal>
         </>
-    )
+    );
 }
 
 export default CreateFile

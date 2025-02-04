@@ -23,7 +23,7 @@ Route::get('/dashboard/user', [DashboardController::class, 'user'])->middleware(
 // Filemanager
 Route::get('/filemanager', [FilemanagerController::class, 'index'])->middleware(['auth'])->name('filemanager');
 Route::get('/filemanager/get-contents', [FilemanagerController::class, 'getContents'])->middleware(['auth'])->name('filemanager.getContents');
-Route::get('/filemanager/create-file', [FilemanagerController::class, 'createFile'])->middleware(['auth'])->name('filemanager.createFile');
+Route::post('/filemanager/create-file', [FilemanagerController::class, 'createFile'])->middleware(['auth'])->name('filemanager.createFile');
 
 // Stats History
 Route::get('/stats/history', [StatsHistoryController::class, 'cpuAndMemory'])->middleware(['auth', AdminMiddleware::class])->name('stats.history');

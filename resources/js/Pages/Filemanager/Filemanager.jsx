@@ -72,6 +72,13 @@ const Filemanager = () => {
         );
     };
 
+    const formatBytes = (bytes, decimals = 2) => {
+        if (bytes === 0) return "0 B";
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const factor = Math.floor(Math.log(bytes) / Math.log(1024));
+        return `${parseFloat((bytes / Math.pow(1024, factor)).toFixed(decimals))} ${sizes[factor]}`;
+    };
+
 
     if (spinner) {
         return (
@@ -119,8 +126,8 @@ const Filemanager = () => {
                         <div className="flex items-center space-x-2">
                             <button>Upload</button>
 
-                            <button onClick={(e) => setCreateFileType('Directory')} className="text-xs">+Directory</button>
-                            <button onClick={(e) => setCreateFileType('File')} className="text-xs">+File</button>
+                            <button onClick={(e) => setCreateFileType('directory')} className="text-xs">+Directory</button>
+                            <button onClick={(e) => setCreateFileType('file')} className="text-xs">+File</button>
 
                             <button>With Selected</button>
                             Upload | With Selected: Rename, Cut, Copy, Delete, Zip, Unzip (depending on the case)
@@ -173,16 +180,20 @@ const Filemanager = () => {
                                 </div>
                             )}
 
-                            <div className="text-sm cursor-pointer">
+                            <div className="text-sm cursor-pointer flex-grow">
                                 {/* remove path from file.path */}
                                 {file.path.split('/').pop()}
+                            </div>
+
+                            <div className="text-xs text-gray-400 dark:text-gray-600">
+                                {typeof file.file_size == "undefined" ? "--" : formatBytes(file.file_size)}
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <CreateFile path={path} fileType={createFileType} setCreateFileType={setCreateFileType} />
+            <CreateFile path={path} fileType={createFileType} setCreateFileType={setCreateFileType} refreshFiles={cdIntoPath} />
 
         </AuthenticatedLayout >
     );
