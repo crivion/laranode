@@ -6,8 +6,8 @@ import { FaFolderClosed } from "react-icons/fa6";
 import { RiFolderReceivedLine } from "react-icons/ri";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { ToastContainer, toast } from 'react-toastify';
-import { MdInfoOutline } from "react-icons/md";
-import Dropdown from '@/Components/Dropdown';
+import Checkbox from '@/Components/Checkbox';
+import CreateFile from './Components/CreateFile';
 
 
 const Filemanager = () => {
@@ -16,6 +16,9 @@ const Filemanager = () => {
     const [path, setPath] = useState([]);
     const [goBack, setGoBack] = useState(false);
     const [spinner, showSpinner] = useState(true);
+    const [selectedPaths, setSelectedPaths] = useState([]);
+    const [createFileName, setCreateFileName] = useState('')
+    const [createFileType, setCreateFileType] = useState(false)
 
     useEffect(() => {
         cdIntoPath('/');
@@ -60,36 +63,13 @@ const Filemanager = () => {
         }
     };
 
-    const [selectedPaths, setSelectedPaths] = useState([]);
-    const [lastSelected, setLastSelected] = useState(null);
 
     const handleFileClick = (e, file) => {
-        const isCtrlClick = e.ctrlKey || e.metaKey;
-        const isShiftClick = e.shiftKey;
-
-        if (isCtrlClick) {
-            // Ctrl+Click: Add or remove the clicked file from the selection
-            setSelectedPaths((prevSelected) =>
-                prevSelected.includes(file.path)
-                    ? prevSelected.filter((path) => path !== file.path)
-                    : [...prevSelected, file.path]
-            );
-        } else if (isShiftClick && lastSelected !== null) {
-            // Shift+Click: Select all files between lastSelected and the clicked file
-            const startIndex = files.findIndex((f) => f.path === lastSelected);
-            const endIndex = files.findIndex((f) => f.path === file.path);
-            const range = files.slice(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex) + 1);
-            const pathsInRange = range.map((f) => f.path);
-            setSelectedPaths((prevSelected) => [
-                ...new Set([...prevSelected, ...pathsInRange]), // Remove duplicates
-            ]);
-        } else {
-            // Normal click: Select only the clicked file
-            setSelectedPaths([file.path]);
-        }
-
-        // Update last selected file
-        setLastSelected(file.path);
+        setSelectedPaths((prevSelected) =>
+            prevSelected.includes(file.path)
+                ? prevSelected.filter((path) => path !== file.path)
+                : [...prevSelected, file.path]
+        );
     };
 
 
@@ -136,18 +116,34 @@ const Filemanager = () => {
                 <div className="mt-8 px-4">
 
                     <div className="text-xs mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        Upload | Create Directory | File | With Selected: Rename, Cut, Copy, Delete, Zip, Unzip (depending on the case)
+                        <div className="flex items-center space-x-2">
+                            <button>Upload</button>
+
+                            <button onClick={(e) => setCreateFileType('Directory')} className="text-xs">+Directory</button>
+                            <button onClick={(e) => setCreateFileType('File')} className="text-xs">+File</button>
+
+                            <button>With Selected</button>
+                            Upload | With Selected: Rename, Cut, Copy, Delete, Zip, Unzip (depending on the case)
+                        </div>
+                        <div>
+                            Currently selected:
+                        </div>
+                        <div className="font-semibold text-gray-900 dark:text-gray-300">
+                            {selectedPaths?.map(file => file).join(', ')}
+                        </div>
                     </div>
 
-                    {goBack && goBack != "" && (
-                        <div className="bg-white dark:bg-gray-850 shadow py-3 px-6">
-
+                    {goBack && goBack != "" && (<div className='flex items-center space-x-2 text-xs'>
+                        <div className="bg-white dark:bg-gray-850 py-3 px-6  hover:bg-gray-200 dark:hover:bg-gray-800">
                             <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onDoubleClick={() => cdIntoPath(goBack)}>
-                                <RiFolderReceivedLine className="text-gray-500 dark:text-gray-300 w-5 h-5 flex-shrink-0 mr-1" />
+                                <RiFolderReceivedLine className="text-gray-500 dark:text-gray-300 mr-1" />
                                 Back
                             </button>
-
                         </div>
+                        <div className="bg-white dark:bg-gray-850 py-3 px-6 dark:text-gray-300 text-gray-900 flex items-center space-x-2">
+                            Path: {path}
+                        </div>
+                    </div>
                     )}
 
 
@@ -158,30 +154,35 @@ const Filemanager = () => {
                     }).map((file, index) => (
                         <div
                             key={`file-${index}`}
-                            className={`flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 bg-white dark:bg-gray-850 hover:bg-gray-100 dark:hover:bg-gray-800 shadow space-x-2 ${selectedPaths.includes(file.path)
-                                ? 'bg-sky-200 text-sky-700 hover:text-sky-700 hover:bg-sky-200 dark:hover:bg-sky-200 dark:hover:text-sky-700 dark:bg-sky-200 dark:text-sky-700'
-                                : ''
+                            className={`flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 border-b dark:border-b-gray-800 space-x-2 ${selectedPaths.includes(file.path)
+                                ? 'bg-gray-200 text-sky-700 hover:text-sky-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-sky-600 dark:bg-gray-800 dark:text-sky-600'
+                                : 'bg-white hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800'
                                 }`}
-                            onClick={(e) => handleFileClick(e, file)}
-                            onDoubleClick={(e) => file.type === "dir" ? cdIntoPath(file.path) : editFile(file.path)}
+                            onDoubleClick={() => file.type === "dir" ? cdIntoPath(file.path) : editFile(file.path)}
                         >
-                            {file.type === "dir" ? (<>
-                                <FaFolderClosed className="text-gray-500 w-5 h-5 flex-shrink-0 mr-1 cursor-pointer" />
-                            </>
+                            <div>
+                                <Checkbox checked={selectedPaths.includes(file.path)} onChange={(e) => handleFileClick(e, file)} className="-mt-1 mr-1" />
+                            </div>
+                            {file.type === "dir" ? (
+                                <div>
+                                    <FaFolderClosed className={`text-gray-500 ${selectedPaths.includes(file.path) ? 'text-sky-600' : ''} cursor-pointer`} />
+                                </div>
                             ) : (
-                                <div className="w-5 h-5">
-                                    <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="mr-1 cursor-pointer" />
+                                <div className="w-4 h-4">
+                                    <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="cursor-pointer" />
                                 </div>
                             )}
 
                             <div className="text-sm cursor-pointer">
-                                {file.path}
+                                {/* remove path from file.path */}
+                                {file.path.split('/').pop()}
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
+            <CreateFile path={path} fileType={createFileType} setCreateFileType={setCreateFileType} />
 
         </AuthenticatedLayout >
     );

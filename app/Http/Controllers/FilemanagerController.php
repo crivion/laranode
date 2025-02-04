@@ -24,32 +24,8 @@ class FilemanagerController extends Controller
         $goBack = false;
 
 
-        // The internal adapter
-        $adapter = new LocalFilesystemAdapter(
-            // Determine the root directory
-            $path,
-
-            // Customize how visibility is converted to unix permissions
-            PortableVisibilityConverter::fromArray([
-                'file' => [
-                    'public' => 0640,
-                    'private' => 0604,
-                ],
-                'dir' => [
-                    'public' => 0740,
-                    'private' => 7604,
-                ],
-            ]),
-
-            // Write flags
-            LOCK_EX,
-
-            // How to deal with links, either DISALLOW_LINKS or SKIP_LINKS
-            // Disallowing them causes exceptions when encountered
-            LocalFilesystemAdapter::DISALLOW_LINKS
-        );
-
-        // The FilesystemOperator
+        // create Filesystem
+        $adapter = new LocalFilesystemAdapter($path, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
         $filesystem = new Filesystem($adapter);
         $recursive = false;
 
@@ -78,6 +54,40 @@ class FilemanagerController extends Controller
             ]);
         } catch (\Exception $exception) {
 
+            return response()->json([
+                'error' => $exception->getMessage(),
+            ], 500);
+        };
+    }
+
+    public function createFile(Request $r)
+    {
+        $r->validate([
+            'path' => 'required',
+            'fileType' => 'required|in:directory,file',
+            'fileName' => 'required',
+        ]);
+
+        try {
+            // @todo: change to actual user path
+            $path = base_path();
+            $adapter = new LocalFilesystemAdapter($path, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
+            $filesystem = new Filesystem($adapter);
+
+            if ($filesystem->fileExists($r->path . '/' . $r->fileName) || $filesystem->directoryExists($r->path . '/' . $r->fileName)) {
+                throw new \Exception($r->fileType . ' ' . $r->path . '/' . $r->fileName . ' already exists!');
+            }
+
+            if ($r->fileType == 'directory') {
+                $filesystem->createDirectory($r->path . '/' . $r->fileName);
+            } else {
+                $filesystem->write($r->path . '/' . $r->fileName, '');
+            }
+
+            return response()->json([
+                'message' => $r->fileType . ' ' . $r->path . $r->fileName . ' created successfully!',
+            ]);
+        } catch (\Exception $exception) {
             return response()->json([
                 'error' => $exception->getMessage(),
             ], 500);
