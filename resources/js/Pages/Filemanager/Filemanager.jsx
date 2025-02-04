@@ -10,6 +10,17 @@ import Checkbox from '@/Components/Checkbox';
 import CreateFile from './Components/CreateFile';
 import EditFile from './Components/EditFile';
 import DeleteFiles from './Components/DeleteFiles';
+import { LuFolderPlus } from "react-icons/lu";
+import { LuFilePlus2 } from "react-icons/lu";
+import { LuDelete } from "react-icons/lu";
+import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
+import { IoMdCut } from "react-icons/io";
+import { MdCopyAll } from "react-icons/md";
+import { BiPaste } from "react-icons/bi";
+import { TbFileTypeZip } from "react-icons/tb";
+import { VscFileZip } from "react-icons/vsc";
+import { FaUpload } from "react-icons/fa";
+
 
 const Filemanager = () => {
 
@@ -143,23 +154,60 @@ const Filemanager = () => {
             <div className="max-w-7xl">
                 <div className="mt-8 px-4">
 
-                    <div className="text-xs mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center space-x-2">
-                            <button>Upload</button>
+                    <div className="mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0 font-semibold">
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600">
+                                <FaUpload className="mr-1" />
+                                Upload
+                            </button>
 
-                            <button onClick={() => setCreateFileType('directory')} className="text-xs">+Directory</button>
-                            <button onClick={() => setCreateFileType('file')} className="text-xs">+File</button>
+                            <button onClick={() => setCreateFileType('directory')} className="flex items-center hover:text-indigo-600">
+                                <LuFolderPlus className="mr-1" />
+                                Directory
+                            </button>
+                            <button onClick={() => setCreateFileType('file')} className="flex items-center hover:text-indigo-600">
+                                <LuFilePlus2 className="mr-1" />
+                                File
+                            </button>
 
-                            With Selected
+                            <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <LuDelete className="mr-1" />
+                                Delete
+                            </button>
 
-                            Upload | With Selected: Rename, Cut, Copy, -<button onClick={() => confirmDelete()}>x Delete</button>, Zip, Unzip (depending on the case)
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
+                                <MdOutlineDriveFileRenameOutline className="mr-1" />
+                                Rename
+                            </button>
+
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <IoMdCut className="mr-1" />
+                                Cut
+                            </button>
+
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <MdCopyAll className="mr-1" />
+                                Copy
+                            </button>
+
+                            {/* here make it if cutFiles == true} */}
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <BiPaste className="mr-1" />
+                                Paste
+                            </button>
+
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <TbFileTypeZip className="mr-1" />
+                                Zip
+                            </button>
+
+                            {/* here make it if its only one file selected and it ends in .zip*/}
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
+                                <VscFileZip className="mr-1" />
+                                Extract
+                            </button>
                         </div>
-                        <div>
-                            Currently selected:
-                        </div>
-                        <div className="font-semibold text-gray-900 dark:text-gray-300">
-                            {selectedPaths?.map(file => file).join(', ')}
-                        </div>
+
                     </div>
 
                     {goBack && goBack != "" && (<div className='flex items-center space-x-2 text-xs'>
