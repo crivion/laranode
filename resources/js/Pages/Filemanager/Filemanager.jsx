@@ -8,28 +8,30 @@ import { FileIcon, defaultStyles } from 'react-file-icon';
 import { ToastContainer, toast } from 'react-toastify';
 import Checkbox from '@/Components/Checkbox';
 import CreateFile from './Components/CreateFile';
-
+import EditFile from './Components/EditFile';
+import DeleteFiles from './Components/DeleteFiles';
 
 const Filemanager = () => {
 
     const [files, setFiles] = useState([]);
-    const [path, setPath] = useState([]);
+    const [path, setPath] = useState("/");
     const [goBack, setGoBack] = useState(false);
     const [spinner, showSpinner] = useState(true);
     const [selectedPaths, setSelectedPaths] = useState([]);
-    const [createFileName, setCreateFileName] = useState('')
-    const [createFileType, setCreateFileType] = useState(false)
+    const [createFileType, setCreateFileType] = useState(false);
+    const [editFile, setEditFile] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
     useEffect(() => {
-        cdIntoPath('/');
-    }, []);
+        cdIntoPath(path);
+    }, [editFile]);
 
     const cdIntoPath = async (path) => {
         setPath(path);
         showSpinner(true);
 
         try {
-            const response = await fetch(`/filemanager/get-contents?path=${path}`);
+            const response = await fetch(`/filemanager/get-directory-contents?path=${path}`);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -64,7 +66,7 @@ const Filemanager = () => {
     };
 
 
-    const handleFileClick = (e, file) => {
+    const handleFileClick = (file) => {
         setSelectedPaths((prevSelected) =>
             prevSelected.includes(file.path)
                 ? prevSelected.filter((path) => path !== file.path)
@@ -72,12 +74,31 @@ const Filemanager = () => {
         );
     };
 
+    const handleDoubleClick = (file) => {
+        if (file.type == "dir") {
+            cdIntoPath(file.path);
+        }
+
+        // do not edit images/videos based on extensions
+        const extension = file.path.split('.').pop();
+        const imagesAndVideos = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mp3', 'webm', 'wav', 'ogg', 'flac', 'mkv', 'mov', 'avi', 'wmv', 'm4v'];
+
+        if (file.type == "file" && !imagesAndVideos.includes(extension)) {
+            setEditFile(file.path);
+        }
+    }
+
     const formatBytes = (bytes, decimals = 2) => {
         if (bytes === 0) return "0 B";
         const sizes = ["B", "KB", "MB", "GB", "TB"];
         const factor = Math.floor(Math.log(bytes) / Math.log(1024));
         return `${parseFloat((bytes / Math.pow(1024, factor)).toFixed(decimals))} ${sizes[factor]}`;
     };
+
+    const confirmDelete = () => {
+        setShowConfirmDelete(true);
+    };
+
 
 
     if (spinner) {
@@ -126,11 +147,12 @@ const Filemanager = () => {
                         <div className="flex items-center space-x-2">
                             <button>Upload</button>
 
-                            <button onClick={(e) => setCreateFileType('directory')} className="text-xs">+Directory</button>
-                            <button onClick={(e) => setCreateFileType('file')} className="text-xs">+File</button>
+                            <button onClick={() => setCreateFileType('directory')} className="text-xs">+Directory</button>
+                            <button onClick={() => setCreateFileType('file')} className="text-xs">+File</button>
 
-                            <button>With Selected</button>
-                            Upload | With Selected: Rename, Cut, Copy, Delete, Zip, Unzip (depending on the case)
+                            With Selected
+
+                            Upload | With Selected: Rename, Cut, Copy, -<button onClick={() => confirmDelete()}>x Delete</button>, Zip, Unzip (depending on the case)
                         </div>
                         <div>
                             Currently selected:
@@ -165,10 +187,10 @@ const Filemanager = () => {
                                 ? 'bg-gray-200 text-sky-700 hover:text-sky-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-sky-600 dark:bg-gray-800 dark:text-sky-600'
                                 : 'bg-white hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800'
                                 }`}
-                            onDoubleClick={() => file.type === "dir" ? cdIntoPath(file.path) : editFile(file.path)}
+                            onDoubleClick={() => handleDoubleClick(file)}
                         >
                             <div>
-                                <Checkbox checked={selectedPaths.includes(file.path)} onChange={(e) => handleFileClick(e, file)} className="-mt-1 mr-1" />
+                                <Checkbox checked={selectedPaths.includes(file.path)} onChange={(e) => handleFileClick(file)} className="-mt-1 mr-1" />
                             </div>
                             {file.type === "dir" ? (
                                 <div>
@@ -193,7 +215,26 @@ const Filemanager = () => {
                 </div>
             </div>
 
-            <CreateFile path={path} fileType={createFileType} setCreateFileType={setCreateFileType} refreshFiles={cdIntoPath} />
+            <CreateFile
+                path={path}
+                fileType={createFileType}
+                setCreateFileType={setCreateFileType}
+                refreshFiles={cdIntoPath}
+            />
+
+            <EditFile
+                editFile={editFile}
+                setEditFile={setEditFile}
+            />
+
+            <DeleteFiles
+                files={selectedPaths}
+                setSelectedPaths={setSelectedPaths}
+                showConfirmDelete={showConfirmDelete}
+                setShowConfirmDelete={setShowConfirmDelete}
+                refreshFiles={cdIntoPath}
+                path={path}
+            />
 
         </AuthenticatedLayout >
     );
