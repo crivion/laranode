@@ -20,6 +20,8 @@ class GetFileContentsAction
             'text/plain',              // .txt, .log, .ini, .env, .conf, .md, .sh, .bash, .zsh
             'text/html',               // .html, .htm
             'text/css',                // .css
+            'text/x-php',              // .php
+            'application/x-empty',     // for example empty php files
             'text/javascript',         // .js
             'application/javascript',  // .js
             'application/json',        // .json
@@ -35,6 +37,7 @@ class GetFileContentsAction
             'text/markdown',           // .md
             'text/x-typescript',       // .ts, .tsx
             'text/x-jsx',              // .jsx, .tsx
+            'text/rtf',
             'application/x-sh',        // .sh
             'application/x-sql',       // .sql
         ];
