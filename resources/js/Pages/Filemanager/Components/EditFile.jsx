@@ -12,6 +12,7 @@ const EditFile = ({ editFile, setEditFile }) => {
 
     const [fileContents, setFileContents] = useState('');
     const [showSpinner, setShowSpinner] = useState(true);
+    const [isError, setIsError] = useState(false);
 
     useEffect(() => {
         readFile();
@@ -32,6 +33,7 @@ const EditFile = ({ editFile, setEditFile }) => {
                 const errorData = await response.json();
                 const errorMessage = errorData.error || response.statusText;
                 toast(errorMessage, { type: 'error' });
+                setIsError(true);
                 return;
             }
 
@@ -53,6 +55,7 @@ const EditFile = ({ editFile, setEditFile }) => {
         } catch (error) {
             toast('Error reading file', { type: 'error' })
             toast(error.message, { type: 'error' })
+            setIsError(true);
             console.error(error)
         } finally {
             setShowSpinner(false);
@@ -99,23 +102,24 @@ const EditFile = ({ editFile, setEditFile }) => {
                             className="sr-only"
                         />
 
-                        <textarea
-                            disabled={showSpinner}
-                            id="fileName"
-                            name="fileName"
-                            value={fileContents}
-                            onChange={(e) =>
-                                setFileContents(e.target.value)
-                            }
-                            className="w-full p-2 rounded shadow border border-gray-400 min-h-[300px] max-h-[500px] bg-white text-gray-700 text-sm dark:bg-gray-800 dark:text-gray-200"
-                            autoFocus={true}
-                        />
+                        {!showSpinner && !isError && (
+                            <textarea
+                                id="fileName"
+                                name="fileName"
+                                value={fileContents}
+                                onChange={(e) =>
+                                    setFileContents(e.target.value)
+                                }
+                                className="w-full p-2 rounded shadow border border-gray-400 min-h-[300px] max-h-[500px] bg-white text-gray-700 text-sm dark:bg-gray-800 dark:text-gray-200"
+                                autoFocus={true}
+                            />
+                        )}
 
 
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                        <PrimaryButton className="mr-3" onClick={(e) => updateFile(e)}>
+                        <PrimaryButton className="mr-3" onClick={(e) => updateFile(e)} disabled={showSpinner || isError}>
                             Save Changes
                         </PrimaryButton>
 

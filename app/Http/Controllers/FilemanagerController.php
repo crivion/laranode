@@ -43,7 +43,7 @@ class FilemanagerController extends Controller
 
     public function getFileContents(Request $r)
     {
-        return (new GetFileContentsAction($this->filesystem))->execute($r);
+        return (new GetFileContentsAction($this->filesystem, $this->path))->execute($r);
     }
 
     public function createFile(Request $r)

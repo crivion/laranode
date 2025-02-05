@@ -2,13 +2,13 @@
 
 namespace App\Actions\Filemanager;
 
+use finfo;
 use Illuminate\Http\Request;
 use League\Flysystem\Filesystem;
-use League\MimeTypeDetection\FinfoMimeTypeDetector;
 
 class GetFileContentsAction
 {
-    public function __construct(public Filesystem $filesystem) {}
+    public function __construct(public Filesystem $filesystem, public string $path) {}
 
     public function execute(Request $r)
     {
@@ -42,8 +42,9 @@ class GetFileContentsAction
 
         try {
 
-            $mimeTypeDetector = new FinfoMimeTypeDetector();
-            $mimeType = $mimeTypeDetector->detectMimeType($r->file, 'string contents');
+            $finfo = new finfo();
+            // @todo -> get base_path() passed by controller
+            $mimeType = $finfo->file($this->path . '/' . $r->path . '/' . $r->file, FILEINFO_MIME_TYPE);
 
             if (!in_array($mimeType, $editableMimeTypes, true)) {
                 throw new \Exception('File of type "' . $mimeType . '" is not editable');
