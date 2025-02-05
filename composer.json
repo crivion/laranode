@@ -15,6 +15,7 @@
         "laravel/reverb": "^1.4",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "league/mime-type-detection": "^1.16",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
