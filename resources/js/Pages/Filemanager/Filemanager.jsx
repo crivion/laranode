@@ -10,6 +10,8 @@ import Checkbox from '@/Components/Checkbox';
 import CreateFile from './Components/CreateFile';
 import EditFile from './Components/EditFile';
 import DeleteFiles from './Components/DeleteFiles';
+import RenameFile from './Components/RenameFile';
+
 import { LuFolderPlus } from "react-icons/lu";
 import { LuFilePlus2 } from "react-icons/lu";
 import { LuDelete } from "react-icons/lu";
@@ -32,6 +34,7 @@ const Filemanager = () => {
     const [createFileType, setCreateFileType] = useState(false);
     const [editFile, setEditFile] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [renameFile, setRenameFile] = useState(false);
 
     useEffect(() => {
         cdIntoPath(path);
@@ -175,7 +178,7 @@ const Filemanager = () => {
                                 Delete
                             </button>
 
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
+                            <button onClick={() => setRenameFile(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
                                 <MdOutlineDriveFileRenameOutline className="mr-1" />
                                 Rename
                             </button>
@@ -202,7 +205,7 @@ const Filemanager = () => {
                             </button>
 
                             {/* here make it if its only one file selected and it ends in .zip*/}
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
+                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1 || !selectedPaths.some(file => file.endsWith('.zip'))}>
                                 <VscFileZip className="mr-1" />
                                 Extract
                             </button>
@@ -280,6 +283,15 @@ const Filemanager = () => {
                 setSelectedPaths={setSelectedPaths}
                 showConfirmDelete={showConfirmDelete}
                 setShowConfirmDelete={setShowConfirmDelete}
+                refreshFiles={cdIntoPath}
+                path={path}
+            />
+
+            <RenameFile
+                selectedFile={selectedPaths.length == 1 ? selectedPaths[0] : null}
+                setSelectedPaths={setSelectedPaths}
+                renameFile={renameFile}
+                setRenameFile={setRenameFile}
                 refreshFiles={cdIntoPath}
                 path={path}
             />

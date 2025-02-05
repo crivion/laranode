@@ -10,6 +10,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use App\Actions\Filemanager\GetDirectoryContentsAction;
 use App\Actions\Filemanager\GetFileContentsAction;
+use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use Illuminate\Http\StreamedResponse;
@@ -45,6 +46,11 @@ class FilemanagerController extends Controller
     public function createFile(Request $r)
     {
         return (new CreateFileAction($this->filesystem))->execute($r);
+    }
+
+    public function renameFile(Request $r)
+    {
+        return (new RenameFileAction($this->filesystem))->execute($r);
     }
 
     public function updateFileContents(Request $r)

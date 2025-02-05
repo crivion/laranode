@@ -4,7 +4,6 @@ namespace App\Actions\Filemanager;
 
 use Illuminate\Http\Request;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class CreateFileAction
 {
