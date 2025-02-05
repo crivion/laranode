@@ -21,6 +21,7 @@ class GetFileContentsAction
             'text/html',               // .html, .htm
             'text/css',                // .css
             'text/javascript',         // .js
+            'application/javascript',  // .js
             'application/json',        // .json
             'application/xml',         // .xml
             'application/x-yaml',      // .yaml, .yml
@@ -44,7 +45,7 @@ class GetFileContentsAction
             $mimeType = $mimeTypeDetector->detectMimeType($r->file, 'string contents');
 
             if (!in_array($mimeType, $editableMimeTypes, true)) {
-                throw new \Exception('File ' . $mimeType . ' is not editable');
+                throw new \Exception('File of type "' . $mimeType . '" is not editable');
             }
 
             $stream = $filesystem->readStream($r->file);
