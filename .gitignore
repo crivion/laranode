@@ -22,3 +22,4 @@ yarn-error.log
 /.vscode
 /.zed
 package-lock.json
+*.DS_Store*

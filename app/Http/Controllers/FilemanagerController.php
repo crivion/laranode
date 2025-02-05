@@ -12,12 +12,14 @@ use App\Actions\Filemanager\GetDirectoryContentsAction;
 use App\Actions\Filemanager\GetFileContentsAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
+use App\Actions\Filemanager\UploadFileAction;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use Illuminate\Http\StreamedResponse;
 
 class FilemanagerController extends Controller
 {
     public Filesystem $filesystem;
+    public string $path;
 
     public function __construct()
     {
@@ -26,6 +28,7 @@ class FilemanagerController extends Controller
         $adapter = new LocalFilesystemAdapter($path, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
 
         $this->filesystem = new Filesystem($adapter);
+        $this->path = $path;
     }
 
     public function index()
@@ -61,5 +64,10 @@ class FilemanagerController extends Controller
     public function deleteFiles(Request $r)
     {
         return (new DeleteFilesAction($this->filesystem))->execute($r);
+    }
+
+    public function uploadFile(Request $r)
+    {
+        return (new UploadFileAction($this->path))->execute($r);
     }
 }

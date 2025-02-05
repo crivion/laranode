@@ -11,6 +11,7 @@ import CreateFile from './Components/CreateFile';
 import EditFile from './Components/EditFile';
 import DeleteFiles from './Components/DeleteFiles';
 import RenameFile from './Components/RenameFile';
+import UploadFile from './Components/UploadFile';
 
 import { LuFolderPlus } from "react-icons/lu";
 import { LuFilePlus2 } from "react-icons/lu";
@@ -35,6 +36,7 @@ const Filemanager = () => {
     const [editFile, setEditFile] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [renameFile, setRenameFile] = useState(false);
+    const [showUploadFile, setShowUploadFile] = useState(false);
 
     useEffect(() => {
         cdIntoPath(path);
@@ -159,7 +161,7 @@ const Filemanager = () => {
 
                     <div className="mb-5 flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0 font-semibold">
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600">
+                            <button onClick={() => setShowUploadFile(true)} className="flex items-center hover:text-indigo-600">
                                 <FaUpload className="mr-1" />
                                 Upload
                             </button>
@@ -292,6 +294,13 @@ const Filemanager = () => {
                 setSelectedPaths={setSelectedPaths}
                 renameFile={renameFile}
                 setRenameFile={setRenameFile}
+                refreshFiles={cdIntoPath}
+                path={path}
+            />
+
+            <UploadFile
+                showUploadFile={showUploadFile}
+                setShowUploadFile={setShowUploadFile}
                 refreshFiles={cdIntoPath}
                 path={path}
             />

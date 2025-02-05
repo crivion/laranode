@@ -36,6 +36,7 @@ class GetFileContentsAction
             'text/x-typescript',       // .ts, .tsx
             'text/x-jsx',              // .jsx, .tsx
             'application/x-sh',        // .sh
+            'application/x-sql',       // .sql
         ];
 
 
