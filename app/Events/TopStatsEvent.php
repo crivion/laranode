@@ -17,10 +17,7 @@ class TopStatsEvent implements ShouldBroadcast, ShouldBeUnique
     /**
      * Create a new event instance.
      */
-    public function __construct(public array $stats = [])
-    {
-        $this->stats = (new TopCommandService)->run();
-    }
+    public function __construct(private TopCommandService $topCommandService) {}
 
     /**
      * Get the channels the event should broadcast on.
@@ -36,6 +33,6 @@ class TopStatsEvent implements ShouldBroadcast, ShouldBeUnique
 
     public function broadcastWith(): array
     {
-        return $this->stats;
+        return $this->topCommandService->run();
     }
 }

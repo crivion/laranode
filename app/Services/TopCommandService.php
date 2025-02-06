@@ -46,8 +46,5 @@ class TopCommandService
         }
 
         return $processes;
-
-        // Render the view with transformed processes
-        /* return ['code' => view('dashboard.top', ['processes' => $processes])->render()]; */
     }
 }

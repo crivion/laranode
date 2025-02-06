@@ -245,7 +245,7 @@ const Filemanager = () => {
 
                             <button onClick={() => setCopyFiles(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0 || cutFiles}>
                                 <MdCopyAll className="mr-1" />
-                                Copy
+                                Copy -tbd
                             </button>
 
                             <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>

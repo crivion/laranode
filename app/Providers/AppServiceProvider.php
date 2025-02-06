@@ -9,8 +9,6 @@ use App\Actions\Filemanager\GetFileContentsAction;
 use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
-use App\Models\Option;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
