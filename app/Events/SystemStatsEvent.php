@@ -11,7 +11,6 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBeUnique;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use PHPUnit\Event\Telemetry\System;
 
 class SystemStatsEvent implements ShouldBroadcast, ShouldBeUnique
 {
@@ -20,7 +19,10 @@ class SystemStatsEvent implements ShouldBroadcast, ShouldBeUnique
     /**
      * Create a new event instance.
      */
-    public function __construct(private SystemStatsService $systemStatsService) {}
+    public function __construct(public array $stats = [])
+    {
+        $this->stats = (new SystemStatsService)->getAllStats();
+    }
 
     /**
      * Get the channels the event should broadcast on.
@@ -36,6 +38,6 @@ class SystemStatsEvent implements ShouldBroadcast, ShouldBeUnique
 
     public function broadcastWith()
     {
-        return $this->systemStatsService->getAllStats();
+        return $this->stats;
     }
 }
