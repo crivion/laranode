@@ -14,12 +14,12 @@ export default function Dashboard() {
     const [liveStats, setLiveStats] = useState([]);
 
     const echo = window.Echo;
-    const dashboardChannel = echo.private("systemstats");
 
     useEffect(() => {
 
+        const dashboardChannel = echo.private("systemstats");
+
         dashboardChannel.listen("SystemStatsEvent", (data) => {
-            console.log(data);
             setLiveStats(data);
         });
 
@@ -36,7 +36,7 @@ export default function Dashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex flex-col xl:justify-between xl:flex-row">
+                <div className="flex flex-col xl:justify-between xl:flex-row max-w-7xl pr-5">
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
                         <RiDashboard3Fill className='mr-2' />
                         Dashboard

@@ -10,7 +10,6 @@ const TopProcesses = () => {
     const [spinner, showSpinner] = useState(false);
 
     const echo = window.Echo;
-    const topStatsChannel = echo.private("topstats");
 
     const setSortPreferrence = (sortBy) => {
         window.axios.patch("/dashboard/admin/set/top-sort", { sortBy }).then((response) => {
@@ -20,6 +19,8 @@ const TopProcesses = () => {
     }
 
     useEffect(() => {
+
+        const topStatsChannel = echo.private("topstats");
 
         window.axios.get("/dashboard/admin/get/top-sort").then((response) => {
             setSortBy(response.data.sortBy);
