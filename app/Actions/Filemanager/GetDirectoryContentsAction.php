@@ -4,11 +4,10 @@ namespace App\Actions\Filemanager;
 
 use Illuminate\Http\Request;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class GetDirectoryContentsAction
 {
-    public function __construct(public Filesystem $filesystem) {}
+    public function __construct(private Filesystem $filesystem) {}
 
     public function execute(Request $r)
     {

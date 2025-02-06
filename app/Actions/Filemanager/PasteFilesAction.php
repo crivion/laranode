@@ -8,10 +8,7 @@ use League\Flysystem\Filesystem;
 class PasteFilesAction
 {
 
-    public function __construct(public Filesystem $filesystem)
-    {
-        $this->filesystem = $filesystem;
-    }
+    public function __construct(private Filesystem $filesystem) {}
 
     public function execute(Request $r)
     {

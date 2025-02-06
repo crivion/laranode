@@ -4,11 +4,17 @@ namespace App\Actions\Filemanager;
 
 use finfo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use League\Flysystem\Filesystem;
 
 class GetFileContentsAction
 {
-    public function __construct(public Filesystem $filesystem, public string $path) {}
+    private $path;
+
+    public function __construct(private Filesystem $filesystem)
+    {
+        $this->path = Config::get('laranode.user_base_path');
+    }
 
     public function execute(Request $r)
     {

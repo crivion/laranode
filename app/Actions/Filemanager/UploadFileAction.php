@@ -3,11 +3,11 @@
 namespace App\Actions\Filemanager;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 
 class UploadFileAction
 {
-    public function __construct(public string $path) {}
 
     public function execute(Request $r)
     {
@@ -20,19 +20,9 @@ class UploadFileAction
         ]);
 
         $file = $r->file('file');
-
-        $path = $this->path . '/' . $r->path;
+        $path = Config::get('laranode.user_base_path') . '/' . $r->path;
 
         File::append($path . '/' . $r->originalName, $file->get());
-
-        /* $handle = fopen($file->getPathname(), 'rb'); */
-        /* $destination = fopen($path . '/' . $r->originalName, 'ab'); */
-        /**/
-        /* if ($handle && $destination) { */
-        /*     stream_copy_to_stream($handle, $destination); // Append chunk data */
-        /*     fclose($handle); */
-        /*     fclose($destination); */
-        /* } */
 
         return response()->json([
             'message' => 'Chunk uploaded',
