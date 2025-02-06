@@ -23,6 +23,7 @@ import { BiPaste } from "react-icons/bi";
 import { TbFileTypeZip } from "react-icons/tb";
 import { VscFileZip } from "react-icons/vsc";
 import { FaUpload } from "react-icons/fa";
+import { PiSelectionAllBold } from "react-icons/pi";
 
 
 const Filemanager = () => {
@@ -113,6 +114,15 @@ const Filemanager = () => {
         }
     }
 
+    const selectAll = () => {
+        // toggle between all selected paths
+        if (selectedPaths.length === files.length) {
+            setSelectedPaths([]);
+        } else {
+            setSelectedPaths(files.map((file) => file.path));
+        }
+    };
+
     const pasteFiles = async () => {
 
         window.axios.patch('/filemanager/paste-files', { filesToPaste: selectedPaths, intoPath: path, pasteFromAction: 'cut' }).then((response) => {
@@ -202,10 +212,11 @@ const Filemanager = () => {
                                 File
                             </button>
 
-                            <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
-                                <LuDelete className="mr-1" />
-                                Delete
+                            <button onClick={() => selectAll()} className="flex items-center hover:text-indigo-600">
+                                <PiSelectionAllBold className="mr-1" />
+                                {selectedPaths.length === files.length ? 'Deselect All' : 'Select All'}
                             </button>
+
 
                             <button onClick={() => setRenameFile(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length != 1}>
                                 <MdOutlineDriveFileRenameOutline className="mr-1" />
@@ -235,6 +246,11 @@ const Filemanager = () => {
                             <button onClick={() => setCopyFiles(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0 || cutFiles}>
                                 <MdCopyAll className="mr-1" />
                                 Copy
+                            </button>
+
+                            <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                <LuDelete className="mr-1" />
+                                Delete
                             </button>
 
 
