@@ -37,6 +37,9 @@ const Filemanager = () => {
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [renameFile, setRenameFile] = useState(false);
     const [showUploadFile, setShowUploadFile] = useState(false);
+    const [copyFiles, setCopyFiles] = useState(false);
+    const [cutFiles, setCutFiles] = useState(false);
+
 
     useEffect(() => {
         cdIntoPath(path);
@@ -91,6 +94,12 @@ const Filemanager = () => {
     };
 
     const handleDoubleClick = (file) => {
+
+        if (cutFiles && selectedPaths.includes(file.path)) {
+            toast('Cannot cut files into a path that already contains them', { type: 'error' });
+            return;
+        }
+
         if (file.type == "dir") {
             cdIntoPath(file.path);
         }
@@ -102,6 +111,24 @@ const Filemanager = () => {
         if (file.type == "file" && !imagesAndVideos.includes(extension)) {
             setEditFile(file.path);
         }
+    }
+
+    const pasteFiles = async () => {
+
+        window.axios.patch('/filemanager/paste-files', { filesToPaste: selectedPaths, intoPath: path, pasteFromAction: 'cut' }).then((response) => {
+            setSelectedPaths([]);
+            setCutFiles(false);
+            cdIntoPath(path);
+
+            toast(response.data.message, { type: 'success' })
+        }).catch((error) => {
+            if (error?.response?.data?.error) {
+                toast(error.response.data.error, { type: 'error' });
+            } else {
+                toast(error.message, { type: 'error' });
+            }
+            console.log(error);
+        });
     }
 
     const formatBytes = (bytes, decimals = 2) => {
@@ -185,21 +212,31 @@ const Filemanager = () => {
                                 Rename
                             </button>
 
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
-                                <IoMdCut className="mr-1" />
-                                Cut
-                            </button>
+                            {!cutFiles ? (
+                                <button onClick={() => setCutFiles(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                                    <IoMdCut className="mr-1" />
+                                    Cut
+                                </button>) : (
+                                <button onClick={() => setCutFiles(false)} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
+                                    <IoMdCut className="mr-1" />
+                                    Cancel
+                                </button>
+                            )
+                            }
 
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
+                            {/* here make it if cutFiles == true} */}
+                            {cutFiles && (
+                                <button onClick={() => pasteFiles()} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
+                                    <BiPaste className="mr-1" />
+                                    Paste
+                                </button>
+                            )}
+
+                            <button onClick={() => setCopyFiles(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0 || cutFiles}>
                                 <MdCopyAll className="mr-1" />
                                 Copy
                             </button>
 
-                            {/* here make it if cutFiles == true} */}
-                            <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
-                                <BiPaste className="mr-1" />
-                                Paste
-                            </button>
 
                             <button onClick={() => alert('TBD')} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
                                 <TbFileTypeZip className="mr-1" />
@@ -255,9 +292,9 @@ const Filemanager = () => {
                                 </div>
                             )}
 
-                            <div className="text-sm cursor-pointer flex-grow">
-                                {/* remove path from file.path */}
+                            <div className={`text-sm cursor-pointer flex-grow flex items-center ${selectedPaths.includes(file.path) && cutFiles && 'text-gray-400'}`}>
                                 {file.path.split('/').pop()}
+                                {selectedPaths.includes(file.path) && cutFiles && <IoMdCut className="ml-1" />}
                             </div>
 
                             <div className="text-xs text-gray-400 dark:text-gray-600">

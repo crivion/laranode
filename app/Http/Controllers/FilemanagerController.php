@@ -10,6 +10,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use App\Actions\Filemanager\GetDirectoryContentsAction;
 use App\Actions\Filemanager\GetFileContentsAction;
+use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
 use App\Actions\Filemanager\UploadFileAction;
@@ -59,6 +60,11 @@ class FilemanagerController extends Controller
     public function updateFileContents(Request $r)
     {
         return (new UpdateFileContentsAction($this->filesystem))->execute($r);
+    }
+
+    public function pasteFiles(Request $r)
+    {
+        return (new PasteFilesAction($this->filesystem))->execute($r);
     }
 
     public function deleteFiles(Request $r)
