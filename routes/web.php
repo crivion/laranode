@@ -34,7 +34,6 @@ Route::post('/filemanager/upload-file', [FilemanagerController::class, 'uploadFi
 // Stats History
 Route::get('/stats/history', [StatsHistoryController::class, 'cpuAndMemory'])->middleware(['auth', AdminMiddleware::class])->name('stats.history');
 
-
 // Accounts
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

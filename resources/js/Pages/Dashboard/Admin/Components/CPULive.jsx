@@ -16,7 +16,7 @@ const CPULive = ({ cpuStats }) => {
                 <div className="text-gray-600 dark:text-gray-400 text-lg">CPU Stats</div>
 
                 <div className="ml-2">
-                    <Link href={"/cpu/history"}>
+                    <Link href={"/stats/history"}>
                         <FaAngleDoubleRight className="text-gray-400 text-lg" />
                     </Link>
                 </div>

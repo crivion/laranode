@@ -23,7 +23,7 @@ class MemoryHistoryService extends SarHistory
         }
 
         // dismiss first (headers)
-        $metrics = $metrics->slice(1);
+        /*$metrics = $metrics->slice(1);*/
 
         return $metrics->map(function ($stat) {
 
@@ -31,8 +31,8 @@ class MemoryHistoryService extends SarHistory
 
             return [
                 'time' => $stat[0],
-                'avail' => $stat[2] / $gb,
-                'used' => $stat[3] / $gb,
+                'avail' => (int)$stat[2] / $gb,
+                'used' => (int)$stat[3] / $gb,
                 'percent' => (float)$stat[4]
             ];
         });

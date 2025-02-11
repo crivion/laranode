@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\Contracts\HistoricStatsContract;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
@@ -53,10 +54,11 @@ abstract class SarHistory implements HistoricStatsContract
 
         // remove sar files from list, we only need sa[0-9]{2}
         $sarFiles = $sarFiles->reject(fn($file) => !preg_match('#^/var/log/sysstat/sa[0-9]{2}$#', $file));
+        $sarFiles = $sarFiles->mapWithKeys(fn($file) => [(int)str_replace('sa', '', basename($file)) => $file]);
+        $sarFiles = $sarFiles->mapWithKeys(fn($file, $key) => [date('Y-m-') . $key => $file]);
+        $sarFiles = $sarFiles->mapWithKeys(fn($file, $key) => [Carbon::parse($key)->format('jS F Y') => $file]);
 
         // add keys for frontend
-        $sarFiles = $sarFiles->mapWithKeys(fn($file) => [str_replace('sa', '', basename($file)) => $file]);
-
         return $sarFiles->reverse();
     }
 }
