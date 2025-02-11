@@ -21,9 +21,9 @@ const NetworkStatsChart = ({ networkStats }) => {
     const txkbs = networkStats.map(item => item.txkbs);
     const totalkbs = networkStats.map(item => item.totalkbs);
 
-    const totalRx = rxkbs.reduce((a, b) => a + b, 0);
-    const totalTx = txkbs.reduce((a, b) => a + b, 0);
-    const totalTraf = totalkbs.reduce((a, b) => a + b, 0);
+    const totalRx = (rxkbs.reduce((a, b) => a + b, 0)) / 1024;
+    const totalTx = (txkbs.reduce((a, b) => a + b, 0)) / 1024
+    const totalTraf = (totalkbs.reduce((a, b) => a + b, 0)) / 1024;
 
     // Define the chart data
     const data = {
@@ -78,7 +78,7 @@ const NetworkStatsChart = ({ networkStats }) => {
                     label: function(tooltipItem) {
                         let label = tooltipItem.dataset.label || '';
                         let value = tooltipItem.raw;
-                        return `${label}: ${value.toFixed(2)} kB/s`;
+                        return `${label}: ${value.toFixed(2)} kB`;
                     }
                 },
             },
@@ -113,19 +113,19 @@ const NetworkStatsChart = ({ networkStats }) => {
             {/* Max Network usage stats */}
             <div className="mt-4 pb-3 border-gray-200 dark:border-gray-700">
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total Rx:</p>
+                    <p>Total Rx/s:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-indigo-100 bg-indigo-400 px-2 py-0.5 rounded text-xs">{totalRx.toFixed(2)} kB</span>
+                    <span className="font-bold text-indigo-100 bg-indigo-400 px-2 py-0.5 rounded text-xs">{totalRx.toFixed(2)} Mbps</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total Tx:</p>
+                    <p>Total Tx/s:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-emerald-100 bg-emerald-400 px-2 py-0.5 rounded text-xs">{totalTx.toFixed(2)} kB</span>
+                    <span className="font-bold text-emerald-100 bg-emerald-400 px-2 py-0.5 rounded text-xs">{totalTx.toFixed(2)} Mbps</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total (Rx+Tx):</p>
+                    <p>Total (Rx+Tx)/s:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-rose-50 bg-rose-300 px-2 py-0.5 rounded text-xs">{totalTraf.toFixed(2)} kB</span>
+                    <span className="font-bold text-rose-50 bg-rose-300 px-2 py-0.5 rounded text-xs">{totalTraf.toFixed(2)} Mbps</span>
                 </div>
             </div>
             <div className="mt-4 w-full">
