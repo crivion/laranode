@@ -15,6 +15,7 @@ class StatsHistoryController extends Controller
 
         if (isset($cpuData['error']) || isset($memoryData['error'])) {
             $error = $cpuData;
+            dd($error);
             return view('error-message', compact('error'));
         }
 

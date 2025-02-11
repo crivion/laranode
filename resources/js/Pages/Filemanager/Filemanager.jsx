@@ -123,9 +123,9 @@ const Filemanager = () => {
         }
     };
 
-    const pasteFiles = async () => {
+    const pasteFiles = async (pasteFromAction) => {
 
-        window.axios.patch('/filemanager/paste-files', { filesToPaste: selectedPaths, intoPath: path, pasteFromAction: 'cut' }).then((response) => {
+        window.axios.patch('/filemanager/paste-files', { filesToPaste: selectedPaths, intoPath: path, pasteFromAction }).then((response) => {
             setSelectedPaths([]);
             setCutFiles(false);
             cdIntoPath(path);
@@ -235,9 +235,8 @@ const Filemanager = () => {
                             )
                             }
 
-                            {/* here make it if cutFiles == true} */}
                             {cutFiles && (
-                                <button onClick={() => pasteFiles()} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
+                                <button onClick={() => pasteFiles('cut')} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
                                     <BiPaste className="mr-1" />
                                     Paste
                                 </button>
@@ -247,6 +246,14 @@ const Filemanager = () => {
                                 <MdCopyAll className="mr-1" />
                                 Copy -tbd
                             </button>
+
+
+                            {copyFiles && (
+                                <button onClick={() => pasteFiles('paste')} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
+                                    <BiPaste className="mr-1" />
+                                    Paste
+                                </button>
+                            )}
 
                             <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
                                 <LuDelete className="mr-1" />
