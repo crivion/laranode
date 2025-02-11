@@ -102,7 +102,6 @@ const NetworkStatsChart = ({ networkStats }) => {
                 },
                 ticks: {
                     beginAtZero: true,
-                    stepSize: 2,
                 },
             }
         }
@@ -113,17 +112,17 @@ const NetworkStatsChart = ({ networkStats }) => {
             {/* Max Network usage stats */}
             <div className="mt-4 pb-3 border-gray-200 dark:border-gray-700">
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total Rx/s:</p>
+                    <p>Total Rx:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
                     <span className="font-bold text-indigo-100 bg-indigo-400 px-2 py-0.5 rounded text-xs">{totalRx.toFixed(2)} Mbps</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total Tx/s:</p>
+                    <p>Total Tx:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
                     <span className="font-bold text-emerald-100 bg-emerald-400 px-2 py-0.5 rounded text-xs">{totalTx.toFixed(2)} Mbps</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
-                    <p>Total (Rx+Tx)/s:</p>
+                    <p>Total (Rx+Tx):</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
                     <span className="font-bold text-rose-50 bg-rose-300 px-2 py-0.5 rounded text-xs">{totalTraf.toFixed(2)} Mbps</span>
                 </div>
