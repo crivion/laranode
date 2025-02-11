@@ -21,9 +21,9 @@ const NetworkStatsChart = ({ networkStats }) => {
     const txkbs = networkStats.map(item => item.txkbs);
     const totalkbs = networkStats.map(item => item.totalkbs);
 
-    const totalRx = (rxkbs.reduce((a, b) => a + b, 0)) / 1024;
-    const totalTx = (txkbs.reduce((a, b) => a + b, 0)) / 1024
-    const totalTraf = (totalkbs.reduce((a, b) => a + b, 0)) / 1024;
+    const totalRx = (rxkbs.reduce((a, b) => a + b, 0));
+    const totalTx = (txkbs.reduce((a, b) => a + b, 0));
+    const totalTraf = (totalkbs.reduce((a, b) => a + b, 0));
 
     // Define the chart data
     const data = {
@@ -78,7 +78,7 @@ const NetworkStatsChart = ({ networkStats }) => {
                     label: function(tooltipItem) {
                         let label = tooltipItem.dataset.label || '';
                         let value = tooltipItem.raw;
-                        return `${label}: ${value.toFixed(2)} kB`;
+                        return `${label}: ${value.toFixed(2)} Mb`;
                     }
                 },
             },

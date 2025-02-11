@@ -25,9 +25,9 @@ class NetworkHistoryService extends SarHistory
             return [
                 'time' => $stat[0],
                 'interface' => $stat[1],
-                'rxkbs' => (float)$stat[2] * 600,
-                'txkbs' => (float)$stat[3] * 600,
-                'totalkbs' => (float)($stat[2] + $stat[3]) * 600
+                'rxkbs' => ((float)$stat[2] * 600) / 1024,
+                'txkbs' => ((float)$stat[3] * 600) / 1024,
+                'totalkbs' => ((float)($stat[2] + $stat[3]) * 600) / 1024
             ];
         });
     }
