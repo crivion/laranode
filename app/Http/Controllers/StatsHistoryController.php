@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CPUHistoryService;
 use App\Services\MemoryHistoryService;
+use App\Services\NetworkHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
@@ -15,9 +16,11 @@ class StatsHistoryController extends Controller
 
         $cpuData = (new CPUHistoryService($r->report))->getStats();
         $memoryData = (new MemoryHistoryService($r->report))->getStats();
+        $networkData = (new NetworkHistoryService($r->report))->getStats();
 
         $cpuStats    = [];
         $memoryStats = [];
+        $networkStats = [];
         $sarFiles    = [];
         $error       = false;
 
@@ -35,11 +38,13 @@ class StatsHistoryController extends Controller
         $sarFiles      = $cpuData['sarFiles'];
         $cpuStats      = $cpuData['metrics'];
         $memoryStats   = $memoryData['metrics'];
+        $networkStats  = $networkData['metrics'];
 
         return Inertia::render('Stats/History', [
             'selectedDate' => $selectedDate,
             'cpuStats'     => $cpuStats,
             'memoryStats'  => $memoryStats,
+            'networkStats' => $networkStats,
             'sarFiles'     => $sarFiles,
             'error'        => $error
         ]);
