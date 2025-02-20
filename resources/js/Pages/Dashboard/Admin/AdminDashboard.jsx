@@ -7,6 +7,7 @@ import CPULive from './Components/CPULive';
 import MemoryLive from './Components/MemoryLive';
 import DiskLive from './Components/DiskLive';
 import NetworkLive from './Components/NetworkLive';
+import MySQLLive from './Components/MySQLLive';
 
 
 export default function Dashboard() {
@@ -20,6 +21,7 @@ export default function Dashboard() {
         const dashboardChannel = echo.private("systemstats");
 
         dashboardChannel.listen("SystemStatsEvent", (data) => {
+            console.log(data);
             setLiveStats(data);
         });
 
@@ -72,6 +74,15 @@ export default function Dashboard() {
                             <DiskLive diskStats={liveStats.diskStats} />
                         </div>
                     </div>
+
+                    <div className="flex items-center flex-col xl:flex-row xl:space-x-4">
+
+                        <div className="mt-5 w-full xl:w-1/2">
+                            <MySQLLive mysqlStats={liveStats.mysql} />
+                        </div>
+
+                    </div>
+
 
                 </div>
 

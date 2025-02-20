@@ -129,13 +129,21 @@ class SystemStatsService
      */
     public function getMysqlStatus(): array
     {
-        $mysqlStatus = Process::run('systemctl status mysql')->output();
+        /* $mysqlStatus = Process::run('systemctl status mysql')->output(); */
 
-        /*dd($mysqlStatus);*/
+        $mysqlStatus = Process::pipe([
+            'systemctl status mysql',
+            "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'"
+        ])->output();
 
-        // Regex to extract status and memory
-        $pattern = '/Active:\s+(.*?)\n.*?Memory:\s+([\d.]+[KMG]?)/s';
-        preg_match($pattern, $mysqlStatus, $matches);
+
+        dd($mysqlStatus);
+
+        $mysqlStatus = explode("|", $mysqlStatus);
+
+        /* // Regex to extract status and memory */
+        /* $pattern = '/Active:\s+(.*?)\n.*?Memory:\s+([\d.]+[KMG]?)/s'; */
+        /* preg_match($pattern, $mysqlStatus, $matches); */
 
         // Extract status and memory
         $status = $matches[1] ?? 'Unknown';
