@@ -52,7 +52,6 @@ export default function StatsHistory({ selectedDate, cpuStats, memoryStats, netw
             }
         >
             <Head title="CPU & Memory Stats History" />
-            <ToastContainer />
 
             <div className="max-w-7xl">
 

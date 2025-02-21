@@ -10,6 +10,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiase bg-gray-100 dark:bg-gray-900">
+            <ToastContainer theme='dark' />
             <TopNavi />
             <SidebarNavi />
 

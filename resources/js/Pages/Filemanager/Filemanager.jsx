@@ -163,7 +163,6 @@ const Filemanager = () => {
                             <VscFileSubmodule className='mr-2' />
                             Filemanager
                         </h2>
-                        <ToastContainer />
                     </div>
                 }
             >
@@ -187,7 +186,6 @@ const Filemanager = () => {
                         <VscFileSubmodule className='mr-2' />
                         Filemanager
                     </h2>
-                    <ToastContainer />
                 </div>
             }
         >

@@ -1,10 +1,16 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { RiDashboard3Fill } from "react-icons/ri";
 import { ImProfile } from "react-icons/im";
-import { FaUsers } from "react-icons/fa6";
+import { FaPhp, FaUsers } from "react-icons/fa6";
 import { VscFileSubmodule } from "react-icons/vsc";
+import { TbBrandMysql } from "react-icons/tb";
+import { MdSecurity } from "react-icons/md";
+import { IoLockClosedOutline } from "react-icons/io5";
 
 const SidebarNavi = () => {
+
+    const { auth } = usePage().props;
+
     return (<div className="fixed flex flex-col top-14 left-0 w-14 hover:w-64 md:w-64 bg-gray-950 dark:bg-gray-900 h-full text-white transition-all duration-300 border-none z-10 sidebar">
         <div className="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow dark:border-gray-800 dark:border-r">
             <ul className="flex flex-col py-4 space-y-2">
@@ -19,7 +25,7 @@ const SidebarNavi = () => {
                 <li>
 
                     <Link
-                        href="/dashboard"
+                        href={route('dashboard')}
                         className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                     >
                         <div>
@@ -28,6 +34,35 @@ const SidebarNavi = () => {
                         <span className="ml-2 text-sm tracking-wide truncate">Dashboard</span>
                     </Link>
                 </li>
+
+                {auth.user.role == 'admin' && (
+                    <li>
+                        <Link
+                            to={route('accounts.index')}
+                            className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
+                        >
+                            <div>
+                                <FaUsers className="ml-3 w-5 h-5" />
+                            </div>
+                            <span className="ml-2 text-sm tracking-wide truncate">Accounts</span>
+                        </Link>
+                    </li>
+                )}
+
+
+                {auth.user.role == 'admin' && (
+                    <li>
+                        <Link
+                            href="/admin/firewall"
+                            className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
+                        >
+                            <div>
+                                <MdSecurity className="ml-3 w-5 h-5" />
+                            </div>
+                            <span className="ml-2 text-sm tracking-wide truncate">Firewall</span>
+                        </Link>
+                    </li>
+                )}
 
                 <li>
                     <Link
@@ -43,13 +78,37 @@ const SidebarNavi = () => {
 
                 <li>
                     <Link
-                        to="/admin/accounts"
+                        to="/mysql"
                         className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                     >
                         <div>
-                            <FaUsers className="ml-3 w-5 h-5" />
+                            <TbBrandMysql className="ml-3 w-5 h-5" />
                         </div>
-                        <span className="ml-2 text-sm tracking-wide truncate">Accounts</span>
+                        <span className="ml-2 text-sm tracking-wide truncate">MySQL DBs</span>
+                    </Link>
+                </li>
+
+                <li>
+                    <Link
+                        to="/admin/php-manager"
+                        className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
+                    >
+                        <div>
+                            <FaPhp className="ml-3 w-5 h-5" />
+                        </div>
+                        <span className="ml-2 text-sm tracking-wide truncate">PHP Manager</span>
+                    </Link>
+                </li>
+
+                <li>
+                    <Link
+                        href="/ssl"
+                        className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
+                    >
+                        <div>
+                            <IoLockClosedOutline className="ml-3 w-5 h-5" />
+                        </div>
+                        <span className="ml-2 text-sm tracking-wide truncate">SSL Manager</span>
                     </Link>
                 </li>
 
