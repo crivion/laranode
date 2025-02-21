@@ -75,14 +75,14 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="mt-5 w-full grid grid-cols-1 xl:grid-cols-2 xl:gap-4">
+                    <div className="mt-5 w-full grid grid-cols-1 xl:grid-cols-4 gap-4">
                         <MySQLLive mysqlStats={liveStats.mysql} />
                         <PHPFPMLive phpStats={liveStats.phpFpm} />
                     </div>
 
                 </div>
 
-                <div className="mx-4 mt-5">
+                <div className="mx-4 mt-8">
                     <TopProcesses />
                 </div>
 
