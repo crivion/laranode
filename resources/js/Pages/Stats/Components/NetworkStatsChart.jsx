@@ -114,17 +114,17 @@ const NetworkStatsChart = ({ networkStats }) => {
                 <div className="text-sm mt-3 flex items-center space-x-2">
                     <p>Total Rx:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-indigo-100 bg-indigo-400 px-2 py-0.5 rounded text-xs">{totalRx.toFixed(2)} Mbps</span>
+                    <span className="font-bold text-indigo-100 bg-indigo-400 px-2 py-0.5 rounded text-xs">{totalRx.toFixed(2)} Mb</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
                     <p>Total Tx:</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-emerald-100 bg-emerald-400 px-2 py-0.5 rounded text-xs">{totalTx.toFixed(2)} Mbps</span>
+                    <span className="font-bold text-emerald-100 bg-emerald-400 px-2 py-0.5 rounded text-xs">{totalTx.toFixed(2)} Mb</span>
                 </div>
                 <div className="text-sm mt-3 flex items-center space-x-2">
                     <p>Total (Rx+Tx):</p>
                     <div className='flex-grow'><hr className="border-gray-300 dark:border-gray-700" /></div>
-                    <span className="font-bold text-rose-50 bg-rose-300 px-2 py-0.5 rounded text-xs">{totalTraf.toFixed(2)} Mbps</span>
+                    <span className="font-bold text-rose-50 bg-rose-300 px-2 py-0.5 rounded text-xs">{totalTraf.toFixed(2)} Mb</span>
                 </div>
             </div>
             <div className="mt-4 w-full">

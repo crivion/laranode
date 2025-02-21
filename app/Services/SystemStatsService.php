@@ -136,22 +136,17 @@ class SystemStatsService
             "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'"
         ])->output();
 
-
-        dd($mysqlStatus);
-
         $mysqlStatus = explode("|", $mysqlStatus);
 
-        /* // Regex to extract status and memory */
-        /* $pattern = '/Active:\s+(.*?)\n.*?Memory:\s+([\d.]+[KMG]?)/s'; */
-        /* preg_match($pattern, $mysqlStatus, $matches); */
-
-        // Extract status and memory
-        $status = $matches[1] ?? 'Unknown';
-        $memory = $matches[2] ?? 'Unknown';
+        $mysqlStatus = array_map(function ($item) {
+            return trim($item);
+        },  $mysqlStatus);
 
         return [
-            'status' => $status,
-            'memory' => $memory
+            'pid' => $mysqlStatus[0],
+            'memory' => $mysqlStatus[1],
+            'cpuTime' => $mysqlStatus[2],
+            'uptime' => $mysqlStatus[3]
         ];
     }
 
@@ -182,31 +177,23 @@ class SystemStatsService
 
         foreach ($phpFpmServices as $service) {
 
-            $status = Process::run('systemctl status ' . $service . ' | grep -E "Active: .*|Memory: .*"');
+            $status = Process::pipe([
+                'systemctl status ' . $service,
+                "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'"
+            ])->output();
 
-            if ($status->failed()) {
-                $phpFpmStatuses[$service] = ['error' => $status->errorOutput()];
-            } else {
-                $status = $status->output();
-                $status = array_filter(explode("\n", $status));
-                $status = array_map('trim', $status);
+            $status = explode("|", $status);
 
-                // match Memory
-                $memory = 'N/A';
+            $status = array_map(function ($item) {
+                return trim($item);
+            },  $status);
 
-                if (isset($status[1])) {
-                    $memory = $status[1];
-                    preg_match('/Memory:\s([0-9.]+[A-Za-z])/', $memory, $matches);
-                    if (isset($matches[1])) {
-                        $memory = $matches[1];
-                    }
-                }
-
-                $phpFpmStatuses[$service] = [
-                    'status' => str_replace('Active: ', '', $status[0]),
-                    'memory' => $memory
-                ];
-            }
+            $phpFpmStatuses[strtoupper(str_ireplace(".service", "", $service))] = [
+                'pid' => $status[0],
+                'memory' => $status[1],
+                'cpuTime' => $status[2],
+                'uptime' => $status[3]
+            ];
         }
 
         return $phpFpmStatuses;
@@ -294,7 +281,7 @@ class SystemStatsService
     public function getAllStats(): array
     {
         $stats = [
-            'whoami'           => $this->getWhoami(),
+            /*'whoami'           => $this->getWhoami(),*/
             'cpuStats'         => [
                 'usage'        => $this->getCpuUsage(),
                 'loadTimes'    => $this->getLoadTimes(),
@@ -303,10 +290,10 @@ class SystemStatsService
             ],
             'diskStats'        => $this->getDiskUsage(),
             'memoryStats'      => $this->getMemoryUsage(),
-            'nginxStatus'      => $this->getNginxStatus(),
-            'phpStatus'        => $this->getPhpFpmStatus(),
-            'sslStatus'        => $this->getSslStatus(),
-            'nginxPort'        => $this->getNginxPort(),
+            /*'nginxStatus'      => $this->getNginxStatus(),*/
+            'phpFpm'        => $this->getPhpFpmStatus(),
+            /*'sslStatus'        => $this->getSslStatus(),*/
+            /*'nginxPort'        => $this->getNginxPort(),*/
             'apache'           => $this->getApacheStatus(),
             'mysql'            => $this->getMysqlStatus(),
             'network'          => $this->getNetworkStats(),

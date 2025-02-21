@@ -8,6 +8,7 @@ import MemoryLive from './Components/MemoryLive';
 import DiskLive from './Components/DiskLive';
 import NetworkLive from './Components/NetworkLive';
 import MySQLLive from './Components/MySQLLive';
+import PHPFPMLive from './Components/PHPFPMLive';
 
 
 export default function Dashboard() {
@@ -21,7 +22,6 @@ export default function Dashboard() {
         const dashboardChannel = echo.private("systemstats");
 
         dashboardChannel.listen("SystemStatsEvent", (data) => {
-            console.log(data);
             setLiveStats(data);
         });
 
@@ -75,24 +75,14 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="flex items-center flex-col xl:flex-row xl:space-x-4">
-
-                        <div className="mt-5 w-full xl:w-1/2">
-                            <MySQLLive mysqlStats={liveStats.mysql} />
-                        </div>
-
+                    <div className="mt-5 w-full grid grid-cols-1 xl:grid-cols-2 xl:gap-4">
+                        <MySQLLive mysqlStats={liveStats.mysql} />
+                        <PHPFPMLive phpStats={liveStats.phpFpm} />
                     </div>
 
-
                 </div>
 
-                <div className="mt-5 px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-
-                </div>
-
-
-                <div className="mx-4">
+                <div className="mx-4 mt-5">
                     <TopProcesses />
                 </div>
 
