@@ -12,18 +12,20 @@ use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
 use App\Actions\Filemanager\UploadFileAction;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FilemanagerController extends Controller
 {
 
-    public function index()
+    public function index(): \Inertia\Response
     {
         return Inertia::render('Filemanager/Filemanager');
     }
 
-    public function getDirectoryContents(GetDirectoryContentsAction $getDirectoryContents, Request $r)
+    public function getDirectoryContents(GetDirectoryContentsAction $getDirectoryContents, Request $r): StreamedResponse|JsonResponse
     {
-        return $getDirectoryContents->execute($r);
+        return $getDirectoryContents->execute($r->path);
     }
 
     public function getFileContents(GetFileContentsAction $getFileContents, Request $r)

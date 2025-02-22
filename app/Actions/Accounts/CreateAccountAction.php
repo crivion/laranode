@@ -13,7 +13,7 @@ class CreateAccountAction
 
         event(new Registered($user));
 
-        if ($validated['notify']) {
+        if (isset($validated['notify']) && $validated['notify']) {
             \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
         }
     }

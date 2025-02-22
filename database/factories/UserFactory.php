@@ -25,9 +25,12 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'ssh_access' => false,
+            'role' => 'user',
             'remember_token' => Str::random(10),
         ];
     }
@@ -37,8 +40,38 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+
+    public function hasSshAccess(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'ssh_access' => true,
+        ]);
+    }
+
+    public function doesNotHaveSshAccess(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'ssh_access' => false,
+        ]);
+    }
+
+
+    public function isAdmin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => 'admin',
+        ]);
+    }
+
+    public function isNotAdmin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'role' => 'user',
         ]);
     }
 }

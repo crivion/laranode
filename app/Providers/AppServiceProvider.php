@@ -44,7 +44,11 @@ class AppServiceProvider extends ServiceProvider
             ->needs(Filesystem::class)
             ->give(function () {
                 if (!Auth::check()) return null;
+
                 $userHome = '/home/' . Auth::user()->username;
+
+                Config::set('laranode.user_base_path', $userHome);
+
                 $adapter = new LocalFilesystemAdapter($userHome, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
                 return new Filesystem($adapter);
             });

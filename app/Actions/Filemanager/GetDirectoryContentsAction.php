@@ -2,39 +2,36 @@
 
 namespace App\Actions\Filemanager;
 
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use League\Flysystem\Filesystem;
+use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 
 class GetDirectoryContentsAction
 {
     public function __construct(private Filesystem $filesystem) {}
 
-    public function execute(Request $r)
+    public function execute(?string $browsePath): StreamedJsonResponse|JsonResponse
     {
-        $filesystem = $this->filesystem;
         $recursive = false;
 
         try {
+            $path = './';
 
             // everything starts from ORIGINAL $path so no need to worry about ../ /.. etc tricks
-            if ($r->has('path')) {
-                $gotopath = $r->path;
-                $path = $gotopath . '/';
-                $goBack = explode('/', $gotopath);
+            if ($browsePath) {
+                $path = $browsePath . '/';
+                $goBack = explode('/', $browsePath);
 
                 if (count($goBack) == 1) {
                     $goBack = '/';
                 } else {
-                    // remove last path
                     array_pop($goBack);
                     $goBack = implode('/', $goBack);
                 }
-            } else {
-                $path = './';
             }
 
             return response()->streamJson([
-                'files' => $filesystem->listContents($path, $recursive)->sortByPath(),
+                'files' => $this->filesystem->listContents($path, $recursive)->sortByPath(),
                 'goBack' => $goBack
             ]);
         } catch (\Exception $exception) {
