@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
+        "lab404/laravel-impersonate": "^1.7",
         "laravel/framework": "^11.31",
         "laravel/reverb": "^1.4",
         "laravel/sanctum": "^4.0",

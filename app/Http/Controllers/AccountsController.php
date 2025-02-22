@@ -47,4 +47,22 @@ class AccountsController extends Controller
 
         return redirect()->route('accounts.index');
     }
+
+    /**
+     * Impersonate a user
+     */
+    public function impersonate(User $user)
+    {
+        auth()->user()->impersonate($user);
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Leave impersonation
+     */
+    public function leaveImpersonation()
+    {
+        auth()->user()->leaveImpersonation();
+        return redirect()->route('dashboard');
+    }
 }

@@ -6,6 +6,9 @@ import ConfirmationButton from "@/Components/ConfirmationButton";
 import { TiDelete } from "react-icons/ti";
 import { toast } from "react-toastify";
 import { router } from '@inertiajs/react'
+import { TbWorldWww } from "react-icons/tb";
+import { RiLoginCircleLine } from "react-icons/ri";
+import { FaDatabase, FaEdit } from "react-icons/fa";
 
 export default function Accounts({ accounts }) {
 
@@ -45,6 +48,7 @@ export default function Accounts({ accounts }) {
                                 <th className="px-6 py-3">Name</th>
                                 <th className="px-6 py-3">Email</th>
                                 <th className="px-6 py-3">Limits</th>
+                                <th className="px-6 py-3">SSH/SFTP</th>
                                 <th className="px-6 py-3">Role</th>
                                 <th className="px-6 py-3">Actions</th>
                             </tr>
@@ -56,24 +60,50 @@ export default function Accounts({ accounts }) {
                                         {account.id}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {account.name}
+                                        <div>
+                                            {account.name}
+                                        </div>
+                                        <span className='text-xs bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-lg'>
+                                            {account.username}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {account.email}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {account.limits?.db}/{account.limits?.domains}
+                                        <div className='flex items-center'>
+                                            <FaDatabase className='w-4 h-4 mr-1' />
+                                            <span className="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded-full">
+                                                {account.domain_limit ?? '∞'}
+                                            </span>
+                                        </div>
+                                        <div className='flex items-center mt-1.5'>
+                                            <TbWorldWww className='w-4 h-4 mr-1' />
+                                            <span className="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded-full">
+                                                {account.database_limit ?? '∞'}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        {account.ssh_access ? <span className='bg-amber-200 text-amber-700 px-2 py-1 rounded-lg'>No</span> : <span className='bg-lime-300 text-lime-700 px-2 py-0.5 text-sm rounded-lg'>Yes</span>}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {account.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900
                                     whitespace-nowrap dark:text-white">
-                                        Edit / Impersonate
 
-                                        <ConfirmationButton doAction={() => deleteUser(account.id)}>
-                                            <TiDelete className='w-6 h-6 text-red-500' />
-                                        </ConfirmationButton>
+                                        <div className='flex items-center space-x-2'>
+                                            <FaEdit className='w-4 h-4' />
+
+                                            <Link href={route('accounts.impersonate', { user: account.id })}>
+                                                <RiLoginCircleLine className='w-4 h-4' />
+                                            </Link>
+
+                                            <ConfirmationButton doAction={() => deleteUser(account.id)}>
+                                                <TiDelete className='w-6 h-6 text-red-500' />
+                                            </ConfirmationButton>
+                                        </div>
 
                                     </td>
                                 </tr>

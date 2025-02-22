@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->integer('domain_limit')->nullable();
             $table->integer('database_limit')->nullable();
+            $table->boolean('ssh_access');
             $table->rememberToken();
             $table->timestamps();
         });

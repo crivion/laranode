@@ -13,7 +13,7 @@ class CreateAccountRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->user()->role == 'admin';
+        return auth()->user()->isAdmin();
     }
 
     /**
@@ -32,6 +32,7 @@ class CreateAccountRequest extends FormRequest
             'domain_limit' => ['nullable', 'integer', 'min:1'],
             'database_limit' => ['nullable', 'integer', 'min:1'],
             'notify' => ['nullable', 'boolean'],
+            'ssh_access' => ['required', 'boolean'],
         ];
     }
 }

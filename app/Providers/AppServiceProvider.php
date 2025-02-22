@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         // Set User Filesystem Path
         // also used in GetFileContentsAction
         // @todo: change to actual user path
-        Config::set('laranode.user_base_path', base_path());
+        /*Config::set('laranode.user_base_path', base_path());*/
 
         // Set Laranode Filemanager Classes
         $laranodeFileManagerClasses = [
@@ -44,7 +44,8 @@ class AppServiceProvider extends ServiceProvider
             ->needs(Filesystem::class)
             ->give(function () {
                 if (!Auth::check()) return null;
-                $adapter = new LocalFilesystemAdapter(Config::get('laranode.user_base_path'), null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
+                $userHome = '/home/' . Auth::user()->username;
+                $adapter = new LocalFilesystemAdapter($userHome, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
                 return new Filesystem($adapter);
             });
     }
