@@ -61,7 +61,7 @@ export default function CreateAccountForm() {
                 closeModal();
                 reset();
                 toast("Account created successfully.");
-            }
+            },
         });
     };
 

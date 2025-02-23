@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -49,6 +51,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'ssh_access' => 'boolean',
         ];
     }
 
@@ -60,8 +63,28 @@ class User extends Authenticatable
         return $this->isAdmin();
     }
 
+    /**
+     * @return bool
+     */
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * @return Attribute
+     */
+    public function homedir(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => '/home/' . $this->systemUsername,
+        );
+    }
+
+    public function systemUsername(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->username . '_ln',
+        );
     }
 }

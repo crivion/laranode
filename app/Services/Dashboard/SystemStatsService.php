@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Dashboard;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;

@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Services\TopCommandService;
+use App\Services\Dashboard\TopCommandService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBeUnique;

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CPUHistoryService;
-use App\Services\MemoryHistoryService;
-use App\Services\NetworkHistoryService;
+use App\Services\Dashboard\CPUHistoryService;
+use App\Services\Dashboard\MemoryHistoryService;
+use App\Services\Dashboard\NetworkHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;

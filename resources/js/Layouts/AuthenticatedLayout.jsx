@@ -1,12 +1,24 @@
 import { usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TopNavi from './Partials/TopNavi';
 import SidebarNavi from './Partials/SidebarNavi';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const { flash } = usePage().props;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    useEffect(() => {
+        if (flash.success) {
+            toast(flash.success, { type: 'success' });
+        }
+
+        if (flash.error) {
+            toast(flash.error, { type: 'error' });
+        }
+    }, [flash]);
+
 
     return (
         <div className="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiase bg-gray-100 dark:bg-gray-900">

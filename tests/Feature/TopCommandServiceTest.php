@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\TopCommandService;
+use App\Services\Dashboard\TopCommandService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Process;
 

@@ -26,6 +26,11 @@ class RenameFileAction
 
             // get path from currentName
             $path = dirname($r->currentName) == "." ? '' : dirname($r->currentName) . '/';
+            $newPath = $path . $r->newName;
+
+            if ($filesystem->fileExists($newPath) || $filesystem->directoryExists($newPath)) {
+                throw new \Exception('Target ' . $newPath . ' already exists!');
+            }
 
             $filesystem->move($r->currentName, $path . $r->newName);
 
@@ -39,3 +44,4 @@ class RenameFileAction
         };
     }
 }
+

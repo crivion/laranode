@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Dashboard;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;

@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Services\SystemStatsService;
+use App\Services\Dashboard\SystemStatsService;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;

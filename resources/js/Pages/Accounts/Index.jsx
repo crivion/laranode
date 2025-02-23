@@ -85,7 +85,7 @@ export default function Accounts({ accounts }) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {account.ssh_access ? <span className='bg-amber-200 text-amber-700 px-2 py-1 rounded-lg'>No</span> : <span className='bg-lime-300 text-lime-700 px-2 py-0.5 text-sm rounded-lg'>Yes</span>}
+                                        {!account.ssh_access ? <span className='bg-amber-200 text-amber-700 px-2 py-1 rounded-lg'>No</span> : <span className='bg-lime-300 text-lime-700 px-2 py-0.5 text-sm rounded-lg'>Yes</span>}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {account.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
