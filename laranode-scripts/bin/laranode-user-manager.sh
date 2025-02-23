@@ -59,6 +59,11 @@ create_user() {
   mkdir -p "/home/$USERNAME/logs"
   chown "$USERNAME:$USERNAME" "/home/$USERNAME/logs"
   chmod 770 "/home/$USERNAME/logs"
+
+  # create /home/{user}/domains directory
+  mkdir -p "/home/$USERNAME/domains"
+  chown "$USERNAME:$USERNAME" "/home/$USERNAME/domains"
+  chmod 770 "/home/$USERNAME/domains"
 }
 
 # Function to delete a user

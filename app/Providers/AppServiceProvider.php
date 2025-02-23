@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
             ->give(function () {
                 if (!Auth::check()) return null;
 
-                $userHome = '/home/' . Auth::user()->username;
+                $userHome = Auth::user()->homedir;
 
                 Config::set('laranode.user_base_path', $userHome);
 

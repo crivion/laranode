@@ -16,7 +16,7 @@ export default function Accounts({ accounts }) {
     const deleteUser = (id) => {
         router.delete(route('accounts.destroy', { account: id }), {
             onBefore: () => {
-                toast("Please wait, deleting account and it's resources...");
+                toast("Please wait, deleting account and its resources...");
             },
             onError: errors => {
                 toast("Error occured while deleting account.");
