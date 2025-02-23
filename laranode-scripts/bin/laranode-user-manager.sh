@@ -52,6 +52,8 @@ create_user() {
     echo "User $USERNAME created successfully with no SSH login."
   fi
 
+  chmod 770 "/home/$USERNAME"
+
   # add this user group to www-data group too
   usermod -aG "$USERNAME" www-data
 

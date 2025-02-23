@@ -20,9 +20,13 @@ class UploadFileAction
         ]);
 
         $file = $r->file('file');
-        $path = Config::get('laranode.user_base_path') . '/' . $r->path;
+
+        $path = '/home/' . $r->user()->systemUsername . '/' . $r->path;
 
         File::append($path . '/' . $r->originalName, $file->get());
+
+        // ensure file permissions
+        (new EnsurePermissionsAction)->execute($r->path . '/' . $r->originalName, $r->user()->systemUsername);
 
         return response()->json([
             'message' => 'Chunk uploaded',

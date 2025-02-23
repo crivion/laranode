@@ -249,7 +249,7 @@ const Filemanager = () => {
                             {copyFiles && (
                                 <button onClick={() => pasteFiles('paste')} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
                                     <BiPaste className="mr-1" />
-                                    Paste
+                                    Paste -tbd
                                 </button>
                             )}
 
@@ -287,42 +287,45 @@ const Filemanager = () => {
                     )}
 
 
-                    {files.sort((a, b) => {
-                        if (a.type === 'dir' && b.type !== 'dir') return -1;
-                        if (a.type !== 'dir' && b.type === 'dir') return 1;
-                        return 0;
-                    }).map((file, index) => (
-                        <div
-                            key={`file-${index}`}
-                            className={`flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 border-b dark:border-b-gray-800 space-x-2 ${selectedPaths.includes(file.path)
-                                ? 'bg-gray-200 text-sky-700 hover:text-sky-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-sky-600 dark:bg-gray-800 dark:text-sky-600'
-                                : 'bg-white hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800'
-                                }`}
-                            onDoubleClick={() => handleDoubleClick(file)}
-                        >
-                            <div>
-                                <Checkbox checked={selectedPaths.includes(file.path)} onChange={(e) => handleFileClick(file)} className="-mt-1 mr-1" />
-                            </div>
-                            {file.type === "dir" ? (
+                    {files
+                        .filter(file => !file.path.includes('laranode-scripts'))
+                        .filter(file => ![".bash_logout", ".bashrc", ".profile"].includes(file.path))
+                        .sort((a, b) => {
+                            if (a.type === 'dir' && b.type !== 'dir') return -1;
+                            if (a.type !== 'dir' && b.type === 'dir') return 1;
+                            return 0;
+                        }).map((file, index) => (
+                            <div
+                                key={`file-${index}`}
+                                className={`flex items-center font-bold text-gray-900 dark:text-gray-300 py-3 px-6 border-b dark:border-b-gray-800 space-x-2 ${selectedPaths.includes(file.path)
+                                    ? 'bg-gray-200 text-sky-700 hover:text-sky-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-sky-600 dark:bg-gray-800 dark:text-sky-600'
+                                    : 'bg-white hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800'
+                                    }`}
+                                onDoubleClick={() => handleDoubleClick(file)}
+                            >
                                 <div>
-                                    <FaFolderClosed className={`text-gray-500 ${selectedPaths.includes(file.path) ? 'text-sky-600' : ''} cursor-pointer`} />
+                                    <Checkbox checked={selectedPaths.includes(file.path)} onChange={(e) => handleFileClick(file)} className="-mt-1 mr-1" />
                                 </div>
-                            ) : (
-                                <div className="w-4 h-4">
-                                    <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="cursor-pointer" />
+                                {file.type === "dir" ? (
+                                    <div>
+                                        <FaFolderClosed className={`text-gray-500 ${selectedPaths.includes(file.path) ? 'text-sky-600' : ''} cursor-pointer`} />
+                                    </div>
+                                ) : (
+                                    <div className="w-4 h-4">
+                                        <FileIcon extension={file.path.split('.').pop()} {...defaultStyles[file.path.split('.').pop()]} className="cursor-pointer" />
+                                    </div>
+                                )}
+
+                                <div className={`text-sm cursor-pointer flex-grow flex items-center ${selectedPaths.includes(file.path) && cutFiles && 'text-gray-400'}`}>
+                                    {file.path.split('/').pop()}
+                                    {selectedPaths.includes(file.path) && cutFiles && <IoMdCut className="ml-1" />}
                                 </div>
-                            )}
 
-                            <div className={`text-sm cursor-pointer flex-grow flex items-center ${selectedPaths.includes(file.path) && cutFiles && 'text-gray-400'}`}>
-                                {file.path.split('/').pop()}
-                                {selectedPaths.includes(file.path) && cutFiles && <IoMdCut className="ml-1" />}
+                                <div className="text-xs text-gray-400 dark:text-gray-600">
+                                    {typeof file.file_size == "undefined" ? "--" : formatBytes(file.file_size)}
+                                </div>
                             </div>
-
-                            <div className="text-xs text-gray-400 dark:text-gray-600">
-                                {typeof file.file_size == "undefined" ? "--" : formatBytes(file.file_size)}
-                            </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
             </div>
 

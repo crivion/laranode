@@ -61,5 +61,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
         URL::forceScheme('https');
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            Config::set('laranode.user_base_path', $user->homedir);
+        }
     }
 }

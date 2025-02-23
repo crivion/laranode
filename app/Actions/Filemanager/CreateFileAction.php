@@ -33,16 +33,7 @@ class CreateFileAction
             }
 
             // ensure file/directory permissions
-            $p = Process::run([
-                'sudo',
-                config('laranode.laranode_bin_path') . '/laranode-file-permissions.sh',
-                $r->path . '/' . $r->fileName,
-                auth()->user()->systemUsername,
-            ]);
-
-            dump('sudo ' . config('laranode.laranode_bin_path') . '/laranode-file-permissions.sh', $r->path . '/' . $r->fileName);
-
-            dump($p->output(), $p->errorOutput());
+            (new EnsurePermissionsAction)->execute($r->path . '/' . $r->fileName, auth()->user()->systemUsername);
 
             return response()->json([
                 'message' => $r->fileType . ' ' . $r->path . '/' . $r->fileName . ' created successfully!',

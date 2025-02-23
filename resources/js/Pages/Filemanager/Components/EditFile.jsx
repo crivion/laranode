@@ -38,7 +38,7 @@ const EditFile = ({ editFile, setEditFile }) => {
             }
 
             const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+            const decoder = new TextDecoder("utf-8");
 
             // let buffer = '';
             while (true) {
