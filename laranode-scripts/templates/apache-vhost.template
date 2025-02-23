@@ -1,0 +1,8 @@
+# @TODO: complete this
+<VirtualHost *:80>
+    ServerName {domain}
+    DocumentRoot /home/{user}/public
+
+    ErrorLog /home/{user}/logs/apache-error.log
+    CustomLog /home/{user}/logs/apache-access.log combined
+</VirtualHost>

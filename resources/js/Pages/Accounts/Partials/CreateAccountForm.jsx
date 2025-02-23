@@ -60,7 +60,6 @@ export default function CreateAccountForm() {
             onSuccess: () => {
                 closeModal();
                 reset();
-                toast("Account created successfully.");
             },
         });
     };

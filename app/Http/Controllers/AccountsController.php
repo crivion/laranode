@@ -28,20 +28,11 @@ class AccountsController extends Controller
      */
     public function store(CreateAccountRequest $request): RedirectResponse
     {
-        try {
+        (new CreateAccountService($request->validated()))->handle();
 
-            (new CreateAccountService($request->validated()))->handle();
+        session()->flash('success', 'Account created successfully!');
 
-            session()->flash('success', 'Account created successfully!');
-
-            return redirect()->route('accounts.index');
-        } catch (CreateAccountException $e) {
-            session()->flash('error', $e->getMessage());
-            return back();
-        } catch (Exception $e) {
-            session()->flash('error', $e->getMessage());
-            return back();
-        }
+        return redirect()->route('accounts.index');
     }
 
 
@@ -59,6 +50,8 @@ class AccountsController extends Controller
     public function destroy($account): RedirectResponse
     {
         (new DeleteAccountService(User::findOrFail($account)))->handle();
+
+        session()->flash('success', 'Account deleted successfully!');
 
         return redirect()->route('accounts.index');
     }

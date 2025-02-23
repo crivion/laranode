@@ -1,0 +1,33 @@
+[{user}]
+
+; configure user & group
+user = {user}
+group = {user}
+
+; configure socket
+listen = /run/php/php-fpm-{version}.{user}.sock
+listen.owner = {user}
+listen.group = {user}
+listen.mode = 0660
+
+; pool settings
+pm = dynamic
+pm.max_children = 5
+pm.start_servers = 2
+pm.min_spare_servers = 1
+pm.max_spare_servers = 3
+pm.max_requests = 500
+
+; Security settings
+php_admin_value[open_basedir] = /home/{user}:/tmp/
+php_admin_flag[expose_php] = Off
+
+; Performance settings
+php_admin_value[memory_limit] = 128M
+php_admin_value[upload_max_filesize] = 128M
+php_admin_value[post_max_size] = 128M
+
+; Error handling
+php_admin_value[error_log] = /home/{user}/logs/php-fpm-error.log
+php_admin_flag[log_errors] = on
+php_admin_flag[display_errors] = on

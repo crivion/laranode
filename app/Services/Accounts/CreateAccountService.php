@@ -2,7 +2,9 @@
 
 namespace App\Services\Accounts;
 
+use App\Models\PhpVersion;
 use App\Models\User;
+use App\Services\Laranode\CreatePhpFpmPoolService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Process;
 use Exception;
@@ -17,7 +19,7 @@ class CreateAccountService
     public function __construct(private array $validated)
     {
         // path to laranode user manager bin|ssh script
-        $this->laranodeBinPath = '/usr/local/bin/laranode';
+        $this->laranodeBinPath = config('laranode.laranode_bin_path');
 
         // appends _ln to all users to avoid all sort of issues (conflicts, control, security, files, etc.)
         $this->systemUsername = $validated['username'] . '_ln';
@@ -55,8 +57,14 @@ class CreateAccountService
         if ($createUser->failed()) {
             throw new CreateAccountException('Failed to create system user: ' . $createUser->errorOutput());
         }
+
+        $this->createDefaultPHPFpmPool();
     }
 
-    // @TODO: implement add user php-fpm pools based on each php version
-    private function addPhpFpmPools(): void {}
+    private function createDefaultPHPFpmPool(): void
+    {
+        $defaultPhpVersion = PhpVersion::where('is_default', true)->firstOrFail();
+
+        (new CreatePhpFpmPoolService($this->systemUsername, $defaultPhpVersion))->handle();
+    }
 }

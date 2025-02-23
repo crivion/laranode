@@ -12,10 +12,11 @@ import { FaDatabase, FaEdit } from "react-icons/fa";
 
 export default function Accounts({ accounts }) {
 
+
     const deleteUser = (id) => {
         router.delete(route('accounts.destroy', { account: id }), {
-            onSuccess: page => {
-                toast("Account deleted successfully.");
+            onBefore: () => {
+                toast("Please wait, deleting account and it's resources...");
             },
             onError: errors => {
                 toast("Error occured while deleting account.");

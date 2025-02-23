@@ -14,14 +14,22 @@ class DeleteAccountService
 
     public function __construct(private User $user)
     {
-        $this->laranodeBinPath = '/usr/local/bin/laranode';
+        // path to laranode user manager bin|ssh script
+        $this->laranodeBinPath = config('laranode.laranode_bin_path');
     }
 
     public function handle(): void
     {
+        // delete php-fpm pools
+        $this->deletePhpFpmPools();
+
+        // wait for pools to be deleted && fpm to restart
+        sleep(1);
+
         // delete system user
         $this->deleteSystemUser();
 
+        // remove user from database
         User::findOrFail($this->user->id)->delete();
     }
 
@@ -39,9 +47,19 @@ class DeleteAccountService
         }
     }
 
+    private function deletePhpFpmPools(): void
+    {
+        $deletePhpFpmPool = Process::run([
+            'sudo',
+            $this->laranodeBinPath . '/laranode-remove-php-fpm-pool.sh',
+            $this->user->systemUsername,
+        ]);
+
+        if ($deletePhpFpmPool->failed()) {
+            throw new DeleteAccountException('Failed to delete PHP-FPM pool: ' . $deletePhpFpmPool->errorOutput());
+        }
+    }
+
     // @TODO: implement delete all DB's of this user
     private function deleteDatabases(): void {}
-
-    // @TODO: implement delete user php-fpm pools
-    private function deletePhpFpmPools(): void {}
 }
