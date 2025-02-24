@@ -1,23 +1,31 @@
 import { Link, usePage } from "@inertiajs/react";
-import { RiDashboard3Fill } from "react-icons/ri";
+import { useState } from "react";
+import { RiDashboard3Fill, RiMvFill } from "react-icons/ri";
 import { ImProfile } from "react-icons/im";
 import { FaPhp, FaUsers } from "react-icons/fa6";
 import { VscFileSubmodule } from "react-icons/vsc";
 import { TbBrandMysql } from "react-icons/tb";
 import { MdSecurity } from "react-icons/md";
 import { IoLockClosedOutline } from "react-icons/io5";
+import { TbWorldWww } from "react-icons/tb";
 
 const SidebarNavi = () => {
 
     const { auth } = usePage().props;
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    return (<div className="fixed flex flex-col top-14 left-0 w-14 hover:w-64 md:w-64 bg-gray-950 dark:bg-gray-900 h-full text-white transition-all duration-300 border-none z-10 sidebar">
+    return (<div className={`fixed flex flex-col top-14 left-0 ${isSidebarOpen ? 'w-64' : 'w-14'} md:w-64 bg-gray-950 dark:bg-gray-900 h-full text-white transition-all duration-300 border-none z-10 sidebar`}>
         <div className="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow dark:border-gray-800 dark:border-r">
             <ul className="flex flex-col py-4 space-y-2">
-                <li className="hidden md:block">
+                <li>
                     <div className="flex flex-row items-center h-8">
-                        <div className="text-sm font-light tracking-wide text-gray-400 uppercase ml-4">
+                        <div className="text-sm font-light tracking-wide text-gray-400 uppercase ml-4 hidden md:block">
                             Menu
+                        </div>
+                        <div>
+                            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-400 ml-4 block md:hidden">
+                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </li>
@@ -38,7 +46,7 @@ const SidebarNavi = () => {
                 {auth.user.role == 'admin' && (
                     <li>
                         <Link
-                            to={route('accounts.index')}
+                            href={route('accounts.index')}
                             className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                         >
                             <div>
@@ -49,6 +57,17 @@ const SidebarNavi = () => {
                     </li>
                 )}
 
+                <li>
+                    <Link
+                        href="/domains"
+                        className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
+                    >
+                        <div>
+                            <TbWorldWww className="ml-3 w-5 h-5" />
+                        </div>
+                        <span className="ml-2 text-sm tracking-wide truncate">Domains</span>
+                    </Link>
+                </li>
 
                 {auth.user.role == 'admin' && (
                     <li>
@@ -78,7 +97,7 @@ const SidebarNavi = () => {
 
                 <li>
                     <Link
-                        to="/mysql"
+                        href="/mysql"
                         className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                     >
                         <div>
@@ -91,7 +110,7 @@ const SidebarNavi = () => {
                 {auth.user.role == 'admin' && (
                     <li>
                         <Link
-                            to="/php-manager"
+                            href="/php-manager"
                             className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                         >
                             <div>

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateAccountRequest;
+use App\Http\Requests\EditAccountRequest;
 use App\Models\User;
 use App\Services\Accounts\CreateAccountException;
 use App\Services\Accounts\CreateAccountService;
 use App\Services\Accounts\DeleteAccountService;
+use App\Services\Accounts\UpdateAccountService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,10 +41,15 @@ class AccountsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(User $account, EditAccountRequest $request): RedirectResponse
     {
-        //
+        (new UpdateAccountService($account, $request->validated()))->handle();
+
+        session()->flash('success', 'Account updated successfully!');
+
+        return redirect()->route('accounts.index');
     }
+
 
     /**
      * Remove the specified resource from storage.

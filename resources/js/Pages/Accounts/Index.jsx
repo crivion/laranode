@@ -2,6 +2,7 @@ import { FaUsers } from "react-icons/fa6";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import CreateUserForm from './Partials/CreateAccountForm';
+import EditAccountForm from './Partials/EditAccountForm';
 import ConfirmationButton from "@/Components/ConfirmationButton";
 import { TiDelete } from "react-icons/ti";
 import { toast } from "react-toastify";
@@ -9,9 +10,9 @@ import { router } from '@inertiajs/react'
 import { TbWorldWww } from "react-icons/tb";
 import { RiLoginCircleLine } from "react-icons/ri";
 import { FaDatabase, FaEdit } from "react-icons/fa";
+import { Tooltip } from 'react-tooltip'
 
 export default function Accounts({ accounts }) {
-
 
     const deleteUser = (id) => {
         router.delete(route('accounts.destroy', { account: id }), {
@@ -74,13 +75,13 @@ export default function Accounts({ accounts }) {
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center'>
                                             <FaDatabase className='w-4 h-4 mr-1' />
-                                            <span className="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded-full">
+                                            <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-1 px-3 rounded-full">
                                                 {account.domain_limit ?? '∞'}
                                             </span>
                                         </div>
                                         <div className='flex items-center mt-1.5'>
                                             <TbWorldWww className='w-4 h-4 mr-1' />
-                                            <span className="text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-1 rounded-full">
+                                            <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-1 px-3 rounded-full">
                                                 {account.database_limit ?? '∞'}
                                             </span>
                                         </div>
@@ -95,11 +96,17 @@ export default function Accounts({ accounts }) {
                                     whitespace-nowrap dark:text-white">
 
                                         <div className='flex items-center space-x-2'>
-                                            <FaEdit className='w-4 h-4' />
+                                            <EditAccountForm account={account} />
 
-                                            <Link href={route('accounts.impersonate', { user: account.id })}>
+                                            <Link href={route('accounts.impersonate', { user: account.id })}
+                                                data-tooltip-id={`tooltip-impersonate-${account.id}`}
+                                                data-tooltip-content="Impersonate User"
+                                                data-tooltip-place="top"
+                                            >
                                                 <RiLoginCircleLine className='w-4 h-4' />
                                             </Link>
+
+                                            <Tooltip id={`tooltip-impersonate-${account.id}`} />
 
                                             <ConfirmationButton doAction={() => deleteUser(account.id)}>
                                                 <TiDelete className='w-6 h-6 text-red-500' />
