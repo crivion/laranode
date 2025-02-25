@@ -1,0 +1,13 @@
+[Unit]
+Description=Laravel reverb websockets for Laranode Panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/php /home/laranode_ln/panel/artisan reverb:start
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

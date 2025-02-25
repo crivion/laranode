@@ -1,0 +1,15 @@
+[Unit]
+Description=Laranode Queue Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=laranode_ln
+Group=laranode_ln
+ExecStart=/usr/bin/php /home/laranode_ln/panel/artisan queue:work
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
