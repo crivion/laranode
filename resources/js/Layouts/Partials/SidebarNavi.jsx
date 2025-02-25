@@ -59,13 +59,13 @@ const SidebarNavi = () => {
 
                 <li>
                     <Link
-                        href="/domains"
+                        href={route('websites.index')}
                         className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                     >
                         <div>
                             <TbWorldWww className="ml-3 w-5 h-5" />
                         </div>
-                        <span className="ml-2 text-sm tracking-wide truncate">Domains</span>
+                        <span className="ml-2 text-sm tracking-wide truncate">Websites</span>
                     </Link>
                 </li>
 

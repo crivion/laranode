@@ -15,6 +15,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, Impersonate;
 
+    public $appends = ['homedir'];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -86,5 +88,10 @@ class User extends Authenticatable
         return Attribute::make(
             get: fn() => $this->username . '_ln',
         );
+    }
+
+    public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Website::class);
     }
 }

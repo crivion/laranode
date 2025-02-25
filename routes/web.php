@@ -5,10 +5,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FilemanagerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatsHistoryController;
+use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\AdminMiddleware;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect('/dashboard');
@@ -26,6 +25,9 @@ Route::get('/dashboard/user', [DashboardController::class, 'user'])->middleware(
 Route::resource('/accounts', AccountsController::class)->middleware(['auth', AdminMiddleware::class])->except(['create', 'edit', 'show']);
 Route::get('/accounts/impersonate/{user}', [AccountsController::class, 'impersonate'])->middleware(['auth', AdminMiddleware::class])->name('accounts.impersonate');
 Route::get('/accounts/leave-impersonation', [AccountsController::class, 'leaveImpersonation'])->middleware(['auth'])->name('accounts.leaveImpersonation');
+
+// Websites [Admin | User]
+Route::resource('/websites', WebsiteController::class)->middleware(['auth']);
 
 // Filemanager [Admin | User]
 Route::get('/filemanager', [FilemanagerController::class, 'index'])->middleware(['auth'])->name('filemanager');

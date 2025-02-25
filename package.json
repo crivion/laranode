@@ -26,6 +26,7 @@
         "chart.js": "^4.4.7",
         "prismjs": "^1.29.0",
         "react-chartjs-2": "^5.3.0",
+        "react-copy-to-clipboard": "^5.1.0",
         "react-data-table-component": "^7.6.2",
         "react-file-icon": "^1.5.0",
         "react-icons": "^5.4.0",
