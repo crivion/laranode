@@ -41,7 +41,7 @@ class Laranode extends Command
         $this->info('Creating admin account');
 
         User::create([
-            'username' => 'laranode_ln', // don't change this
+            'username' => 'laranode', // don't change this
             'name' => $name,
             'email' => $email,
             'password' => bcrypt($password),

@@ -10,6 +10,6 @@
                 Require all granted
         </Directory>
 
-        ErrorLog /home/laranode_ln/panel/logs/error.log
-        CustomLog /home/laranode_ln/panel/logs/access.log combined
+        ErrorLog /home/laranode_ln/panel/storage/logs/apache-error.log
+        CustomLog /home/laranode_ln/panel/storage/logs/apache-access.log combined
 </VirtualHost>

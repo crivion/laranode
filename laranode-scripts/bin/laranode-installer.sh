@@ -218,7 +218,7 @@ echo "Hold tight, pouring node_modules with npm install & compiling assets"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 npm install
-npm run dev
+npm run build
 
 
 echo -e "\033[34m"
