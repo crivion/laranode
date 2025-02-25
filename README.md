@@ -5,13 +5,21 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 ## Features
 
 ✅ **Self-Hosted** – Full control over your server with no licensing fees.
+
 ✅ **Multi-Account Support** – Role-based access control for admins and users.  
+
 ✅ **Website Management** – Easily create and manage multiple websites.  
+
 ✅ **File Manager** – Built-in (from the ground up) web-based file manager for quick access.  
+
 ✅ **Live System Stats** – Monitor CPU, memory, and network usage in real-time. 
+
 ✅ **LAMP Stack Administration** – Manage Apache, MySQL, and PHP with ease.  
+
 ✅ **User-Friendly Interface** – Clean and simple UI designed for efficiency.  
+
 ✅ **MySQL Database Management** – Create and control MySQL databases.  
+
 
 ## Installation
 
@@ -38,7 +46,7 @@ Login with the credentials provided during installation.
 🚀 (Coming soon!)
 
 ## Roadmap
-– 🔹 Secure your websites with Let's Encrypt
+– 🔹 SSL With Let's Encrypt
 - 🔹 UFW Firewall Integration
 - 🔹 DNS Management
 - 🔹 Email Server Integration
@@ -47,8 +55,7 @@ Login with the credentials provided during installation.
 Laranode is open-source and welcomes contributions! Feel free to submit issues, feature requests, or pull requests.
 
 ## License
-Laranode is released under the MIT License.
-
+Laranode is open-source and released under the [MIT license](https://opensource.org/licenses/MIT).
 ---
 
 ⭐ **Star this repo to support the project!**
