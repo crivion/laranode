@@ -17,7 +17,7 @@ class PhpVersionFactory extends Factory
     public function definition(): array
     {
         return [
-            'version' => '8.3',
+            'version' => '8.4',
             'active' => true,
             'is_default' => true,
         ];

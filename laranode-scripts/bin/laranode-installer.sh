@@ -1,6 +1,7 @@
 echo "--------------------------------------------------------------------------------"
-echo "Installing software-properties-common"
-apt install -y software-properties-common
+echo "Installing software-properties-common and git"
+apt update
+apt install -y software-properties-common git
 echo "--------------------------------------------------------------------------------"
 
 echo "--------------------------------------------------------------------------------"
@@ -10,8 +11,8 @@ echo "--------------------------------------------------------------------------
 
 echo "--------------------------------------------------------------------------------"
 echo "Enabling and starting apache2"
-service apache2 enable
-service apache2 start
+systemctl enable apache2
+systemctl start apache2
 echo "--------------------------------------------------------------------------------"
 
 echo "--------------------------------------------------------------------------------"
@@ -40,8 +41,8 @@ echo "--------------------------------------------------------------------------
 
 echo "--------------------------------------------------------------------------------"
 echo "Enabling and starting PHP-FPM"
-service enable php8.4-fpm
-service start php8.4-fpm
+systemctl enable php8.4-fpm
+systemctl start php8.4-fpm
 echo "--------------------------------------------------------------------------------"
 
 echo "--------------------------------------------------------------------------------"
@@ -72,7 +73,12 @@ echo "--------------------------------------------------------------------------
 
 echo "--------------------------------------------------------------------------------"
 echo "Restarting apache2"
-service apache2 restart
+systemctl restart apache2
+echo "--------------------------------------------------------------------------------"
+
+echo "--------------------------------------------------------------------------------"
+echo "Adding www-data to sudoers and allowing to run laranode scripts"
+echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh" >> /etc/sudoers
 echo "--------------------------------------------------------------------------------"
 
 echo "--------------------------------------------------------------------------------"
@@ -88,10 +94,28 @@ echo "--------------------------------------------------------------------------
 
 
 echo "--------------------------------------------------------------------------------"
-echo "Installing Laranode"
+echo "Creating Laranode User"
+useradd -m -s /bin/bash laranode_ln
+echo "--------------------------------------------------------------------------------"
+
+echo "--------------------------------------------------------------------------------"
+echo "Cloning Laranode"
+git clone https://github.com/crivion/laranode-inertia.git /home/laranode_ln/panel
 echo "--------------------------------------------------------------------------------"
 
 
+echo "--------------------------------------------------------------------------------"
+echo "Installing Laranode"
+echo "--------------------------------------------------------------------------------"
+cd /home/laranode_ln/panel
+composer install
+cp .env.example .env
+
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan storage:link
+php artisan reverb:install
 
 echo "================================================================================"
 echo "================================================================================"
