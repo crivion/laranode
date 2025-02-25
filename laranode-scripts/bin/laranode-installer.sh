@@ -201,8 +201,8 @@ echo "Adding systemd services (queue worker and reverb)"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-cp /home/laranode_ln/laranode-scripts/templates/laranode-queue-worker.service /etc/systemd/system/laranode-queue-worker.service
-cp /home/laranode_ln/laranode-scripts/templates/laranode-reverb.service /etc/systemd/system/laranode-reverb.service
+cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-queue-worker.service /etc/systemd/system/laranode-queue-worker.service
+cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-reverb.service /etc/systemd/system/laranode-reverb.service
 
 systemctl daemon-reload
 systemctl enable laranode-queue-worker.service
