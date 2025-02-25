@@ -27,7 +27,6 @@ class GetFileContentsAction
         try {
 
             $finfo = new finfo();
-            // @todo -> get base_path() passed by controller
             $mimeType = $finfo->file($this->path . '/' . $r->path . '/' . $r->file, FILEINFO_MIME_TYPE);
 
             if (!in_array($mimeType, $editableMimeTypes, true)) {

@@ -37,7 +37,7 @@ class CreateAccountService
 
         // notify user if requested
         // @todo: implement notification (mail)
-        if (isset($validated['notify']) && $validated['notify']) {
+        if ($this->validated['notify']) {
             \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
         }
     }

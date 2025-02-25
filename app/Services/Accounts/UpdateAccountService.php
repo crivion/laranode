@@ -2,10 +2,7 @@
 
 namespace App\Services\Accounts;
 
-use App\Models\PhpVersion;
 use App\Models\User;
-use App\Services\Laranode\CreatePhpFpmPoolService;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Process;
 use Exception;
 
@@ -13,13 +10,19 @@ class UpdateAccountException extends Exception {}
 
 class UpdateAccountService
 {
-    public function __construct(private User $account, private array $validated) {}
+
+    private string $laranodeBinPath;
+
+    public function __construct(private User $account, private array $validated)
+    {
+        $this->laranodeBinPath = config('laranode.laranode_bin_path');
+    }
 
     public function handle(): void
     {
-        $this->account->update($this->validated);
-
         $this->updateUserShell($this->account->ssh_access);
+
+        $this->account->update($this->validated);
 
         $this->updatePasswordIfRequested();
     }
@@ -39,18 +42,33 @@ class UpdateAccountService
         $this->account->refresh();
 
         if ($this->account->ssh_access) {
-            // TODO: call laranode password update manager
+            Process::run([
+                'sudo',
+                $this->laranodeBinPath . '/laranode-update-sh-password.sh',
+                $this->account->systemUsername,
+                $this->validated['new_password'],
+            ]);
         }
     }
 
     private function updateUserShell(): void
     {
-        // TODO: call laranode user manager
+
         if ($this->account->ssh_access != $this->validated['ssh_access']) {
             if ($this->validated['ssh_access']) {
-                // add shell access
+                Process::run([
+                    'sudo',
+                    $this->laranodeBinPath . '/laranode-update-sh-access.sh',
+                    $this->account->systemUsername,
+                    'yes',
+                ]);
             } else {
-                // remove shell access
+                Process::run([
+                    'sudo',
+                    $this->laranodeBinPath . '/laranode-update-sh-access.sh',
+                    $this->account->systemUsername,
+                    'no',
+                ]);
             }
         }
     }
