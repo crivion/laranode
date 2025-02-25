@@ -1,0 +1,15 @@
+<VirtualHost *:80>
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /home/laranode_ln/panel/public
+
+        <Directory /home/laranode_ln/panel/public>
+                Options Indexes FollowSymLinks
+                AllowOverride All
+                Require all granted
+        </Directory>
+
+        ErrorLog /home/laranode_ln/panel/logs/error.log
+        CustomLog /home/laranode_ln/panel/logs/access.log combined
+</VirtualHost>

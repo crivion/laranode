@@ -21,6 +21,18 @@ apt install -y apache2
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
+echo "Installing Sysstat"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+
+apt-get install -y sysstat
+sed -i 's/ENABLED="false"/ENABLED="true"/' /etc/default/sysstat
+systemctl restart sysstat
+systemctl enable sysstat
+
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
 echo "Enabling and starting apache2"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
@@ -58,8 +70,8 @@ echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
 echo "Adding ppa:ondrej/php"
 echo "--------------------------------------------------------------------------------"
-add-apt-repository -y ppa:ondrej/php
 echo -e "\033[0m"
+add-apt-repository -y ppa:ondrej/php
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -163,6 +175,7 @@ echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
 echo "Creating Laranode User"
 useradd -m -s /bin/bash laranode_ln
+usermod -aG laranode_ln www-data
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
@@ -185,6 +198,8 @@ cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
 sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"/" ".env"
+sed -i "s/VITE_REVERB_HOST=.*/VITE_REVERB_HOST=\"$(curl icanhazip.com)\"/" ".env"
+sed -i "s/APP_URL=.*/APP_URL=\"http://$(curl icanhazip.com)\"/" ".env"
 
 php artisan key:generate
 php artisan migrate
@@ -194,6 +209,17 @@ php artisan reverb:install
 chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
 find /home/laranode_ln -type d -exec chmod 770 {} \;
 find /home/laranode_ln -type f -exec chmod 660 {} \;
+find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
+cp /home/laranode_ln/panel/laranode-scripts/templates/apache2-default.template /etc/apache2/sites-available/000-default.conf
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Hold tight, pouring node_modules with npm install & compiling assets"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+npm install
+npm run dev
+
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -209,6 +235,8 @@ systemctl enable laranode-queue-worker.service
 systemctl enable laranode-reverb.service
 systemctl start laranode-queue-worker.service
 systemctl start laranode-reverb.service
+systemctl restart apache2
+systemctl restart php8.4-fpm
 
 
 echo "================================================================================"
@@ -222,7 +250,7 @@ echo "Laranode MySQL Password: $LARANODE_RANDOM_PASS"
 echo -e "\033[32m --- IMPORTANT ---\033[0m"
 
 echo "Final Step: Now create an admin account for Laranode by running the following command:"
-echo -e "\033[33m php artisan laranode:create-admin \033[0m"
+echo -e "\033[33m cd /home/laranode_ln/panel && php artisan laranode:create-admin \033[0m"
 
 echo "================================================================================"
 echo "================================================================================"

@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBeUnique;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class SystemStatsEvent implements ShouldBroadcast, ShouldBeUnique
+class SystemStatsEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
