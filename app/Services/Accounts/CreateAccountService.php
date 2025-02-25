@@ -32,7 +32,6 @@ class CreateAccountService
 
         // only after that add the user to the database
         $user = User::create($this->validated);
-
         event(new Registered($user));
 
         // notify user if requested
@@ -40,6 +39,9 @@ class CreateAccountService
         if ($this->validated['notify']) {
             \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
         }
+
+	// add php fpm at the end
+        $this->createDefaultPHPFpmPool();
     }
 
     private function createSystemUser(): void
@@ -58,13 +60,13 @@ class CreateAccountService
             throw new CreateAccountException('Failed to create system user: ' . $createUser->errorOutput());
         }
 
-        $this->createDefaultPHPFpmPool();
     }
 
     private function createDefaultPHPFpmPool(): void
     {
         $defaultPhpVersion = PhpVersion::where('is_default', true)->firstOrFail();
+	$phpVersion = $defaultPhpVersion->version;
 
-        (new CreatePhpFpmPoolService($this->systemUsername, $defaultPhpVersion))->handle();
+	defer(fn () => (new CreatePhpFpmPoolService($this->systemUsername, $phpVersion))->handle());
     }
 }

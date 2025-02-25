@@ -27,9 +27,8 @@ class CreatePhpFpmPoolService
             'sudo',
             $this->laranodeBinPath . '/laranode-add-php-fpm-pool.sh',
             $this->systemUser,
-            '7.4', // @TODO: remove this and replace with $this->phpVersion
+	    $this->phpVersion,
             $this->phpFpmPoolTemplate
-            /*$this->phpVersion,*/
         ]);
 
         if ($createPhpFpmPool->failed()) {
