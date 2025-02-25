@@ -45,8 +45,9 @@ echo "Creating Laranode MySQL User & Database"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-$LARANODE_RANDOM_PASS=$(openssl rand -base64 12)
-$ROOT_RANDOM_PASS=$(openssl rand -base64 12)
+LARANODE_RANDOM_PASS=$(openssl rand -base64 12)
+ROOT_RANDOM_PASS=$(openssl rand -base64 12)
+
 mysql -u root -e "CREATE USER 'laranode'@'localhost' IDENTIFIED BY '$LARANODE_RANDOM_PASS';"
 mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'laranode'@'localhost';"
 mysql -u root -e "FLUSH PRIVILEGES;"
@@ -183,6 +184,7 @@ echo -e "\033[0m"
 cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
+sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"/" ".env"
 
 php artisan key:generate
 php artisan migrate
