@@ -46,7 +46,6 @@ export default function Websites({ websites, serverIp }) {
                     <table className="w-full  text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
                             <tr>
-                                <th className="px-6 py-3">ID</th>
                                 <th className="px-6 py-3">URL</th>
                                 <th className="px-6 py-3">Document Root</th>
                                 <th className="px-6 py-3">PHP Version</th>
@@ -78,7 +77,7 @@ export default function Websites({ websites, serverIp }) {
                                         </td>
                                     )}
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {account.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
+                                        {website.user.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900
                                     whitespace-nowrap dark:text-white">

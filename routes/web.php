@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FilemanagerController;
+use App\Http\Controllers\PHPManagerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatsHistoryController;
 use App\Http\Controllers\WebsiteController;
@@ -27,7 +28,10 @@ Route::get('/accounts/impersonate/{user}', [AccountsController::class, 'imperson
 Route::get('/accounts/leave-impersonation', [AccountsController::class, 'leaveImpersonation'])->middleware(['auth'])->name('accounts.leaveImpersonation');
 
 // Websites [Admin | User]
-Route::resource('/websites', WebsiteController::class)->middleware(['auth']);
+Route::resource('/websites', WebsiteController::class)->middleware(['auth'])->except(['create', 'edit', 'show']);
+
+// PHP FPM Pools [Admin | User]
+Route::get('/php/get-versions', [PHPManagerController::class, 'getVersions'])->middleware(['auth'])->name('php.get-versions');
 
 // Filemanager [Admin | User]
 Route::get('/filemanager', [FilemanagerController::class, 'index'])->middleware(['auth'])->name('filemanager');

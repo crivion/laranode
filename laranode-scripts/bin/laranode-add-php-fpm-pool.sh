@@ -19,8 +19,8 @@ fi
 TEMPLATE_FILE=$(cat "$TEMPLATE_FILE_PATH")
 
 # replace {user} and {version} in template file
-TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s/{user}/$SYSTEM_USER/g")
-TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s/{version}/$PHP_VERSION/g")
+TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{user}#$SYSTEM_USER#g")
+TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{version}#$PHP_VERSION#g")
 
 # write template file to /etc/php/{version}/fpm/pool.d/pool-{systemUser}.conf
 echo "$TEMPLATE_FILE" > "/etc/php/$PHP_VERSION/fpm/pool.d/$SYSTEM_USER.conf"

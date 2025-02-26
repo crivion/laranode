@@ -198,8 +198,8 @@ cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
 sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"/" ".env"
-sed -i "s/VITE_REVERB_HOST=.*/VITE_REVERB_HOST=\"$(curl icanhazip.com)\"/" ".env"
-sed -i "s/APP_URL=.*/APP_URL=\"http://$(curl icanhazip.com)\"/" ".env"
+sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=\"$(curl icanhazip.com)\"#" ".env"
+sed -i "s#APP_URL=.*#APP_URL=\"http://$(curl icanhazip.com)\"#" ".env"
 
 php artisan key:generate
 php artisan migrate

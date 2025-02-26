@@ -15,7 +15,8 @@ class GetDirectoryContentsAction
         $recursive = false;
 
         try {
-            $path = './';
+            $path = '';
+            $goBack = null;
 
             // everything starts from ORIGINAL $path so no need to worry about ../ /.. etc tricks
             if ($browsePath) {

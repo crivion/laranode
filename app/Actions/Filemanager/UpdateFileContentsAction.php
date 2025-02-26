@@ -15,7 +15,7 @@ class UpdateFileContentsAction
 
         try {
             $filesystem = $this->filesystem;
-            $filesystem->write($r->editFile, $r->fileContents);
+            $filesystem->write($r->editFile, $r->fileContents ?? '');
 
             return response()->json(['message' => 'File contents updated successfully'], 200);
         } catch (\Exception $exception) {

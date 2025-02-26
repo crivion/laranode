@@ -4,17 +4,34 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
-import { useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useForm, usePage, router } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { TbWorldWww } from 'react-icons/tb';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Transition } from '@headlessui/react';
+import Checkbox from '@/Components/Checkbox';
+import Dropdown from '@/Components/Dropdown';
+import { FaChevronDown } from 'react-icons/fa6';
 
 export default function CreateWebsiteForm({ serverIp }) {
     const { auth } = usePage().props;
     const [showModal, setShowModal] = useState(false);
     const [ipCopied, setIpCopied] = useState(false);
+    const [phpVersions, setPhpVersions] = useState([]);
+
+    useEffect(() => {
+        getPhpVersions();
+    }, []);
+
+    const getPhpVersions = async () => {
+        window.axios.get(route('php.get-versions')).then((response) => {
+            setPhpVersions(response.data);
+        }).catch((error) => {
+            toast(error.response.data.message, { type: 'error' });
+            console.log(error);
+        });
+    };
 
     const {
         data,
@@ -66,7 +83,7 @@ export default function CreateWebsiteForm({ serverIp }) {
                         Add a New Website
                     </h2>
 
-                    <div className="mt-6 flex flex-col space-y-4 max-h-[500px] overflow-scroll">
+                    <div className="mt-6 flex flex-col space-y-4 max-h-[500px]">
 
                         <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-md text-gray-700 dark:text-gray-300 flex items-center text-xs">
                             <div>
@@ -148,6 +165,27 @@ export default function CreateWebsiteForm({ serverIp }) {
                             />
                         </div>
 
+                        <div>
+                            <InputLabel htmlFor="php_version_id" value="PHP Version" className='my-2' />
+
+                            <select
+                                id="php_version_id"
+                                name="php_version_id"
+                                value={data.php_version_id}
+                                onChange={(e) => setData('php_version_id', e.target.value)}
+                                className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md"
+                            >
+                                {phpVersions.map((phpVersion) => (
+                                    <option key={`php-version-${phpVersion.id}`} value={phpVersion.id}>{phpVersion.version}</option>
+                                ))}
+                            </select>
+
+                            <InputError
+                                message={errors.php_version_id}
+                                className="mt-2"
+                            />
+                        </div>
+
                         <div className="flex justify-end">
                             <PrimaryButton className="mr-3" disabled={processing}>
                                 Add Website
@@ -158,8 +196,8 @@ export default function CreateWebsiteForm({ serverIp }) {
                             </SecondaryButton>
                         </div>
                     </div>
-                </form >
-            </Modal >
+                </form>
+            </Modal>
         </>
     );
 }

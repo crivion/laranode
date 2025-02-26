@@ -39,9 +39,6 @@ class CreateAccountService
         if ($this->validated['notify']) {
             \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
         }
-
-	// add php fpm at the end
-        $this->createDefaultPHPFpmPool();
     }
 
     private function createSystemUser(): void
@@ -59,14 +56,5 @@ class CreateAccountService
         if ($createUser->failed()) {
             throw new CreateAccountException('Failed to create system user: ' . $createUser->errorOutput());
         }
-
-    }
-
-    private function createDefaultPHPFpmPool(): void
-    {
-        $defaultPhpVersion = PhpVersion::where('is_default', true)->firstOrFail();
-	$phpVersion = $defaultPhpVersion->version;
-
-	defer(fn () => (new CreatePhpFpmPoolService($this->systemUsername, $phpVersion))->handle());
     }
 }

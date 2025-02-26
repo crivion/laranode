@@ -15,7 +15,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, Impersonate;
 
-    public $appends = ['homedir'];
+    public $appends = ['homedir', 'systemUsername'];
 
     /**
      * The attributes that are mass assignable.
@@ -74,20 +74,21 @@ class User extends Authenticatable
     }
 
     /**
-     * @return Attribute
+     * not using casts as it's not working in some scenarios
+     * @return string
      */
-    public function homedir(): Attribute
+    public function getHomedirAttribute(): string
     {
-        return Attribute::make(
-            get: fn() => '/home/' . $this->systemUsername,
-        );
+        return '/home/' . $this->systemUsername;
     }
 
-    public function systemUsername(): Attribute
+    /**
+     * not using casts as it's not working in some scenarios
+     * @return string
+     */
+    public function getSystemUsernameAttribute(): string
     {
-        return Attribute::make(
-            get: fn() => $this->username . '_ln',
-        );
+        return $this->username . '_ln';
     }
 
     public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany

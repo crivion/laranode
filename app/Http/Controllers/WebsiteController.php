@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateWebsiteRequest;
 use App\Models\Website;
+use App\Services\Websites\CreateWebsiteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -26,36 +28,17 @@ class WebsiteController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateWebsiteRequest $request)
     {
-        //
+        (new CreateWebsiteService($request->validated(), auth()->user()))->handle();
+
+        session()->flash('success', 'Website created successfully.');
+
+        return redirect()->route('websites.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.

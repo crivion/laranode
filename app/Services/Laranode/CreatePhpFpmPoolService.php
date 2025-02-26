@@ -2,6 +2,7 @@
 
 namespace App\Services\Laranode;
 
+use App\Models\Website;
 use Illuminate\Support\Facades\Process;
 use Exception;
 
@@ -12,7 +13,7 @@ class CreatePhpFpmPoolService
     private string $laranodeBinPath;
     private string $phpFpmPoolTemplate;
 
-    public function __construct(private string $systemUser, private string $phpVersion)
+    public function __construct(private Website $website)
     {
         // path to laranode user manager bin|ssh script
         $this->laranodeBinPath = config('laranode.laranode_bin_path');
@@ -23,11 +24,14 @@ class CreatePhpFpmPoolService
 
     public function handle(): void
     {
+        // TODO: if user has other websites with the same php version, do nothing as pool already exists
+
+        # "Usage: $0 {system user} {php version} {template_file_path}"
         $createPhpFpmPool = Process::run([
             'sudo',
             $this->laranodeBinPath . '/laranode-add-php-fpm-pool.sh',
-            $this->systemUser,
-	    $this->phpVersion,
+            $this->website->user->username,
+            $this->website->phpVersion->version,
             $this->phpFpmPoolTemplate
         ]);
 

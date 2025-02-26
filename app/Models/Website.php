@@ -7,12 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Website extends Model
 {
+    public $appends = ['fullDocumentRoot'];
 
     protected $fillable = [
         'url',
         'document_root',
         'php_version_id',
     ];
+
+    // not using casts as it's not working in some scenarios
+    public function getFullDocumentRootAttribute(): string
+    {
+        return $this->user->homedir . '/domains/' . $this->url . $this->document_root;
+    }
 
     public function scopeMine(Builder $query): Builder
     {
@@ -24,8 +31,8 @@ class Website extends Model
         return $this->belongsTo(User::class)->select(['id', 'username', 'role']);
     }
 
-    public function phpVersion(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function phpVersion(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasOne(PhpVersion::class);
+        return $this->belongsTo(PhpVersion::class);
     }
 }

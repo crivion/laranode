@@ -1,8 +1,20 @@
-# @TODO: complete this
 <VirtualHost *:80>
     ServerName {domain}
-    DocumentRoot /home/{user}/public
+    ServerAlias www.{domain}
+
+    DocumentRoot /home/{user}/domains/{domain}{document_root}
 
     ErrorLog /home/{user}/logs/apache-error.log
     CustomLog /home/{user}/logs/apache-access.log combined
+
+	<FilesMatch \.php$>
+	      SetHandler "proxy:unix:/run/php/php-fpm-{phpVersion}.{user}.sock|fcgi://localhost"
+	</FilesMatch>
+
+	<Directory /home/{user}/domains/{domain}{document_root}>
+		Options Indexes FollowSymLinks
+		AllowOverride All
+		Require all granted
+	</Directory>
+
 </VirtualHost>

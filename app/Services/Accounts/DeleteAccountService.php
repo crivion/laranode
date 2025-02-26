@@ -60,6 +60,9 @@ class DeleteAccountService
         }
     }
 
+    // TODO: HIGHLY CRUCIAL: implement delete websites from db and virtual hosts!!!!!!!!!
+    private function deleteWebsites(): void {}
+
     // @TODO: implement delete all DB's of this user
     private function deleteDatabases(): void {}
 }
