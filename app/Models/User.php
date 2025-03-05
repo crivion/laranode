@@ -88,7 +88,10 @@ class User extends Authenticatable
      */
     public function getSystemUsernameAttribute(): string
     {
-        return $this->username . '_ln';
+        if ($this->username != 'laranode') {
+            return $this->username . '_ln';
+        }
+        return $this->username;
     }
 
     public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany

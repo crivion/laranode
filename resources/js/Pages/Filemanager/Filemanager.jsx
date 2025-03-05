@@ -240,11 +240,13 @@ const Filemanager = () => {
                                 </button>
                             )}
 
+                            {/*
                             <button onClick={() => setCopyFiles(true)} className="flex items-center hover:text-indigo-600 disabled:opacity-25" disabled={selectedPaths.length == 0 || cutFiles}>
                                 <MdCopyAll className="mr-1" />
                                 Copy -tbd
                             </button>
 
+                            -- to be added --
 
                             {copyFiles && (
                                 <button onClick={() => pasteFiles('paste')} className="flex items-center hover:text-indigo-600 disabled:opacity-25">
@@ -252,6 +254,7 @@ const Filemanager = () => {
                                     Paste -tbd
                                 </button>
                             )}
+                            */}
 
                             <button onClick={() => confirmDelete()} className="flex items-center hover:text-red-600 disabled:opacity-25" disabled={selectedPaths.length == 0}>
                                 <LuDelete className="mr-1" />
