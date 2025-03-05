@@ -15,9 +15,9 @@ export default function Websites({ websites, serverIp }) {
     const { auth } = usePage().props;
 
     const deleteWebsite = (id) => {
-        router.delete(route('accounts.destroy', { account: id }), {
+        router.delete(route('websites.destroy', { website: id }), {
             onBefore: () => {
-                toast("Please wait, deleting account and its resources...");
+                toast("Please wait, deleting website and its resources...");
             },
             onError: errors => {
                 toast("Error occured while deleting account.");
@@ -62,23 +62,21 @@ export default function Websites({ websites, serverIp }) {
                                         {website.url}
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {website.document_root}
+                                        <div className="text-xs inline-flex items-center px-3 rounded-md border border-gray-300 bg-gray-100 text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                            {website.fullDocumentRoot}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {website.php_version.version}
                                     </td>
                                     {auth.user.role == 'admin' && (
                                         <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            {website.user.username}
                                             <div>
                                                 {website.user.username}
                                             </div>
                                             {website.user.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
                                         </td>
                                     )}
-                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {website.user.role == "admin" ? <span className='bg-green-300 text-green-700 px-2 py-1 text-sm rounded-lg'>Admin</span> : <span className='bg-gray-300 text-gray-700 px-2 py-1 text-sm rounded-lg'>User</span>}
-                                    </td>
                                     <td className="px-6 py-4 font-medium text-gray-900
                                     whitespace-nowrap dark:text-white">
 

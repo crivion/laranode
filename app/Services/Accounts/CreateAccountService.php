@@ -2,9 +2,7 @@
 
 namespace App\Services\Accounts;
 
-use App\Models\PhpVersion;
 use App\Models\User;
-use App\Services\Laranode\CreatePhpFpmPoolService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Process;
 use Exception;
@@ -35,7 +33,7 @@ class CreateAccountService
         event(new Registered($user));
 
         // notify user if requested
-        // @todo: implement notification (mail)
+        // TODO: implement notification (mail)
         if ($this->validated['notify']) {
             \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
         }

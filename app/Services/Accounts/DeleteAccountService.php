@@ -3,6 +3,7 @@
 namespace App\Services\Accounts;
 
 use App\Models\User;
+use App\Services\Websites\DeleteWebsiteService;
 use Illuminate\Support\Facades\Process;
 use Exception;
 
@@ -29,6 +30,9 @@ class DeleteAccountService
         // delete system user
         $this->deleteSystemUser();
 
+        // delete all user websites
+        $this->deleteWebsites();
+
         // remove user from database
         User::findOrFail($this->user->id)->delete();
     }
@@ -51,7 +55,7 @@ class DeleteAccountService
     {
         $deletePhpFpmPool = Process::run([
             'sudo',
-            $this->laranodeBinPath . '/laranode-remove-php-fpm-pool.sh',
+            $this->laranodeBinPath . '/laranode-remove-all-user-php-fpm-pools.sh',
             $this->user->systemUsername,
         ]);
 
@@ -60,8 +64,14 @@ class DeleteAccountService
         }
     }
 
-    // TODO: HIGHLY CRUCIAL: implement delete websites from db and virtual hosts!!!!!!!!!
-    private function deleteWebsites(): void {}
+    private function deleteWebsites(): void
+    {
+        $userWebsites = $this->user->websites()->get();
+
+        foreach ($userWebsites as $website) {
+            (new DeleteWebsiteService($website, auth()->user()))->handle();
+        }
+    }
 
     // @TODO: implement delete all DB's of this user
     private function deleteDatabases(): void {}

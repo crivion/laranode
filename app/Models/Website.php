@@ -12,8 +12,14 @@ class Website extends Model
     protected $fillable = [
         'url',
         'document_root',
+        'website_root',
         'php_version_id',
     ];
+
+    public function getWebsiteRootAttribute(): string
+    {
+        return $this->user->homedir . '/domains/' . $this->url;
+    }
 
     // not using casts as it's not working in some scenarios
     public function getFullDocumentRootAttribute(): string

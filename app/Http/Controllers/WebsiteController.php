@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateWebsiteRequest;
 use App\Models\Website;
 use App\Services\Websites\CreateWebsiteService;
+use App\Services\Websites\DeleteWebsiteService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
@@ -51,8 +53,14 @@ class WebsiteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Website $website)
     {
-        //
+        Gate::authorize('delete', $website);
+
+        (new DeleteWebsiteService($website, auth()->user()))->handle();
+
+        session()->flash('success', 'Website deleted successfully.');
+
+        return redirect()->route('websites.index');
     }
 }

@@ -24,8 +24,6 @@ class CreatePhpFpmPoolService
 
     public function handle(): void
     {
-        // TODO: if user has other websites with the same php version, do nothing as pool already exists
-
         # "Usage: $0 {system user} {php version} {template_file_path}"
         $createPhpFpmPool = Process::run([
             'sudo',
