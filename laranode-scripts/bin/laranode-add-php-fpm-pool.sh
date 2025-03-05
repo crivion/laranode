@@ -22,9 +22,15 @@ TEMPLATE_FILE=$(cat "$TEMPLATE_FILE_PATH")
 TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{user}#$SYSTEM_USER#g")
 TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{version}#$PHP_VERSION#g")
 
+
 # write template file to /etc/php/{version}/fpm/pool.d/pool-{systemUser}.conf
 echo "$TEMPLATE_FILE" > "/etc/php/$PHP_VERSION/fpm/pool.d/$SYSTEM_USER.conf"
 
+# Get the PID of PHP-FPM based on PHP version
+PID_FILE="/var/run/php/php${PHP_VERSION}-fpm.pid"
+
 # reload php{version}-fpm
 echo "Reloading php$PHP_VERSION-fpm..."
-systemctl reload php"$PHP_VERSION"-fpm
+#systemctl restart "php${version}-fpm"
+
+kill -USR2 $(cat "$PID_FILE")

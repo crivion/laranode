@@ -22,4 +22,9 @@ fi
 
 # reload php{version}-fpm
 echo "Reloading php$PHP_VERSION-fpm..."
-systemctl reload php"$PHP_VERSION"-fpm
+
+# Get the PID of PHP-FPM based on PHP version
+PID_FILE="/var/run/php/php${PHP_VERSION}-fpm.pid"
+#systemctl reload php"$PHP_VERSION"-fpm
+
+kill -USR2 $(cat "$PID_FILE")

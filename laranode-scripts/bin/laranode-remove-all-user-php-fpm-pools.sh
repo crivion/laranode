@@ -25,7 +25,11 @@ echo "Removed $count pool configuration(s)"
 # Restart only affected PHP-FPM versions
 for version in "${affected_versions[@]}"; do
     echo "Restarting php${version}-fpm"
-    systemctl restart "php${version}-fpm"
+    #systemctl restart "php${version}-fpm"
+
+    # get pid of this php-fpm and USR2 it
+    PID_FILE="/var/run/php/php${version}-fpm.pid"
+    kill -USR2 $(cat "$PID_FILE")
 done
 
 if [ $count -eq 0 ]; then
