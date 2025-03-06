@@ -3,7 +3,6 @@
 # Exit on any error
 # set -e
 
-# ONLY CHANGE: Add this line to avoid interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
 echo -e "\033[34m"
@@ -202,7 +201,7 @@ echo -e "\033[0m"
 cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
-sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"/" ".env"
+sed -i "s#DB_PASSWORD=.*#DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"#" ".env"
 sed -i "s#APP_URL=.*#APP_URL=\"http://$(curl icanhazip.com)\"#" ".env"
 
 php artisan key:generate
@@ -240,6 +239,7 @@ echo "--------------------------------------------------------------------------
 echo "Setting permissions"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
+mkdir -p /home/laranode_ln/logs
 chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
 find /home/laranode_ln -type d -exec chmod 770 {} \;
 find /home/laranode_ln -type f -exec chmod 660 {} \;
