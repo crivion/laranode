@@ -28,8 +28,10 @@ for version in "${affected_versions[@]}"; do
     #systemctl restart "php${version}-fpm"
 
     # get pid of this php-fpm and USR2 it
-    PID_FILE="/var/run/php/php${version}-fpm.pid"
-    kill -USR2 $(cat "$PID_FILE")
+    #PID_FILE="/var/run/php/php${version}-fpm.pid"
+    #kill -USR2 $(cat "$PID_FILE")
+
+    (sleep 2 && systemctl reload "php${version}-fpm") >/dev/null 2>&1 &
 done
 
 if [ $count -eq 0 ]; then
