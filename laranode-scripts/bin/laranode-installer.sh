@@ -214,10 +214,6 @@ php artisan reverb:install
 sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=$(curl icanhazip.com)#" ".env"
 sed -i "s#REVERB_HOST=.*#REVERB_HOST=$(curl icanhazip.com)#" ".env"
 
-chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
-find /home/laranode_ln -type d -exec chmod 770 {} \;
-find /home/laranode_ln -type f -exec chmod 660 {} \;
-find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
 cp /home/laranode_ln/panel/laranode-scripts/templates/apache2-default.template /etc/apache2/sites-available/000-default.conf
 
 echo -e "\033[34m"
@@ -237,6 +233,17 @@ echo -e "\033[0m"
 
 cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-queue-worker.service /etc/systemd/system/laranode-queue-worker.service
 cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-reverb.service /etc/systemd/system/laranode-reverb.service
+
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Setting permissions"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
+find /home/laranode_ln -type d -exec chmod 770 {} \;
+find /home/laranode_ln -type f -exec chmod 660 {} \;
+find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
 
 systemctl daemon-reload
 systemctl enable laranode-queue-worker.service
