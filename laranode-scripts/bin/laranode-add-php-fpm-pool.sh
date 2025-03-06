@@ -33,4 +33,7 @@ PID_FILE="/var/run/php/php${PHP_VERSION}-fpm.pid"
 echo "Reloading php$PHP_VERSION-fpm..."
 #systemctl restart "php${version}-fpm"
 
-kill -USR2 $(cat "$PID_FILE")
+# restart in bg to avoid current request issues in the browser
+nohup systemctl restart "php${PHP_VERSION}-fpm" >/dev/null 2>&1 &
+
+#kill -USR2 $(cat "$PID_FILE")
