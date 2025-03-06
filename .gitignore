@@ -24,3 +24,4 @@ yarn-error.log
 /.zed
 package-lock.json
 *.DS_Store*
+*.php-cs-fixer.cache*

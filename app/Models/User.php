@@ -13,7 +13,9 @@ use Lab404\Impersonate\Models\Impersonate;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, Impersonate;
+    use HasFactory;
+    use Notifiable;
+    use Impersonate;
 
     public $appends = ['homedir', 'systemUsername'];
 
@@ -88,9 +90,6 @@ class User extends Authenticatable
      */
     public function getSystemUsernameAttribute(): string
     {
-        if ($this->username != 'laranode') {
-            return $this->username . '_ln';
-        }
         return $this->username;
     }
 
