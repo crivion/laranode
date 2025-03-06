@@ -1,5 +1,18 @@
+#!/bin/bash
+
 # Exit on any error
 # set -e
+
+# Prevent interactive prompts during installation
+export DEBIAN_FRONTEND=noninteractive
+
+# Create policy-rc.d to prevent automatic service restarts
+echo '#!/bin/sh
+exit 101' > /usr/sbin/policy-rc.d
+chmod +x /usr/sbin/policy-rc.d
+
+# Configure apt to use default answers for configuration prompts
+echo 'DPkg::options { "--force-confdef"; "--force-confold"; }' > /etc/apt/apt.conf.d/local
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -27,8 +40,8 @@ echo -e "\033[0m"
 
 apt-get install -y sysstat
 sed -i 's/ENABLED="false"/ENABLED="true"/' /etc/default/sysstat
-systemctl restart sysstat
-systemctl enable sysstat
+# Store restart for later
+SERVICES_TO_RESTART="sysstat"
 
 
 echo -e "\033[34m"
@@ -39,6 +52,7 @@ echo -e "\033[0m"
 
 systemctl enable apache2
 systemctl start apache2
+SERVICES_TO_RESTART="$SERVICES_TO_RESTART apache2"
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -46,9 +60,14 @@ echo "Installing MySQL Server"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
+# Pre-set MySQL root password to blank for non-interactive installation
+debconf-set-selections <<< "mysql-server mysql-server/root_password password ''"
+debconf-set-selections <<< "mysql-server mysql-server/root_password_again password ''"
+
 apt install -y mysql-server
 systemctl enable mysql
 systemctl start mysql
+SERVICES_TO_RESTART="$SERVICES_TO_RESTART mysql"
 
 
 echo -e "\033[34m"
@@ -90,6 +109,7 @@ apt install -y php8.4 php8.4-fpm php8.4-cli php8.4-common php8.4-curl php8.4-mbs
                php8.4-gd php8.4-imagick php8.4-intl php8.4-readline php8.4-tokenizer php8.4-fileinfo \
                php8.4-soap php8.4-opcache unzip curl
 
+SERVICES_TO_RESTART="$SERVICES_TO_RESTART php8.4-fpm"
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -143,7 +163,8 @@ echo "Restarting apache2"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-systemctl restart apache2
+# We'll restart Apache at the end, not here
+# systemctl restart apache2
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -237,9 +258,17 @@ systemctl enable laranode-queue-worker.service
 systemctl enable laranode-reverb.service
 systemctl start laranode-queue-worker.service
 systemctl start laranode-reverb.service
-systemctl restart apache2
-systemctl restart php8.4-fpm
 
+# Now restart all services at once
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Restarting all services"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+systemctl restart apache2 php8.4-fpm
+
+# Remove the policy-rc.d file to restore normal service behavior
+rm -f /usr/sbin/policy-rc.d
 
 echo "================================================================================"
 echo "================================================================================"
