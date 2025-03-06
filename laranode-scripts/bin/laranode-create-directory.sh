@@ -17,11 +17,8 @@ fi
 
 # Create directory and apply permisisons
 mkdir -p "$DIR_PATH"
-#find /home/$SYSTEM_USER -type d -exec chmod 770 {} \;
-find $DIR_PATH -type d -exec chmod 770 {} \;
-find $DIR_PATH -type f -exec chmod 660 {} \;
-#find /home/$SYSTEM_USER -type f -exec chmod 660 {} \;
+find /home/$SYSTEM_USER/domains -type d -exec chmod 770 {} \;
+find /home/$SYSTEM_USER/domains -type f -exec chmod 660 {} \;
 chown -R $SYSTEM_USER:$SYSTEM_USER /home/$SYSTEM_USER
-
 
 echo "Directory created successfully."

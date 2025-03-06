@@ -240,7 +240,7 @@ echo "Setting permissions"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 mkdir -p /home/laranode_ln/logs
-chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
+chown -R laranode_ln:laranode_ln /home/laranode_ln
 find /home/laranode_ln -type d -exec chmod 770 {} \;
 find /home/laranode_ln -type f -exec chmod 660 {} \;
 find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
