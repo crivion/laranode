@@ -90,7 +90,7 @@ class User extends Authenticatable
      */
     public function getSystemUsernameAttribute(): string
     {
-        return $this->username;
+        return $this->username . '_ln';
     }
 
     public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany
