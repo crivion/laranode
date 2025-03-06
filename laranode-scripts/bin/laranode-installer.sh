@@ -151,7 +151,7 @@ echo "Adding www-data to sudoers and allowing to run laranode scripts"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh" >> /etc/sudoers
+echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf" >> /etc/sudoers
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -198,7 +198,6 @@ cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
 sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"/" ".env"
-sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=\"$(curl icanhazip.com)\"#" ".env"
 sed -i "s#APP_URL=.*#APP_URL=\"http://$(curl icanhazip.com)\"#" ".env"
 
 php artisan key:generate
@@ -206,6 +205,9 @@ php artisan migrate
 php artisan db:seed
 php artisan storage:link
 php artisan reverb:install
+
+sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=$(curl icanhazip.com)#" ".env"
+
 chown -R laranode_ln:laranode_ln /home/laranode_ln/panel
 find /home/laranode_ln -type d -exec chmod 770 {} \;
 find /home/laranode_ln -type f -exec chmod 660 {} \;
