@@ -175,6 +175,7 @@ export default function CreateWebsiteForm({ serverIp }) {
                                 onChange={(e) => setData('php_version_id', e.target.value)}
                                 className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md"
                             >
+                                <option value={""}>-- Select --</option>
                                 {phpVersions.map((phpVersion) => (
                                     <option key={`php-version-${phpVersion.id}`} value={phpVersion.id}>{phpVersion.version}</option>
                                 ))}
