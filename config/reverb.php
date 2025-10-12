@@ -101,9 +101,9 @@ return [
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
             ],
             [
-                'key' =>  env('REVERB_SMARTH_APP_KEY'),
-                'secret' => env('REVERB_SMARTH_APP_SECRET'),
                 'app_id' => env('REVERB_SMARTH_APP_ID'),
+                'key' =>  env('REVERB_SMARTH_KEY'),
+                'secret' => env('REVERB_SMARTH_SECRET'),
                 'options' => [
                     'host' => env('REVERB_SMARTH_HOST'),
                     'port' => env('REVERB_PORT', 443),

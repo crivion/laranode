@@ -1,5 +1,6 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import InputRadio from '@/Components/InputRadio';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -168,6 +169,21 @@ export default function CreateWebsiteForm({ serverIp }) {
                         <div>
                             <InputLabel htmlFor="php_version_id" value="PHP Version" className='my-2' />
 
+                            {phpVersions.map((phpVersion) => (
+                                <div key={`php-version-${phpVersion.id}`} className="flex items-center">
+                                    <InputRadio
+                                        id={`php_version_id-${phpVersion.id}`}
+                                        name="php_version_id"
+                                        value={phpVersion.id}
+                                        checked={data.php_version_id === phpVersion.id}
+                                        onChange={(e) => setData('php_version_id', e.target.value)}
+                                        className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor={`php_version_id-${phpVersion.id}`} className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">{phpVersion.version}</label>
+                                </div>
+                            ))}
+
+                            {/*
                             <select
                                 id="php_version_id"
                                 name="php_version_id"
@@ -180,6 +196,7 @@ export default function CreateWebsiteForm({ serverIp }) {
                                     <option key={`php-version-${phpVersion.id}`} value={phpVersion.id}>{phpVersion.version}</option>
                                 ))}
                             </select>
+                            */}
 
                             <InputError
                                 message={errors.php_version_id}
