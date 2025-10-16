@@ -1,46 +1,25 @@
 #!/bin/bash
 
-# Ensure arguments
-if [ $# -lt 6 ]; then
-  echo "Usage: $0 {system user} {domain} {documentRoot} {phpVersion} {php_pool_template_path} {apache_vhost_template_path}"
+if [ $# -lt 5 ]; then
+  echo "Usage: $0 {domain} {phpVersion}"
   exit 1
 fi
 
-SYSTEM_USER=$1
-DOMAIN=$2
-DOCUMENT_ROOT=$3
-PHP_VERSION=$4
-PHP_POOL_TEMPLATE_PATH=$5
-APACHE_VHOST_TEMPLATE_PATH=$6
+DOMAIN=$1
+PHP_VERSION=$2
 
-# Automatically append _ln to system user if not already present
-if echo "$SYSTEM_USER" | grep -qv '_ln$'; then
-    SYSTEM_USER+="_ln"
-fi
 
-# 1) Ensure PHP-FPM pool exists (create/overwrite from template)
-POOL_TEMPLATE=$(cat "$PHP_POOL_TEMPLATE_PATH")
-POOL_TEMPLATE=$(echo "$POOL_TEMPLATE" | sed "s#{user}#$SYSTEM_USER#g")
-POOL_TEMPLATE=$(echo "$POOL_TEMPLATE" | sed "s#{version}#$PHP_VERSION#g")
+# read vhost file
+VHOST_FILE="/etc/apache2/sites-available/$DOMAIN.conf"
 
-echo "$POOL_TEMPLATE" > "/etc/php/$PHP_VERSION/fpm/pool.d/$SYSTEM_USER.conf"
+# replace {user} and {version} in template file
+VHOST_FILE=$(echo "$VHOST_FILE" | sed "s#{phpVersion}#$PHP_VERSION#g")
 
-# Reload php-fpm for this version in background to avoid blocking
-(sleep 1 && systemctl reload "php${PHP_VERSION}-fpm") >/dev/null 2>&1 &
+# write template file to /etc/apache2/sites-available/{domain}.conf
+#echo "$VHOST_FILE" > "/etc/apache2/sites-available/$DOMAIN.conf"
+echo "$VHOST_FILE"
 
-# 2) Update Apache vhost to use the new PHP-FPM socket
-VHOST_TEMPLATE=$(cat "$APACHE_VHOST_TEMPLATE_PATH")
-VHOST_TEMPLATE=$(echo "$VHOST_TEMPLATE" | sed "s#{user}#$SYSTEM_USER#g")
-VHOST_TEMPLATE=$(echo "$VHOST_TEMPLATE" | sed "s#{domain}#$DOMAIN#g")
-VHOST_TEMPLATE=$(echo "$VHOST_TEMPLATE" | sed "s#{document_root}#$DOCUMENT_ROOT#g")
-VHOST_TEMPLATE=$(echo "$VHOST_TEMPLATE" | sed "s#{phpVersion}#$PHP_VERSION#g")
 
-echo "$VHOST_TEMPLATE" > "/etc/apache2/sites-available/$DOMAIN.conf"
-
-# Enable site (idempotent) and reload Apache
-a2ensite "$DOMAIN" >/dev/null 2>&1 || true
+# reaload apache
+echo "Reload apache"
 systemctl reload apache2
-
-echo "Updated PHP version to $PHP_VERSION for $DOMAIN"
-
-
