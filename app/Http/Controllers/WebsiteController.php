@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateWebsiteRequest;
+use App\Http\Requests\UpdateWebsitePHPVersionRequest;
 use App\Models\Website;
 use App\Models\PhpVersion;
 use App\Services\Websites\CreateWebsiteService;
 use App\Services\Websites\DeleteWebsiteService;
+use App\Services\Websites\UpdateWebsitePHPVersionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
@@ -35,7 +37,9 @@ class WebsiteController extends Controller
      */
     public function store(CreateWebsiteRequest $request)
     {
-        (new CreateWebsiteService($request->validated(), auth()->user()))->handle();
+        $user = $request->user();
+
+        (new CreateWebsiteService($request->validated(), $user))->handle();
 
         session()->flash('success', 'Website created successfully.');
 
@@ -46,22 +50,15 @@ class WebsiteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateWebsitePHPVersionRequest $request, string $id)
     {
         $website = Website::findOrFail($id);
 
         Gate::authorize('update', $website);
 
-        $validated = $request->validate([
-            'php_version_id' => ['required', 'integer', 'exists:php_versions,id'],
-        ]);
+        $validated = $request->validated();
 
-        // ensure selected PHP version is active
-        $phpVersion = PhpVersion::active()->findOrFail($validated['php_version_id']);
-
-        $website->update([
-            'php_version_id' => $phpVersion->id,
-        ]);
+        (new UpdateWebsitePHPVersionService($website, (int) $validated['php_version_id']))->handle();
 
         session()->flash('success', 'Website updated successfully.');
 
@@ -71,11 +68,13 @@ class WebsiteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Website $website)
+    public function destroy(Request $request, Website $website)
     {
         Gate::authorize('delete', $website);
 
-        (new DeleteWebsiteService($website, auth()->user()))->handle();
+        $user = $request->user();
+
+        (new DeleteWebsiteService($website, $user))->handle();
 
         session()->flash('success', 'Website deleted successfully.');
 
