@@ -176,7 +176,7 @@ export default function CreateWebsiteForm({ serverIp }) {
                                         name="php_version_id"
                                         value={phpVersion.id}
                                         checked={data.php_version_id === phpVersion.id}
-                                        onChange={(e) => setData('php_version_id', e.target.value)}
+                                        onChange={(e) => setData('php_version_id', Number(e.target.value))}
                                         className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                                     />
                                     <label htmlFor={`php_version_id-${phpVersion.id}`} className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">{phpVersion.version}</label>
