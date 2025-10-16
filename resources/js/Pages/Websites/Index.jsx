@@ -9,10 +9,24 @@ import { TbWorldWww } from "react-icons/tb";
 import { FaDatabase, FaEdit } from "react-icons/fa";
 import { Tooltip } from 'react-tooltip'
 import CreateWebsiteForm from "./Partials/CreateWebsiteForm";
+import { useEffect, useState } from "react";
 
 export default function Websites({ websites, serverIp }) {
 
     const { auth } = usePage().props;
+    const [phpVersions, setPhpVersions] = useState([]);
+
+    useEffect(() => {
+        // fetch available PHP versions once
+        fetch(route('php.get-versions'), {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => setPhpVersions(data))
+            .catch(() => setPhpVersions([]));
+    }, []);
 
     const deleteWebsite = (id) => {
         router.delete(route('websites.destroy', { website: id }), {
@@ -67,7 +81,28 @@ export default function Websites({ websites, serverIp }) {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {website.php_version.version}
+                                        <select
+                                            className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                            value={website.php_version?.id || ''}
+                                            onChange={(e) => {
+                                                const selectedId = e.target.value;
+                                                if (!selectedId) return;
+
+                                                router.patch(route('websites.update', { website: website.id }),
+                                                    { php_version_id: selectedId },
+                                                    {
+                                                        onBefore: () => toast('Updating PHP version...'),
+                                                        onSuccess: () => toast('PHP version updated.'),
+                                                        onError: () => toast('Failed to update PHP version.'),
+                                                    }
+                                                );
+                                            }}
+                                        >
+                                            <option value="" disabled>Choose version</option>
+                                            {phpVersions.map(v => (
+                                                <option key={`phpver-${v.id}`} value={v.id}>{v.version}</option>
+                                            ))}
+                                        </select>
                                     </td>
                                     {auth.user.role == 'admin' && (
                                         <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">

@@ -16,6 +16,11 @@ class WebsitePolicy
         //
     }
 
+    public function update(User $user, Website $website): Response
+    {
+        return ($user->isAdmin() || $user->id === $website->user_id) ? Response::allow() : Response::deny('You are not authorized to update this website.');
+    }
+
     public function delete(User $user, Website $website): Response
     {
         return ($user->isAdmin() || $user->id === $website->user_id) ? Response::allow() : Response::deny('You are not authorized to delete this website.');

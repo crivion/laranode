@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateWebsiteRequest;
 use App\Models\Website;
+use App\Models\PhpVersion;
 use App\Services\Websites\CreateWebsiteService;
 use App\Services\Websites\DeleteWebsiteService;
 use Illuminate\Http\Request;
@@ -47,7 +48,24 @@ class WebsiteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $website = Website::findOrFail($id);
+
+        Gate::authorize('update', $website);
+
+        $validated = $request->validate([
+            'php_version_id' => ['required', 'integer', 'exists:php_versions,id'],
+        ]);
+
+        // ensure selected PHP version is active
+        $phpVersion = PhpVersion::active()->findOrFail($validated['php_version_id']);
+
+        $website->update([
+            'php_version_id' => $phpVersion->id,
+        ]);
+
+        session()->flash('success', 'Website updated successfully.');
+
+        return redirect()->route('websites.index');
     }
 
     /**
