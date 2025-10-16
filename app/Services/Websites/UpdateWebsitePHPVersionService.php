@@ -17,25 +17,23 @@ class UpdateWebsitePHPVersionService
         // ensure selected PHP version is active
         $phpVersion = PhpVersion::active()->findOrFail($this->phpVersionId);
 
-        // update website with the selected active PHP version
-        $this->website->update([
-            'php_version_id' => $phpVersion->id,
-        ]);
-
-        // Ensure PHP-FPM pool and vhost are updated via a single script for idempotency
         $laranodeBinPath = config('laranode.laranode_bin_path');
-        $phpPoolTemplate = config('laranode.php_fpm_pool_template');
-        $apacheVhostTemplate = config('laranode.apache_vhost_template');
+
+        // Ensure there's a php-fpm pool for the new PHP version
+        (new CreatePhpFpmPoolService($this->website))->handle();
 
         Process::run([
             'sudo',
             $laranodeBinPath . '/laranode-update-php-version.sh',
-            $this->website->user->systemUsername,
             $this->website->url,
-            $this->website->document_root,
+            $this->website->phpVersion->version,
             $phpVersion->version,
-            $phpPoolTemplate,
-            $apacheVhostTemplate,
+        ]);
+
+
+        // update website with the selected active PHP version
+        $this->website->update([
+            'php_version_id' => $phpVersion->id,
         ]);
     }
 }
