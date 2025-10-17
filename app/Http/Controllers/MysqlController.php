@@ -19,9 +19,9 @@ class MysqlController extends Controller
         // collect databases for current user
         $databases = DB::select("SHOW DATABASES");
         $dbNames = collect($databases)
-            ->map(fn ($row) => (array) $row)
-            ->map(fn ($row) => reset($row))
-            ->filter(fn ($name) => str_starts_with($name, $prefix))
+            ->map(fn($row) => (array) $row)
+            ->map(fn($row) => reset($row))
+            ->filter(fn($name) => str_starts_with($name, $prefix))
             ->values();
 
         $items = [];
@@ -78,11 +78,11 @@ class MysqlController extends Controller
         }
 
         // Create database with charset
-        DB::statement("CREATE DATABASE `$name` CHARACTER SET ?", [$charset]);
+        DB::statement("CREATE DATABASE `$name` CHARACTER SET $charset");
 
         // Create user (if not exists) and grant all privileges on the new DB
-        DB::statement("CREATE USER IF NOT EXISTS ?@'localhost' IDENTIFIED BY ?", [$dbUser, $dbPass]);
-        DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO ?@'localhost'", [$dbUser]);
+        DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY '$dbPass'");
+        DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO `$dbUser`@'localhost'");
         DB::statement("FLUSH PRIVILEGES");
 
         return redirect()->route('mysql.index')->with('success', 'Database created successfully.');

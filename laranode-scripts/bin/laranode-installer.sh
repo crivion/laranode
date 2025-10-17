@@ -65,7 +65,7 @@ LARANODE_RANDOM_PASS=$(openssl rand -base64 12)
 ROOT_RANDOM_PASS=$(openssl rand -base64 12)
 
 mysql -u root -e "CREATE USER 'laranode'@'localhost' IDENTIFIED BY '$LARANODE_RANDOM_PASS';"
-mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'laranode'@'localhost';"
+mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'laranode'@'localhost' WITH GRANT OPTION;"
 mysql -u root -e "FLUSH PRIVILEGES;"
 mysql -u root -e "CREATE DATABASE laranode;"
 mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_RANDOM_PASS';"
