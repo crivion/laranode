@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Process;
 class MysqlController extends Controller
 {
 
-    public function index(): \Inertia\Response
+    public function index(Request $request): \Inertia\Response
     {
-        $user = auth()->user();
+        $user = $request->user();
         $prefix = $user->username . '_';
 
         // collect databases for current user
@@ -50,6 +50,42 @@ class MysqlController extends Controller
         return Inertia::render('Mysql/Index', [
             'databases' => $items,
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string'],
+            'db_user' => ['required', 'string'],
+            'db_pass' => ['required', 'string'],
+            'charset' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+        $prefix = $user->username . '_';
+
+        $name = $request->string('name');
+        $dbUser = $request->string('db_user');
+        $dbPass = $request->string('db_pass');
+        $charset = $request->string('charset');
+
+        if (!str_starts_with($name, $prefix)) {
+            return back()->withErrors(['name' => 'Database name must start with ' . $prefix]);
+        }
+
+        if (!str_starts_with($dbUser, $prefix)) {
+            return back()->withErrors(['db_user' => 'Database username must start with ' . $prefix]);
+        }
+
+        // Create database with charset
+        DB::statement("CREATE DATABASE `$name` CHARACTER SET ?", [$charset]);
+
+        // Create user (if not exists) and grant all privileges on the new DB
+        DB::statement("CREATE USER IF NOT EXISTS ?@'localhost' IDENTIFIED BY ?", [$dbUser, $dbPass]);
+        DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO ?@'localhost'", [$dbUser]);
+        DB::statement("FLUSH PRIVILEGES");
+
+        return redirect()->route('mysql.index')->with('success', 'Database created successfully.');
     }
 
     public function rename(Request $request)

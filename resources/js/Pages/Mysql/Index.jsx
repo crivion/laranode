@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { TbDatabase } from 'react-icons/tb';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import CreateDatabaseForm from './Partials/CreateDatabaseForm';
 
 export default function MysqlIndex({ databases = [] }) {
 
@@ -37,6 +38,7 @@ export default function MysqlIndex({ databases = [] }) {
                         <TbDatabase className='mr-2' />
                         MySQL Databases
                     </h2>
+                    <CreateDatabaseForm />
                 </div>
             }
         >

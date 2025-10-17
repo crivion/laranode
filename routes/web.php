@@ -35,9 +35,10 @@ Route::resource('/websites', WebsiteController::class)->middleware(['auth'])->ex
 Route::get('/php/get-versions', [PHPManagerController::class, 'getVersions'])->middleware(['auth'])->name('php.get-versions');
 
 // MySQL management [Admin | User]
-Route::get('/mysql', [MysqlController::class, 'index'])->middleware(['auth'])->name('mysql.index');
-Route::patch('/mysql/rename', [MysqlController::class, 'rename'])->middleware(['auth'])->name('mysql.rename');
-Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
+Route::get('/mysql', [\App\Http\Controllers\MysqlController::class, 'index'])->middleware(['auth'])->name('mysql.index');
+Route::post('/mysql', [\App\Http\Controllers\MysqlController::class, 'store'])->middleware(['auth'])->name('mysql.store');
+Route::patch('/mysql/rename', [\App\Http\Controllers\MysqlController::class, 'rename'])->middleware(['auth'])->name('mysql.rename');
+Route::delete('/mysql', [\App\Http\Controllers\MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
 
 // Filemanager [Admin | User]
 Route::get('/filemanager', [FilemanagerController::class, 'index'])->middleware(['auth'])->name('filemanager');
