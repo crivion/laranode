@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
 
 class MysqlController extends Controller
 {
@@ -53,7 +54,7 @@ class MysqlController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $this->authorize('update', $database);
+        Gate::authorize('update', $database);
 
         (new UpdateDatabaseService($database, $request->validated()))->handle();
 
@@ -71,7 +72,7 @@ class MysqlController extends Controller
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $this->authorize('delete', $database);
+        Gate::authorize('delete', $database);
 
         (new DeleteDatabaseService($database))->handle();
 
