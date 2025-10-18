@@ -91,7 +91,7 @@ class MysqlController extends Controller
             'db_user' => ['required', 'string'],
             'db_pass' => ['required', 'string'],
             'charset' => ['required', 'string'],
-            'collation' => ['nullable', 'string'],
+            'collation' => ['required', 'string'],
         ]);
 
         $user = $request->user();
@@ -112,11 +112,7 @@ class MysqlController extends Controller
         }
 
         // Create database with charset and collation
-        $sql = "CREATE DATABASE `$name` CHARACTER SET $charset";
-        if ($collation) {
-            $sql .= " COLLATE $collation";
-        }
-        DB::statement($sql);
+        DB::statement("CREATE DATABASE `$name` CHARACTER SET $charset COLLATE $collation");
 
         // Create user (if not exists) and grant all privileges on the new DB
         DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY '$dbPass'");

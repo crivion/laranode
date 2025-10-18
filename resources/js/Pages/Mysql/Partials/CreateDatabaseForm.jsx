@@ -23,7 +23,7 @@ export default function CreateDatabaseForm() {
         db_user: '',
         db_pass: '',
         charset: 'utf8mb4',
-        collation: '',
+        collation: 'utf8mb4_unicode_ci',
     });
 
     useEffect(() => {
@@ -38,9 +38,13 @@ export default function CreateDatabaseForm() {
             const filtered = collations.filter(collation => collation.charset === data.charset);
             setFilteredCollations(filtered);
             
-            // If current collation is not valid for the selected charset, clear it
+            // If current collation is not valid for the selected charset, set to default
             if (data.collation && !filtered.find(c => c.name === data.collation)) {
-                setData('collation', '');
+                // Find the default collation for this charset
+                const defaultCollation = filtered.find(c => c.default === 'Yes') || filtered[0];
+                if (defaultCollation) {
+                    setData('collation', defaultCollation.name);
+                }
             }
         } else {
             setFilteredCollations(collations);
@@ -53,6 +57,16 @@ export default function CreateDatabaseForm() {
             const response = await axios.get(route('mysql.charsets-collations'));
             setCharsets(response.data.charsets);
             setCollations(response.data.collations);
+            
+            // Set default collation for utf8mb4 if not already set
+            if (data.charset === 'utf8mb4' && !data.collation) {
+                const utf8mb4Collations = response.data.collations.filter(c => c.charset === 'utf8mb4');
+                const defaultCollation = utf8mb4Collations.find(c => c.default === 'Yes') || utf8mb4Collations.find(c => c.name === 'utf8mb4_unicode_ci') || utf8mb4Collations[0];
+                if (defaultCollation) {
+                    setData('collation', defaultCollation.name);
+                }
+            }
+            
             setFilteredCollations(response.data.collations);
         } catch (error) {
             console.error('Error fetching charsets and collations:', error);
@@ -128,7 +142,7 @@ export default function CreateDatabaseForm() {
                             <InputError message={errors.charset} className="mt-2" />
                         </div>
                         <div>
-                            <InputLabel htmlFor="collation" value="Collation (Optional)" className='my-2' />
+                            <InputLabel htmlFor="collation" value="Collation" className='my-2' />
                             <SearchableDropdown
                                 options={filteredCollations}
                                 value={data.collation}
