@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Process;
+use App\Models\Database;
 
 class MysqlController extends Controller
 {
@@ -14,18 +15,15 @@ class MysqlController extends Controller
     public function index(Request $request): \Inertia\Response
     {
         $user = $request->user();
-        $prefix = $user->username . '_';
 
-        // collect databases for current user
-        $databases = DB::select("SHOW DATABASES");
-        $dbNames = collect($databases)
-            ->map(fn($row) => (array) $row)
-            ->map(fn($row) => reset($row))
-            ->filter(fn($name) => str_starts_with($name, $prefix))
-            ->values();
+        // Get databases from our model for the current user
+        $databases = Database::where('user_id', $user->id)->get();
 
         $items = [];
-        foreach ($dbNames as $dbName) {
+        foreach ($databases as $database) {
+            // Get additional info from MySQL
+            $dbName = $database->name;
+            
             // number of tables
             $tables = DB::select("SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ?", [$dbName]);
             $tableCount = (int) ($tables[0]->cnt ?? 0);
@@ -34,16 +32,15 @@ class MysqlController extends Controller
             $sizeRow = DB::selectOne("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.tables WHERE table_schema = ?", [$dbName]);
             $sizeMb = (float) ($sizeRow->size_mb ?? 0);
 
-            // default engine and charset from schema
-            $schema = DB::selectOne("SELECT DEFAULT_CHARACTER_SET_NAME as charset, DEFAULT_COLLATION_NAME as collation FROM information_schema.schemata WHERE schema_name = ?", [$dbName]);
-
             $items[] = [
-                'name' => $dbName,
+                'id' => $database->id,
+                'name' => $database->name,
                 'user' => $user->username,
+                'db_user' => $database->db_user,
                 'tables' => $tableCount,
                 'sizeMb' => $sizeMb,
-                'charset' => $schema->charset ?? null,
-                'collation' => $schema->collation ?? null,
+                'charset' => $database->charset,
+                'collation' => $database->collation,
             ];
         }
 
@@ -119,91 +116,92 @@ class MysqlController extends Controller
         DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO `$dbUser`@'localhost'");
         DB::statement("FLUSH PRIVILEGES");
 
+        // Create database record in our model
+        Database::create([
+            'name' => $name,
+            'db_user' => $dbUser,
+            'db_password' => $dbPass,
+            'charset' => $charset,
+            'collation' => $collation,
+            'user_id' => $user->id,
+        ]);
+
         return redirect()->route('mysql.index')->with('success', 'Database created successfully.');
     }
 
     public function update(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string'],
+            'id' => ['required', 'integer'],
             'charset' => ['required', 'string'],
             'collation' => ['required', 'string'],
+            'db_password' => ['nullable', 'string'],
         ]);
 
         $user = $request->user();
-        $prefix = $user->username . '_';
-
-        $name = $request->string('name');
+        $databaseId = $request->integer('id');
         $charset = $request->string('charset');
         $collation = $request->string('collation');
+        $newPassword = $request->string('db_password');
 
-        if (!str_starts_with($name, $prefix)) {
-            return back()->withErrors(['name' => 'Database name must start with ' . $prefix]);
-        }
+        // Find the database record
+        $database = Database::where('id', $databaseId)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
 
-        // Check if database exists
-        $databases = DB::select("SHOW DATABASES");
-        $dbNames = collect($databases)
-            ->map(fn($row) => (array) $row)
-            ->map(fn($row) => reset($row))
-            ->filter(fn($dbName) => str_starts_with($dbName, $prefix))
-            ->values();
+        $name = $database->name;
 
-        if (!$dbNames->contains($name)) {
-            return back()->withErrors(['name' => 'Database not found or access denied']);
-        }
-
-        // Update database charset and collation
+        // Update database charset and collation in MySQL
         DB::statement("ALTER DATABASE `$name` CHARACTER SET $charset COLLATE $collation");
 
-        return redirect()->route('mysql.index')->with('success', 'Database updated successfully.');
-    }
+        // Update the database record
+        $updateData = [
+            'charset' => $charset,
+            'collation' => $collation,
+        ];
 
-    public function rename(Request $request)
-    {
-        $request->validate([
-            'from' => ['required', 'string'],
-            'to' => ['required', 'string'],
-        ]);
-
-        $user = $request->user();
-        $prefix = $user->username . '_';
-
-        $from = $request->string('from');
-        $to = $request->string('to');
-
-        if (!str_starts_with($from, $prefix) || !str_starts_with($to, $prefix)) {
-            return back()->withErrors(['to' => 'Database names must start with ' . $prefix]);
+        // Update password if provided
+        if ($newPassword) {
+            $updateData['db_password'] = $newPassword;
+            
+            // Update MySQL user password
+            DB::statement("ALTER USER `{$database->db_user}`@'localhost' IDENTIFIED BY '$newPassword'");
+            DB::statement("FLUSH PRIVILEGES");
         }
 
-        // MySQL has no native RENAME DATABASE; approach: create new DB, move tables, drop old
-        DB::statement("CREATE DATABASE IF NOT EXISTS `$to`");
-        $tables = DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = ?", [$from]);
-        foreach ($tables as $t) {
-            $table = $t->table_name ?? reset((array)$t);
-            DB::statement("RENAME TABLE `$from`.`$table` TO `$to`.`$table`");
-        }
-        DB::statement("DROP DATABASE `$from`");
+        $database->update($updateData);
 
-        return back()->with('success', 'Database renamed successfully.');
+        return redirect()->route('mysql.index')->with('success', 'Database charset and collation updated successfully.');
     }
+
 
     public function destroy(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string'],
+            'id' => ['required', 'integer'],
         ]);
 
         $user = $request->user();
-        $prefix = $user->username . '_';
-        $name = $request->string('name');
+        $databaseId = $request->integer('id');
 
-        if (!str_starts_with($name, $prefix)) {
-            return back()->withErrors(['name' => 'Database name must start with ' . $prefix]);
-        }
+        // Find the database record
+        $database = Database::where('id', $databaseId)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
 
+        $name = $database->name;
+        $dbUser = $database->db_user;
+
+        // Drop the MySQL database
         DB::statement("DROP DATABASE IF EXISTS `$name`");
 
-        return back()->with('success', 'Database deleted successfully.');
+        // Drop the MySQL user
+        DB::statement("DROP USER IF EXISTS `$dbUser`@'localhost'");
+        DB::statement("FLUSH PRIVILEGES");
+
+        // Delete the database record
+        $database->delete();
+
+        return redirect()->route('mysql.index')->with('success', 'Database deleted successfully.');
     }
 }

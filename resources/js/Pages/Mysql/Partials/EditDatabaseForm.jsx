@@ -20,9 +20,10 @@ export default function EditDatabaseForm({ database }) {
     const [loading, setLoading] = useState(false);
 
     const { data, setData, patch, processing, reset, clearErrors, errors } = useForm({
-        name: database.name,
+        id: database.id,
         charset: database.charset || 'utf8mb4',
         collation: database.collation || 'utf8mb4_unicode_ci',
+        db_password: '',
     });
 
     useEffect(() => {
@@ -98,15 +99,13 @@ export default function EditDatabaseForm({ database }) {
         });
     };
 
-    const prefix = auth.user.username + '_';
-
     return (
         <>
             <button 
                 onClick={showEditModal} 
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 data-tooltip-id={`tooltip-edit-${database.name}`}
-                data-tooltip-content="Edit Database"
+                data-tooltip-content="Edit Charset & Collation"
                 data-tooltip-place="top"
             >
                 <FaEdit className='w-4 h-4' />
@@ -121,17 +120,27 @@ export default function EditDatabaseForm({ database }) {
 
                     <div className="mt-6 flex flex-col space-y-4 max-h-[500px]">
                         <div>
-                            <InputLabel htmlFor="name" value={`Database name (must start with ${prefix})`} className='my-2' />
+                            <InputLabel htmlFor="db_user" value="Database User" className='my-2' />
                             <TextInput 
-                                id="name" 
-                                name="name" 
-                                value={data.name} 
-                                onChange={(e) => setData('name', e.target.value)} 
-                                className="mt-1 block w-full" 
-                                placeholder={prefix + 'mydb'} 
-                                required 
+                                id="db_user" 
+                                name="db_user" 
+                                value={database.db_user} 
+                                className="mt-1 block w-full bg-gray-100 dark:bg-gray-800" 
+                                disabled 
                             />
-                            <InputError message={errors.name} className="mt-2" />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="db_password" value="Database Password (leave blank to keep current)" className='my-2' />
+                            <TextInput 
+                                id="db_password" 
+                                name="db_password" 
+                                type="password"
+                                value={data.db_password} 
+                                onChange={(e) => setData('db_password', e.target.value)} 
+                                className="mt-1 block w-full" 
+                                placeholder="Enter new password or leave blank"
+                            />
+                            <InputError message={errors.db_password} className="mt-2" />
                         </div>
                         <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />
@@ -164,7 +173,7 @@ export default function EditDatabaseForm({ database }) {
                             <InputError message={errors.collation} className="mt-2" />
                         </div>
                         <div className="flex justify-end">
-                            <PrimaryButton className="mr-3" disabled={processing}>Update Database</PrimaryButton>
+                            <PrimaryButton className="mr-3" disabled={processing}>Update Charset & Collation</PrimaryButton>
                             <SecondaryButton onClick={closeModal}>Cancel</SecondaryButton>
                         </div>
                     </div>

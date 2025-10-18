@@ -12,9 +12,9 @@ export default function MysqlIndex({ databases = [] }) {
 
     const { auth } = usePage().props;
 
-    const deleteDb = (name) => {
+    const deleteDb = (id) => {
         router.delete(route('mysql.destroy'), {
-            data: { name },
+            data: { id },
             onBefore: () => toast('Deleting database...'),
             onSuccess: () => toast('Database deleted.'),
             onError: () => toast('Failed to delete database.'),
@@ -61,7 +61,7 @@ export default function MysqlIndex({ databases = [] }) {
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center space-x-2'>
                                             <EditDatabaseForm database={db} />
-                                            <ConfirmationButton doAction={() => deleteDb(db.name)}>
+                                            <ConfirmationButton doAction={() => deleteDb(db.id)}>
                                                 <TiDelete className='w-6 h-6 text-red-500' />
                                             </ConfirmationButton>
                                         </div>

@@ -39,7 +39,6 @@ Route::get('/mysql', [MysqlController::class, 'index'])->middleware(['auth'])->n
 Route::get('/mysql/charsets-collations', [MysqlController::class, 'getCharsetsAndCollations'])->middleware(['auth'])->name('mysql.charsets-collations');
 Route::post('/mysql', [MysqlController::class, 'store'])->middleware(['auth'])->name('mysql.store');
 Route::patch('/mysql', [MysqlController::class, 'update'])->middleware(['auth'])->name('mysql.update');
-Route::patch('/mysql/rename', [MysqlController::class, 'rename'])->middleware(['auth'])->name('mysql.rename');
 Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
 
 // Filemanager [Admin | User]
