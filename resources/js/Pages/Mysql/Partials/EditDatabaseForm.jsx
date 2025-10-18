@@ -79,6 +79,7 @@ export default function EditDatabaseForm({ database }) {
         setShowModal(true);
         // Reset form with current database values
         setData({
+            id: database.id,
             name: database.name,
             charset: database.charset || 'utf8mb4',
             collation: database.collation || 'utf8mb4_unicode_ci',
