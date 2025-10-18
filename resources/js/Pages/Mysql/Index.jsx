@@ -1,27 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { TbDatabase } from 'react-icons/tb';
-import { useState } from 'react';
+import { TiDelete } from 'react-icons/ti';
 import { toast } from 'react-toastify';
 import CreateDatabaseForm from './Partials/CreateDatabaseForm';
+import EditDatabaseForm from './Partials/EditDatabaseForm';
+import ConfirmationButton from '@/Components/ConfirmationButton';
+import { Tooltip } from 'react-tooltip';
 
 export default function MysqlIndex({ databases = [] }) {
 
     const { auth } = usePage().props;
-    const [renames, setRenames] = useState({});
-
-    const renameDb = (from) => {
-        const to = renames[from];
-        if (!to) return toast('Enter new database name');
-        router.patch(route('mysql.rename'), { from, to }, {
-            onBefore: () => toast('Renaming database...'),
-            onSuccess: () => toast('Database renamed.'),
-            onError: () => toast('Failed to rename database.'),
-        });
-    };
 
     const deleteDb = (name) => {
-        if (!confirm('Are you sure you want to delete this database?')) return;
         router.delete(route('mysql.destroy'), {
             data: { name },
             onBefore: () => toast('Deleting database...'),
@@ -69,14 +60,10 @@ export default function MysqlIndex({ databases = [] }) {
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.collation || '-'}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center space-x-2'>
-                                            <input
-                                                placeholder="New name"
-                                                className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                                value={renames[db.name] || ''}
-                                                onChange={(e) => setRenames({ ...renames, [db.name]: e.target.value })}
-                                            />
-                                            <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-lg" onClick={() => renameDb(db.name)}>Rename</button>
-                                            <button className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-2 rounded-lg" onClick={() => deleteDb(db.name)}>Delete</button>
+                                            <EditDatabaseForm database={db} />
+                                            <ConfirmationButton doAction={() => deleteDb(db.name)}>
+                                                <TiDelete className='w-6 h-6 text-red-500' />
+                                            </ConfirmationButton>
                                         </div>
                                     </td>
                                 </tr>

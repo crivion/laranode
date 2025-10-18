@@ -38,6 +38,7 @@ Route::get('/php/get-versions', [PHPManagerController::class, 'getVersions'])->m
 Route::get('/mysql', [MysqlController::class, 'index'])->middleware(['auth'])->name('mysql.index');
 Route::get('/mysql/charsets-collations', [MysqlController::class, 'getCharsetsAndCollations'])->middleware(['auth'])->name('mysql.charsets-collations');
 Route::post('/mysql', [MysqlController::class, 'store'])->middleware(['auth'])->name('mysql.store');
+Route::patch('/mysql', [MysqlController::class, 'update'])->middleware(['auth'])->name('mysql.update');
 Route::patch('/mysql/rename', [MysqlController::class, 'rename'])->middleware(['auth'])->name('mysql.rename');
 Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
 
@@ -52,8 +53,6 @@ Route::patch('/filemanager/paste-files', [FilemanagerController::class, 'pasteFi
 Route::post('/filemanager/delete-files', [FilemanagerController::class, 'deleteFiles'])->middleware(['auth'])->name('filemanager.deleteFiles');
 Route::post('/filemanager/upload-file', [FilemanagerController::class, 'uploadFile'])->middleware(['auth'])->name('filemanager.uploadFile');
 
-// MySQL [Admin | User]
-Route::get('/mysql', [MysqlController::class, 'index'])->middleware(['auth'])->name('mysql.index');
 
 // Stats History [Admin]
 Route::get('/stats/history', [StatsHistoryController::class, 'cpuAndMemory'])->middleware(['auth', AdminMiddleware::class])->name('stats.history');

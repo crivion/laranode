@@ -122,6 +122,43 @@ class MysqlController extends Controller
         return redirect()->route('mysql.index')->with('success', 'Database created successfully.');
     }
 
+    public function update(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string'],
+            'charset' => ['required', 'string'],
+            'collation' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+        $prefix = $user->username . '_';
+
+        $name = $request->string('name');
+        $charset = $request->string('charset');
+        $collation = $request->string('collation');
+
+        if (!str_starts_with($name, $prefix)) {
+            return back()->withErrors(['name' => 'Database name must start with ' . $prefix]);
+        }
+
+        // Check if database exists
+        $databases = DB::select("SHOW DATABASES");
+        $dbNames = collect($databases)
+            ->map(fn($row) => (array) $row)
+            ->map(fn($row) => reset($row))
+            ->filter(fn($dbName) => str_starts_with($dbName, $prefix))
+            ->values();
+
+        if (!$dbNames->contains($name)) {
+            return back()->withErrors(['name' => 'Database not found or access denied']);
+        }
+
+        // Update database charset and collation
+        DB::statement("ALTER DATABASE `$name` CHARACTER SET $charset COLLATE $collation");
+
+        return redirect()->route('mysql.index')->with('success', 'Database updated successfully.');
+    }
+
     public function rename(Request $request)
     {
         $request->validate([
