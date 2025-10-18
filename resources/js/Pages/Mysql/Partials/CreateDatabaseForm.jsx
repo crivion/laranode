@@ -37,7 +37,7 @@ export default function CreateDatabaseForm() {
         if (data.charset && collations.length > 0) {
             const filtered = collations.filter(collation => collation.charset === data.charset);
             setFilteredCollations(filtered);
-            
+
             // If current collation is not valid for the selected charset, set to default
             if (data.collation && !filtered.find(c => c.name === data.collation)) {
                 // Find the default collation for this charset
@@ -57,7 +57,7 @@ export default function CreateDatabaseForm() {
             const response = await axios.get(route('mysql.charsets-collations'));
             setCharsets(response.data.charsets);
             setCollations(response.data.collations);
-            
+
             // Set default collation for utf8mb4 if not already set
             if (data.charset === 'utf8mb4' && !data.collation) {
                 const utf8mb4Collations = response.data.collations.filter(c => c.charset === 'utf8mb4');
@@ -66,7 +66,7 @@ export default function CreateDatabaseForm() {
                     setData('collation', defaultCollation.name);
                 }
             }
-            
+
             setFilteredCollations(response.data.collations);
         } catch (error) {
             console.error('Error fetching charsets and collations:', error);
@@ -125,7 +125,9 @@ export default function CreateDatabaseForm() {
                                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm">
                                     {prefix}
                                 </span>
-                                <TextInput id="name_suffix" name="name_suffix" value={data.name_suffix} onChange={(e) => setData('name_suffix', e.target.value)} className="flex-1 rounded-l-none" placeholder={'mydb'} required />
+                                <div className="flex-1">
+                                    <TextInput id="name_suffix" name="name_suffix" value={data.name_suffix} onChange={(e) => setData('name_suffix', e.target.value)} className="flex-1 rounded-l-none w-full" placeholder={'mydb'} required />
+                                </div>
                             </div>
                             <InputError message={errors.name} className="mt-2" />
                         </div>
@@ -135,7 +137,10 @@ export default function CreateDatabaseForm() {
                                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm">
                                     {prefix}
                                 </span>
-                                <TextInput id="db_user_suffix" name="db_user_suffix" value={data.db_user_suffix} onChange={(e) => setData('db_user_suffix', e.target.value)} className="flex-1 rounded-l-none" placeholder={'user'} required />
+
+                                <div className="flex-1">
+                                    <TextInput id="db_user_suffix" name="db_user_suffix" value={data.db_user_suffix} onChange={(e) => setData('db_user_suffix', e.target.value)} className="flex-1 rounded-l-none w-full" placeholder={'user'} required />
+                                </div>
                             </div>
                             <InputError message={errors.db_user} className="mt-2" />
                         </div>
@@ -146,11 +151,11 @@ export default function CreateDatabaseForm() {
                         </div>
                         <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />
-                            <select 
-                                id="charset" 
-                                name="charset" 
-                                value={data.charset} 
-                                onChange={(e) => setData('charset', e.target.value)} 
+                            <select
+                                id="charset"
+                                name="charset"
+                                value={data.charset}
+                                onChange={(e) => setData('charset', e.target.value)}
                                 className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md"
                                 disabled={loading}
                             >

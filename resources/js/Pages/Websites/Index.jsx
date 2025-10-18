@@ -46,7 +46,7 @@ export default function Websites({ websites, serverIp }) {
                 <div className="flex flex-col xl:flex-row xl:justify-between max-w-7xl pr-5">
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
                         <TbWorldWww className='mr-2' />
-                        Websites
+                        Websites ({websites.length}/{auth.user.domain_limit || 'unlimited'})
                     </h2>
                     <CreateWebsiteForm serverIp={serverIp} className="max-w-xl" />
                 </div>

@@ -53,15 +53,15 @@ class CreateDatabaseRequest extends FormRequest
 
         return [
             'name' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'max:64',
                 'regex:/^' . preg_quote($prefix) . '[a-zA-Z0-9_]+$/',
                 'unique:' . Database::class . ',name'
             ],
             'db_user' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'max:32',
                 'regex:/^' . preg_quote($prefix) . '[a-zA-Z0-9_]+$/'
             ],
@@ -85,4 +85,26 @@ class CreateDatabaseRequest extends FormRequest
             'name.unique' => 'A database with this name already exists.',
         ];
     }
+
+    protected function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $user = $this->user();
+            if (!$user) {
+                return;
+            }
+
+            $limit = $user->database_limit;
+            if (is_null($limit) || (is_int($limit) && $limit <= 0)) {
+                // Null or <= 0 interpreted as unlimited
+                return;
+            }
+
+            $currentCount = \App\Models\Database::where('user_id', $user->id)->count();
+            if ($currentCount >= (int) $limit) {
+                $validator->errors()->add('name', 'You have reached your database limit and cannot create more databases.');
+            }
+        });
+    }
 }
+

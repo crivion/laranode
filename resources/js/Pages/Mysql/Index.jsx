@@ -16,7 +16,6 @@ export default function MysqlIndex({ databases = [] }) {
         router.delete(route('mysql.destroy'), {
             data: { id },
             onBefore: () => toast('Deleting database...'),
-            onSuccess: () => toast('Database deleted.'),
             onError: () => toast('Failed to delete database.'),
         });
     };
@@ -27,7 +26,7 @@ export default function MysqlIndex({ databases = [] }) {
                 <div className="flex flex-col xl:flex-row xl:justify-between max-w-7xl pr-5">
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center">
                         <TbDatabase className='mr-2' />
-                        MySQL Databases
+                        MySQL Databases ({databases.length}/{auth.user.database_limit || 'unlimited'})
                     </h2>
                     <CreateDatabaseForm />
                 </div>
@@ -53,7 +52,7 @@ export default function MysqlIndex({ databases = [] }) {
                             {databases.map((db, index) => (
                                 <tr key={`db-${index}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.name}</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.user}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.db_user}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.tables}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.sizeMb}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.charset || '-'}</td>

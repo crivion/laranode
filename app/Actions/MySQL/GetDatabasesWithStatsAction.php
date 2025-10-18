@@ -25,10 +25,10 @@ class GetDatabasesWithStatsAction
     private function buildDatabaseItem(Database $database): array
     {
         $dbName = $database->name;
-        
+
         // Get table count
         $tableCount = $this->getTableCount($dbName);
-        
+
         // Get database size
         $sizeMb = $this->getDatabaseSize($dbName);
 
@@ -47,22 +47,22 @@ class GetDatabasesWithStatsAction
     private function getTableCount(string $dbName): int
     {
         $tables = DB::select(
-            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ?", 
+            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ?",
             [$dbName]
         );
-        
+
         return (int) ($tables[0]->cnt ?? 0);
     }
 
     private function getDatabaseSize(string $dbName): float
     {
         $sizeRow = DB::selectOne(
-            "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb 
-             FROM information_schema.tables 
-             WHERE table_schema = ?", 
+            "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb
+             FROM information_schema.tables
+             WHERE table_schema = ?",
             [$dbName]
         );
-        
+
         return (float) ($sizeRow->size_mb ?? 0);
     }
 }

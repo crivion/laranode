@@ -37,7 +37,7 @@ export default function EditDatabaseForm({ database }) {
         if (data.charset && collations.length > 0) {
             const filtered = collations.filter(collation => collation.charset === data.charset);
             setFilteredCollations(filtered);
-            
+
             // If current collation is not valid for the selected charset, set to default
             if (data.collation && !filtered.find(c => c.name === data.collation)) {
                 // Find the default collation for this charset
@@ -57,7 +57,7 @@ export default function EditDatabaseForm({ database }) {
             const response = await axios.get(route('mysql.charsets-collations'));
             setCharsets(response.data.charsets);
             setCollations(response.data.collations);
-            
+
             // Set default collation for current charset if not already set
             if (data.charset && !data.collation) {
                 const charsetCollations = response.data.collations.filter(c => c.charset === data.charset);
@@ -66,7 +66,7 @@ export default function EditDatabaseForm({ database }) {
                     setData('collation', defaultCollation.name);
                 }
             }
-            
+
             setFilteredCollations(response.data.collations);
         } catch (error) {
             console.error('Error fetching charsets and collations:', error);
@@ -102,8 +102,8 @@ export default function EditDatabaseForm({ database }) {
 
     return (
         <>
-            <button 
-                onClick={showEditModal} 
+            <button
+                onClick={showEditModal}
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 data-tooltip-id={`tooltip-edit-${database.name}`}
                 data-tooltip-content="Edit Charset & Collation"
@@ -122,34 +122,34 @@ export default function EditDatabaseForm({ database }) {
                     <div className="mt-6 flex flex-col space-y-4 max-h-[500px]">
                         <div>
                             <InputLabel htmlFor="db_user" value="Database User" className='my-2' />
-                            <TextInput 
-                                id="db_user" 
-                                name="db_user" 
-                                value={database.db_user} 
-                                className="mt-1 block w-full bg-gray-100 dark:bg-gray-800" 
-                                disabled 
+                            <TextInput
+                                id="db_user"
+                                name="db_user"
+                                value={database.db_user}
+                                className="mt-1 block w-full bg-gray-100 dark:bg-gray-800"
+                                disabled
                             />
                         </div>
                         <div>
                             <InputLabel htmlFor="db_password" value="Database Password (leave blank to keep current)" className='my-2' />
-                            <TextInput 
-                                id="db_password" 
-                                name="db_password" 
+                            <TextInput
+                                id="db_password"
+                                name="db_password"
                                 type="password"
-                                value={data.db_password} 
-                                onChange={(e) => setData('db_password', e.target.value)} 
-                                className="mt-1 block w-full" 
+                                value={data.db_password}
+                                onChange={(e) => setData('db_password', e.target.value)}
+                                className="mt-1 block w-full"
                                 placeholder="Enter new password or leave blank"
                             />
                             <InputError message={errors.db_password} className="mt-2" />
                         </div>
                         <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />
-                            <select 
-                                id="charset" 
-                                name="charset" 
-                                value={data.charset} 
-                                onChange={(e) => setData('charset', e.target.value)} 
+                            <select
+                                id="charset"
+                                name="charset"
+                                value={data.charset}
+                                onChange={(e) => setData('charset', e.target.value)}
                                 className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md"
                                 disabled={loading}
                             >
@@ -174,7 +174,7 @@ export default function EditDatabaseForm({ database }) {
                             <InputError message={errors.collation} className="mt-2" />
                         </div>
                         <div className="flex justify-end">
-                            <PrimaryButton className="mr-3" disabled={processing}>Update Charset & Collation</PrimaryButton>
+                            <PrimaryButton className="mr-3" disabled={processing}>Update</PrimaryButton>
                             <SecondaryButton onClick={closeModal}>Cancel</SecondaryButton>
                         </div>
                     </div>
