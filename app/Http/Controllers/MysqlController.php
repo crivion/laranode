@@ -161,7 +161,7 @@ class MysqlController extends Controller
         ];
 
         // Update password if provided
-        if ($newPassword) {
+        if ($request->filled('db_password')) {
             $updateData['db_password'] = $newPassword;
             
             // Update MySQL user password

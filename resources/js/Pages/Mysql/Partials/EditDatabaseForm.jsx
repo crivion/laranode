@@ -20,7 +20,7 @@ export default function EditDatabaseForm({ database }) {
     const [loading, setLoading] = useState(false);
 
     const { data, setData, patch, processing, reset, clearErrors, errors } = useForm({
-        id: database.id,
+        id: database.id || 0,
         charset: database.charset || 'utf8mb4',
         collation: database.collation || 'utf8mb4_unicode_ci',
         db_password: '',
