@@ -18,9 +18,9 @@ export default function CreateDatabaseForm() {
     const [filteredCollations, setFilteredCollations] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const { data, setData, post, processing, reset, clearErrors, errors } = useForm({
-        name: '',
-        db_user: '',
+    const { data, setData, post, processing, reset, clearErrors, errors, transform } = useForm({
+        name_suffix: '',
+        db_user_suffix: '',
         db_pass: '',
         charset: 'utf8mb4',
         collation: 'utf8mb4_unicode_ci',
@@ -85,9 +85,20 @@ export default function CreateDatabaseForm() {
 
     const createDatabase = (e) => {
         e.preventDefault();
+        const prefix = auth.user.username + '_';
+        const name = data.name_suffix ? `${prefix}${data.name_suffix}` : '';
+        const db_user = data.db_user_suffix ? `${prefix}${data.db_user_suffix}` : '';
+
+        transform((form) => ({
+            ...form,
+            name,
+            db_user,
+        }));
+
         post(route('mysql.store'), {
             preserveScroll: true,
             onSuccess: closeModal,
+            onFinish: () => transform((form) => form), // reset transform
         });
     };
 
@@ -109,13 +120,23 @@ export default function CreateDatabaseForm() {
 
                     <div className="mt-6 flex flex-col space-y-4 max-h-[500px]">
                         <div>
-                            <InputLabel htmlFor="name" value={`Database name (must start with ${prefix})`} className='my-2' />
-                            <TextInput id="name" name="name" value={data.name} onChange={(e) => setData('name', e.target.value)} className="mt-1 block w-full" placeholder={prefix + 'mydb'} required />
+                            <InputLabel htmlFor="name_suffix" value="Database name" className='my-2' />
+                            <div className="mt-1 flex">
+                                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm">
+                                    {prefix}
+                                </span>
+                                <TextInput id="name_suffix" name="name_suffix" value={data.name_suffix} onChange={(e) => setData('name_suffix', e.target.value)} className="flex-1 rounded-l-none" placeholder={'mydb'} required />
+                            </div>
                             <InputError message={errors.name} className="mt-2" />
                         </div>
                         <div>
-                            <InputLabel htmlFor="db_user" value={`Database user (must start with ${prefix})`} className='my-2' />
-                            <TextInput id="db_user" name="db_user" value={data.db_user} onChange={(e) => setData('db_user', e.target.value)} className="mt-1 block w-full" placeholder={prefix + 'user'} required />
+                            <InputLabel htmlFor="db_user_suffix" value="Database user" className='my-2' />
+                            <div className="mt-1 flex">
+                                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm">
+                                    {prefix}
+                                </span>
+                                <TextInput id="db_user_suffix" name="db_user_suffix" value={data.db_user_suffix} onChange={(e) => setData('db_user_suffix', e.target.value)} className="flex-1 rounded-l-none" placeholder={'user'} required />
+                            </div>
                             <InputError message={errors.db_user} className="mt-2" />
                         </div>
                         <div>

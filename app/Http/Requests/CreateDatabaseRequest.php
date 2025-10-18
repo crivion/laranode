@@ -8,6 +8,31 @@ use Illuminate\Validation\Rule;
 
 class CreateDatabaseRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $user = $this->user();
+        if (!$user) {
+            return;
+        }
+
+        $prefix = $user->username . '_';
+
+        $name = $this->input('name');
+        $nameSuffix = $this->input('name_suffix');
+        if (empty($name) && !empty($nameSuffix)) {
+            $this->merge([
+                'name' => $prefix . $nameSuffix,
+            ]);
+        }
+
+        $dbUser = $this->input('db_user');
+        $dbUserSuffix = $this->input('db_user_suffix');
+        if (empty($dbUser) && !empty($dbUserSuffix)) {
+            $this->merge([
+                'db_user' => $prefix . $dbUserSuffix,
+            ]);
+        }
+    }
     /**
      * Determine if the user is authorized to make this request.
      */
