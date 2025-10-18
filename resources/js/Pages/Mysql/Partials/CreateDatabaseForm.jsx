@@ -4,26 +4,62 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
+import SearchableDropdown from '@/Components/SearchableDropdown';
 import { useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TbDatabase } from 'react-icons/tb';
-
-const CHARSETS = [
-    { value: 'utf8mb4', label: 'utf8mb4' },
-    { value: 'utf8', label: 'utf8' },
-    { value: 'latin1', label: 'latin1' },
-];
+import axios from 'axios';
 
 export default function CreateDatabaseForm() {
     const { auth } = usePage().props;
     const [showModal, setShowModal] = useState(false);
+    const [charsets, setCharsets] = useState([]);
+    const [collations, setCollations] = useState([]);
+    const [filteredCollations, setFilteredCollations] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const { data, setData, post, processing, reset, clearErrors, errors } = useForm({
         name: '',
         db_user: '',
         db_pass: '',
         charset: 'utf8mb4',
+        collation: '',
     });
+
+    useEffect(() => {
+        if (showModal) {
+            fetchCharsetsAndCollations();
+        }
+    }, [showModal]);
+
+    useEffect(() => {
+        // Filter collations based on selected charset
+        if (data.charset && collations.length > 0) {
+            const filtered = collations.filter(collation => collation.charset === data.charset);
+            setFilteredCollations(filtered);
+            
+            // If current collation is not valid for the selected charset, clear it
+            if (data.collation && !filtered.find(c => c.name === data.collation)) {
+                setData('collation', '');
+            }
+        } else {
+            setFilteredCollations(collations);
+        }
+    }, [data.charset, collations]);
+
+    const fetchCharsetsAndCollations = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(route('mysql.charsets-collations'));
+            setCharsets(response.data.charsets);
+            setCollations(response.data.collations);
+            setFilteredCollations(response.data.collations);
+        } catch (error) {
+            console.error('Error fetching charsets and collations:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const showCreateModal = () => setShowModal(true);
 
@@ -75,10 +111,33 @@ export default function CreateDatabaseForm() {
                         </div>
                         <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />
-                            <select id="charset" name="charset" value={data.charset} onChange={(e) => setData('charset', e.target.value)} className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md">
-                                {CHARSETS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                            <select 
+                                id="charset" 
+                                name="charset" 
+                                value={data.charset} 
+                                onChange={(e) => setData('charset', e.target.value)} 
+                                className="mt-1 block w-full flex-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 rounded-md"
+                                disabled={loading}
+                            >
+                                {charsets.map(charset => (
+                                    <option key={charset.name} value={charset.name}>
+                                        {charset.name} - {charset.description}
+                                    </option>
+                                ))}
                             </select>
                             <InputError message={errors.charset} className="mt-2" />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="collation" value="Collation (Optional)" className='my-2' />
+                            <SearchableDropdown
+                                options={filteredCollations}
+                                value={data.collation}
+                                onChange={(collation) => setData('collation', collation.name)}
+                                placeholder="Select a collation..."
+                                className="mt-1"
+                                disabled={loading || filteredCollations.length === 0}
+                            />
+                            <InputError message={errors.collation} className="mt-2" />
                         </div>
                         <div className="flex justify-end">
                             <PrimaryButton className="mr-3" disabled={processing}>Add Database</PrimaryButton>

@@ -52,6 +52,38 @@ class MysqlController extends Controller
         ]);
     }
 
+    public function getCharsetsAndCollations()
+    {
+        // Get available character sets
+        $charsets = DB::select("SHOW CHARACTER SET");
+        $charsetData = collect($charsets)->map(function($charset) {
+            return [
+                'name' => $charset->Charset,
+                'description' => $charset->Description,
+                'default_collation' => $charset->{'Default collation'},
+                'maxlen' => $charset->Maxlen,
+            ];
+        });
+
+        // Get available collations
+        $collations = DB::select("SHOW COLLATION");
+        $collationData = collect($collations)->map(function($collation) {
+            return [
+                'name' => $collation->Collation,
+                'charset' => $collation->Charset,
+                'id' => $collation->Id,
+                'default' => $collation->Default,
+                'compiled' => $collation->Compiled,
+                'sortlen' => $collation->Sortlen,
+            ];
+        });
+
+        return response()->json([
+            'charsets' => $charsetData,
+            'collations' => $collationData,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -59,6 +91,7 @@ class MysqlController extends Controller
             'db_user' => ['required', 'string'],
             'db_pass' => ['required', 'string'],
             'charset' => ['required', 'string'],
+            'collation' => ['nullable', 'string'],
         ]);
 
         $user = $request->user();
@@ -68,6 +101,7 @@ class MysqlController extends Controller
         $dbUser = $request->string('db_user');
         $dbPass = $request->string('db_pass');
         $charset = $request->string('charset');
+        $collation = $request->string('collation');
 
         if (!str_starts_with($name, $prefix)) {
             return back()->withErrors(['name' => 'Database name must start with ' . $prefix]);
@@ -77,8 +111,12 @@ class MysqlController extends Controller
             return back()->withErrors(['db_user' => 'Database username must start with ' . $prefix]);
         }
 
-        // Create database with charset
-        DB::statement("CREATE DATABASE `$name` CHARACTER SET $charset");
+        // Create database with charset and collation
+        $sql = "CREATE DATABASE `$name` CHARACTER SET $charset";
+        if ($collation) {
+            $sql .= " COLLATE $collation";
+        }
+        DB::statement($sql);
 
         // Create user (if not exists) and grant all privileges on the new DB
         DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY '$dbPass'");
