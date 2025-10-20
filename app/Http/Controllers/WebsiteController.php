@@ -122,11 +122,11 @@ class WebsiteController extends Controller
             'ssl_enabled' => true
         ]);
 
-        // Run SSL generation script
-        $scriptPath = base_path('laranode-scripts/bin/laranode-ssl-manager.sh');
         $result = Process::run([
-            'bash', $scriptPath, 'generate', 
-            $website->url, 
+            'sudo',
+            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
+            'generate',
+            $website->url,
             $email,
             $website->fullDocumentRoot
         ]);
@@ -141,7 +141,10 @@ class WebsiteController extends Controller
 
         // Check SSL status
         $statusResult = Process::run([
-            'bash', $scriptPath, 'status', $website->url
+            'sudo',
+            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
+            'status',
+            $website->url
         ]);
 
         $sslStatus = trim($statusResult->output());
@@ -159,10 +162,12 @@ class WebsiteController extends Controller
      */
     private function removeSslCertificate(Website $website): void
     {
-        // Run SSL removal script
-        $scriptPath = base_path('laranode-scripts/bin/laranode-ssl-manager.sh');
+        
         $result = Process::run([
-            'bash', $scriptPath, 'remove', $website->url
+            'sudo',
+            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
+            'remove',
+            $website->url,
         ]);
 
         if ($result->failed()) {
@@ -186,9 +191,11 @@ class WebsiteController extends Controller
         Gate::authorize('view', $website);
 
         try {
-            $scriptPath = base_path('laranode-scripts/bin/laranode-ssl-manager.sh');
             $result = Process::run([
-                'bash', $scriptPath, 'status', $website->url
+                'sudo',
+                config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
+                'status',
+                $website->url,
             ]);
 
             $sslStatus = trim($result->output());
