@@ -1,4 +1,3 @@
-import { FaUsers } from "react-icons/fa6";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import ConfirmationButton from "@/Components/ConfirmationButton";
@@ -6,8 +5,8 @@ import { TiDelete } from "react-icons/ti";
 import { toast } from "react-toastify";
 import { router } from '@inertiajs/react'
 import { TbWorldWww } from "react-icons/tb";
-import { FaDatabase, FaEdit } from "react-icons/fa";
-import { Tooltip } from 'react-tooltip'
+import { MdLock, MdLockOpen } from "react-icons/md";
+import { FaToggleOn, FaToggleOff } from "react-icons/fa";
 import CreateWebsiteForm from "./Partials/CreateWebsiteForm";
 import { useEffect, useState } from "react";
 
@@ -40,6 +39,53 @@ export default function Websites({ websites, serverIp }) {
         });
     };
 
+    const toggleSsl = (website) => {
+        const isEnabled = website.ssl_enabled;
+        const action = isEnabled ? 'disable' : 'enable';
+        
+        if (!isEnabled) {
+            // If enabling SSL, prompt for email
+            const email = prompt('Please enter your email address for SSL certificate generation:');
+            if (!email) return;
+            
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                toast.error('Please enter a valid email address');
+                return;
+            }
+        }
+
+        const requestData = {
+            enabled: !isEnabled,
+            ...(isEnabled ? {} : { email: email })
+        };
+
+        fetch(route('websites.ssl.toggle', { website: website.id }), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toast.success(data.message);
+                // Refresh the page to show updated SSL status
+                router.reload();
+            } else {
+                toast.error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toast.error('Failed to toggle SSL certificate');
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -61,6 +107,7 @@ export default function Websites({ websites, serverIp }) {
                         <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
                             <tr>
                                 <th className="px-6 py-3">URL</th>
+                                <th className="px-6 py-3">SSL Status</th>
                                 <th className="px-6 py-3">Document Root</th>
                                 <th className="px-6 py-3">PHP Version</th>
                                 {auth.user.role == 'admin' && (
@@ -73,7 +120,30 @@ export default function Websites({ websites, serverIp }) {
                             {websites?.map((website, index) => (
                                 <tr key={`website-${index}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {website.url}
+                                        <Link href={`https://${website.url}`} target="_blank">
+                                            <TbWorldWww className='w-4 h-4' /> {website.url}
+                                        </Link>
+                                    </td>
+                                    
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
+                                            website.ssl_status === 'active' 
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                                : website.ssl_status === 'expired'
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                : website.ssl_status === 'pending'
+                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                                        }`}>
+                                            {website.ssl_status === 'active' ? (
+                                                <MdLock className="w-4 h-4 mr-1" />
+                                            ) : (
+                                                <MdLockOpen className="w-4 h-4 mr-1" />
+                                            )}
+                                            {website.ssl_status === 'active' ? 'SSL Active' : 
+                                             website.ssl_status === 'expired' ? 'SSL Expired' :
+                                             website.ssl_status === 'pending' ? 'SSL Pending' : 'SSL Inactive'}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className="text-xs inline-flex items-center px-3 rounded-md border border-gray-300 bg-gray-100 text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
@@ -116,7 +186,21 @@ export default function Websites({ websites, serverIp }) {
                                     whitespace-nowrap dark:text-white">
 
                                         <div className='flex items-center space-x-2'>
-                                            {/* <EditAccountForm account={account} /> */}
+                                            <button
+                                                onClick={() => toggleSsl(website)}
+                                                className={`p-2 rounded-lg transition-colors ${
+                                                    website.ssl_enabled 
+                                                        ? 'bg-green-100 hover:bg-green-200 text-green-600 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-300' 
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-400'
+                                                }`}
+                                                title={website.ssl_enabled ? 'Disable SSL' : 'Enable SSL'}
+                                            >
+                                                {website.ssl_enabled ? (
+                                                    <FaToggleOn className='w-5 h-5' />
+                                                ) : (
+                                                    <FaToggleOff className='w-5 h-5' />
+                                                )}
+                                            </button>
 
                                             <ConfirmationButton doAction={() => deleteWebsite(website.id)}>
                                                 <TiDelete className='w-6 h-6 text-red-500' />

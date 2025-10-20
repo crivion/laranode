@@ -30,6 +30,8 @@ Route::get('/accounts/leave-impersonation', [AccountsController::class, 'leaveIm
 
 // Websites [Admin | User]
 Route::resource('/websites', WebsiteController::class)->middleware(['auth'])->except(['create', 'edit', 'show']);
+Route::post('/websites/{website}/ssl/toggle', [WebsiteController::class, 'toggleSsl'])->middleware(['auth'])->name('websites.ssl.toggle');
+Route::get('/websites/{website}/ssl/status', [WebsiteController::class, 'checkSslStatus'])->middleware(['auth'])->name('websites.ssl.status');
 
 // PHP FPM Pools [Admin | User]
 Route::get('/php/get-versions', [PHPManagerController::class, 'getVersions'])->middleware(['auth'])->name('php.get-versions');
