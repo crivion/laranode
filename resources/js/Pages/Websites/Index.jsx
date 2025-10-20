@@ -42,34 +42,18 @@ export default function Websites({ websites, serverIp }) {
     const toggleSsl = (website) => {
         const isEnabled = website.ssl_enabled;
         const action = isEnabled ? 'disable' : 'enable';
-        
-        const requestData = {
-            enabled: !isEnabled,
-        };
 
-        fetch(route('websites.ssl.toggle', { website: website.id }), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                toast.success(data.message);
-                // Refresh the page to show updated SSL status
-                router.reload();
-            } else {
-                toast.error(data.message);
+        router.post(route('websites.ssl.toggle', { website: website.id }),
+            { enabled: !isEnabled },
+            {
+                onBefore: () => toast(`${action === 'enable' ? 'Enabling' : 'Disabling'} SSL...`),
+                onSuccess: () => {
+                    toast.success(`SSL ${action === 'enable' ? 'enabled' : 'disabled'} successfully`);
+                    router.reload();
+                },
+                onError: () => toast.error(`Failed to ${action} SSL`),
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            toast.error('Failed to toggle SSL certificate');
-        });
+        );
     };
 
     return (
@@ -172,8 +156,8 @@ export default function Websites({ websites, serverIp }) {
                                     whitespace-nowrap dark:text-white">
 
                                         <div className='flex items-center space-x-2'>
-                                            <button
-                                                onClick={() => toggleSsl(website)}
+                                            <ConfirmationButton doAction={() => toggleSsl(website)}>
+                                                <button
                                                 className={`p-2 rounded-lg transition-colors ${
                                                     website.ssl_enabled 
                                                         ? 'bg-green-100 hover:bg-green-200 text-green-600 dark:bg-green-900 dark:hover:bg-green-800 dark:text-green-300' 
@@ -186,7 +170,8 @@ export default function Websites({ websites, serverIp }) {
                                                 ) : (
                                                     <FaToggleOff className='w-5 h-5' />
                                                 )}
-                                            </button>
+                                                </button>
+                                            </ConfirmationButton>
 
                                             <ConfirmationButton doAction={() => deleteWebsite(website.id)}>
                                                 <TiDelete className='w-6 h-6 text-red-500' />

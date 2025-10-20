@@ -102,18 +102,12 @@ class WebsiteController extends Controller
                 $this->removeSslCertificate($website);
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => $request->enabled ? 'SSL certificate generated successfully' : 'SSL certificate removed successfully',
-                'ssl_status' => $website->fresh()->ssl_status,
-                'ssl_enabled' => $website->fresh()->ssl_enabled
-            ]);
+            session()->flash('success', $request->enabled ? 'SSL certificate generated successfully' : 'SSL certificate removed successfully');
+            return redirect()->route('websites.index');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to ' . ($request->enabled ? 'generate' : 'remove') . ' SSL certificate: ' . $e->getMessage()
-            ], 500);
+            session()->flash('error', 'Failed to ' . ($request->enabled ? 'generate' : 'remove') . ' SSL certificate: ' . $e->getMessage());
+            return redirect()->back();
         }
     }
 
