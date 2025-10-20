@@ -90,14 +90,13 @@ class WebsiteController extends Controller
         Gate::authorize('update', $website);
 
         $request->validate([
-            'enabled' => 'required|boolean',
-            'email' => 'required_if:enabled,true|email'
+            'enabled' => 'required|boolean'
         ]);
 
         try {
             if ($request->enabled) {
                 // Generate SSL certificate
-                $this->generateSslCertificate($website, $request->email);
+                $this->generateSslCertificate($website, $request->user()->email);
             } else {
                 // Remove SSL certificate
                 $this->removeSslCertificate($website);

@@ -43,22 +43,8 @@ export default function Websites({ websites, serverIp }) {
         const isEnabled = website.ssl_enabled;
         const action = isEnabled ? 'disable' : 'enable';
         
-        if (!isEnabled) {
-            // If enabling SSL, prompt for email
-            const email = prompt('Please enter your email address for SSL certificate generation:');
-            if (!email) return;
-            
-            // Basic email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                toast.error('Please enter a valid email address');
-                return;
-            }
-        }
-
         const requestData = {
             enabled: !isEnabled,
-            ...(isEnabled ? {} : { email: email })
         };
 
         fetch(route('websites.ssl.toggle', { website: website.id }), {

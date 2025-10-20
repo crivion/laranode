@@ -60,6 +60,15 @@ check_domain_accessibility() {
 generate_ssl_certificate() {
     local domain=$1
     local email=$2
+    local document_root=$3
+    local webroot_path
+    
+    # Prefer provided document root; fallback to default WEBROOT_PATH
+    if [ -n "$document_root" ]; then
+        webroot_path="$document_root"
+    else
+        webroot_path="$WEBROOT_PATH"
+    fi
     
     print_status "Generating SSL certificate for $domain..."
     
@@ -72,7 +81,7 @@ generate_ssl_certificate() {
     # Generate certificate using certbot
     if certbot certonly \
         --webroot \
-        --webroot-path="$WEBROOT_PATH" \
+        --webroot-path="$webroot_path" \
         --email "$email" \
         --agree-tos \
         --no-eff-email \
@@ -207,18 +216,19 @@ renew_ssl_certificates() {
 # Main script logic
 case "$1" in
     "generate")
-        if [ $# -ne 3 ]; then
-            echo "Usage: $0 generate <domain> <email>"
+        if [ $# -lt 3 ]; then
+            echo "Usage: $0 generate <domain> <email> [document_root]"
             exit 1
         fi
         
         domain=$2
         email=$3
+        document_root=$4
         
         check_certbot
         check_domain_accessibility "$domain"
-        generate_ssl_certificate "$domain" "$email"
-        create_ssl_vhost "$domain" "$4"
+        generate_ssl_certificate "$domain" "$email" "$document_root"
+        create_ssl_vhost "$domain" "$document_root"
         ;;
         
     "remove")
