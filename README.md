@@ -26,9 +26,9 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 Laranode can be installed on a FRESH VPS or dedicated server. A one-line installer will be available soon.
 
 ### Requirements
-- Ubuntu 22.04+
+- Ubuntu 24.04+
 
-### Quick Install (Coming Soon)
+### Quick Install (Coming Soon - Oct 30th 2025)
 ```bash
 curl -sSL https://laranode.com/install.sh | bash
 ```
@@ -56,10 +56,10 @@ Login with the credentials provided during installation.
 
 
 ## Roadmap
-– 🔹 SSL With Let's Encrypt
+
+Will be completed by Oct 30th 2025
 - 🔹 UFW Firewall Integration
-- 🔹 DNS Management
-- 🔹 Email Server Integration
+- 🔹 PHP Manager
 
 ## Contributing
 Laranode is open-source and welcomes contributions! Feel free to submit issues, feature requests, or pull requests.
