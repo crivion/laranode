@@ -90,8 +90,9 @@ export default function Websites({ websites, serverIp }) {
                             {websites?.map((website, index) => (
                                 <tr key={`website-${index}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        <Link href={`https://${website.url}`} target="_blank" className='hover:underline text-blue-600 dark:text-blue-400'>
-                                            <TbWorldWww className='w-4 h-4 inline-flex mr-1' /> {website.url}
+                                        <Link href={`${website.ssl_status === 'active' ? 'https' : 'http'}://${website.url}`} target="_blank" className='hover:underline text-blue-600 dark:text-blue-400'>
+                                            <TbWorldWww className='w-4 h-4 inline-flex' /> 
+                                            <span className='ml-1'>{website.url}</span>
                                         </Link>
                                     </td>
                                     
