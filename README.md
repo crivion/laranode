@@ -46,13 +46,13 @@ Login with the credentials provided during installation.
 
 | Light | Dark |
 |:------:|:----:|
-| <img src="laranode-screenshots2-dashboard.png" alt="Dashboard (Light)" width="400"/> | <img src="laranode-screenshots1-dashboard-dark.png" alt="Dashboard (Dark)" width="400"/> |
-| <img src="laranode-screenshots3-stats-history.png" alt="Stats History (Light)" width="400"/> | <img src="laranode-screenshots3-stats-history-dark.png" alt="Stats History (Dark)" width="400"/> |
-| <img src="laranode-screenshots4-accounts.png" alt="Accounts (Light)" width="400"/> | <img src="laranode-screenshots4-accounts-dark.png" alt="Accounts (Dark)" width="400"/> |
-| <img src="laranode-screenshots5-create-account.png" alt="Create Account (Light)" width="400"/> | <img src="laranode-screenshots5-create-account-dark.png" alt="Create Account (Dark)" width="400"/> |
-| <img src="laranode-screenshots6-websites.png" alt="Websites (Light)" width="400"/> | <img src="laranode-screenshots6-websites-dark.png" alt="Websites (Dark)" width="400"/> |
-| <img src="laranode-screenshots7-filemanager.png" alt="File Manager (Light)" width="400"/> | <img src="laranode-screenshots7-filemanager-dark.png" alt="File Manager (Dark)" width="400"/> |
-| <img src="laranode-screenshots8-db.png" alt="Database Manager (Light)" width="400"/> | <img src="laranode-screenshots8-db-dark.png" alt="Database Manager (Dark)" width="400"/> |
+| <img src="laranode-screenshots/2-dashboard.png" alt="Dashboard (Light)" width="400"/> | <img src="laranode-screenshots/1-dashboard-dark.png" alt="Dashboard (Dark)" width="400"/> |
+| <img src="laranode-screenshots/3-stats-history.png" alt="Stats History (Light)" width="400"/> | <img src="laranode-screenshots/3-stats-history-dark.png" alt="Stats History (Dark)" width="400"/> |
+| <img src="laranode-screenshots/4-accounts.png" alt="Accounts (Light)" width="400"/> | <img src="laranode-screenshots/4-accounts-dark.png" alt="Accounts (Dark)" width="400"/> |
+| <img src="laranode-screenshots/5-create-account.png" alt="Create Account (Light)" width="400"/> | <img src="laranode-screenshots/5-create-account-dark.png" alt="Create Account (Dark)" width="400"/> |
+| <img src="laranode-screenshots/6-websites.png" alt="Websites (Light)" width="400"/> | <img src="laranode-screenshots/6-websites-dark.png" alt="Websites (Dark)" width="400"/> |
+| <img src="laranode-screenshots/7-filemanager.png" alt="File Manager (Light)" width="400"/> | <img src="laranode-screenshots/7-filemanager-dark.png" alt="File Manager (Dark)" width="400"/> |
+| <img src="laranode-screenshots/8-db.png" alt="Database Manager (Light)" width="400"/> | <img src="laranode-screenshots/8-db-dark.png" alt="Database Manager (Dark)" width="400"/> |
 
 
 ## Roadmap
