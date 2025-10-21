@@ -43,7 +43,17 @@ http://your-domain.tld
 Login with the credentials provided during installation.
 
 ## Screenshots
-🚀 (Coming soon!)
+
+| Light | Dark |
+|:------:|:----:|
+| <img src="screenshots/2-dashboard.png" alt="Dashboard (Light)" width="400"/> | <img src="screenshots/1-dashboard-dark.png" alt="Dashboard (Dark)" width="400"/> |
+| <img src="screenshots/3-stats-history.png" alt="Stats History (Light)" width="400"/> | <img src="screenshots/3-stats-history-dark.png" alt="Stats History (Dark)" width="400"/> |
+| <img src="screenshots/4-accounts.png" alt="Accounts (Light)" width="400"/> | <img src="screenshots/4-accounts-dark.png" alt="Accounts (Dark)" width="400"/> |
+| <img src="screenshots/5-create-account.png" alt="Create Account (Light)" width="400"/> | <img src="screenshots/5-create-account-dark.png" alt="Create Account (Dark)" width="400"/> |
+| <img src="screenshots/6-websites.png" alt="Websites (Light)" width="400"/> | <img src="screenshots/6-websites-dark.png" alt="Websites (Dark)" width="400"/> |
+| <img src="screenshots/7-filemanager.png" alt="File Manager (Light)" width="400"/> | <img src="screenshots/7-filemanager-dark.png" alt="File Manager (Dark)" width="400"/> |
+| <img src="screenshots/8-db.png" alt="Database Manager (Light)" width="400"/> | <img src="screenshots/8-db-dark.png" alt="Database Manager (Dark)" width="400"/> |
+
 
 ## Roadmap
 – 🔹 SSL With Let's Encrypt
