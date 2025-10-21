@@ -123,18 +123,6 @@ const SidebarNavi = () => {
 
                 <li>
                     <Link
-                        href="/ssl"
-                        className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
-                    >
-                        <div>
-                            <IoLockClosedOutline className="ml-3 w-5 h-5" />
-                        </div>
-                        <span className="ml-2 text-sm tracking-wide truncate">SSL Manager</span>
-                    </Link>
-                </li>
-
-                <li>
-                    <Link
                         href={route('profile.edit')}
                         className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                     >

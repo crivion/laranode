@@ -9,10 +9,12 @@ use App\Models\PhpVersion;
 use App\Services\Websites\CreateWebsiteService;
 use App\Services\Websites\DeleteWebsiteService;
 use App\Services\Websites\UpdateWebsitePHPVersionService;
+use App\Actions\SSL\GenerateWebsiteSslAction;
+use App\Actions\SSL\RemoveWebsiteSslAction;
+use App\Actions\SSL\CheckWebsiteSslStatusAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Process;
 use Inertia\Inertia;
 
 class WebsiteController extends Controller
@@ -96,10 +98,10 @@ class WebsiteController extends Controller
         try {
             if ($request->enabled) {
                 // Generate SSL certificate
-                $this->generateSslCertificate($website, $request->user()->email);
+                (new GenerateWebsiteSslAction())->execute($website, $request->user()->email);
             } else {
                 // Remove SSL certificate
-                $this->removeSslCertificate($website);
+                (new RemoveWebsiteSslAction())->execute($website);
             }
 
             session()->flash('success', $request->enabled ? 'SSL certificate generated successfully' : 'SSL certificate removed successfully');
@@ -112,78 +114,6 @@ class WebsiteController extends Controller
     }
 
     /**
-     * Generate SSL certificate for a website
-     */
-    private function generateSslCertificate(Website $website, string $email): void
-    {
-        // Update status to pending
-        $website->update([
-            'ssl_status' => 'pending',
-            'ssl_enabled' => true
-        ]);
-
-        $result = Process::run([
-            'sudo',
-            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
-            'generate',
-            $website->url,
-            $email,
-            $website->fullDocumentRoot
-        ]);
-
-        if ($result->failed()) {
-            $website->update([
-                'ssl_status' => 'inactive',
-                'ssl_enabled' => false
-            ]);
-            throw new \Exception($result->errorOutput());
-        }
-
-        // Check SSL status
-        $statusResult = Process::run([
-            'sudo',
-            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
-            'status',
-            $website->url
-        ]);
-
-        $sslStatus = trim($statusResult->output());
-        
-        // Update website with SSL information
-        $website->update([
-            'ssl_status' => $sslStatus === 'active' ? 'active' : 'inactive',
-            'ssl_generated_at' => now(),
-            'ssl_expires_at' => $sslStatus === 'active' ? now()->addDays(90) : null
-        ]);
-    }
-
-    /**
-     * Remove SSL certificate for a website
-     */
-    private function removeSslCertificate(Website $website): void
-    {
-        
-        $result = Process::run([
-            'sudo',
-            config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
-            'remove',
-            $website->url,
-        ]);
-
-        if ($result->failed()) {
-            throw new \Exception($result->errorOutput());
-        }
-
-        // Update website SSL status
-        $website->update([
-            'ssl_enabled' => false,
-            'ssl_status' => 'inactive',
-            'ssl_expires_at' => null,
-            'ssl_generated_at' => null
-        ]);
-    }
-
-    /**
      * Check SSL status for a website
      */
     public function checkSslStatus(Website $website)
@@ -191,25 +121,12 @@ class WebsiteController extends Controller
         Gate::authorize('view', $website);
 
         try {
-            $result = Process::run([
-                'sudo',
-                config('laranode.laranode_bin_path') . '/laranode-ssl-manager.sh',
-                'status',
-                $website->url,
-            ]);
-
-            $sslStatus = trim($result->output());
-            
-            // Update website SSL status
-            $website->update([
-                'ssl_status' => $sslStatus,
-                'ssl_enabled' => $sslStatus === 'active'
-            ]);
+            $result = (new CheckWebsiteSslStatusAction())->execute($website);
 
             return response()->json([
                 'success' => true,
-                'ssl_status' => $sslStatus,
-                'ssl_enabled' => $sslStatus === 'active',
+                'ssl_status' => $result['ssl_status'],
+                'ssl_enabled' => $result['ssl_enabled'],
                 'status_text' => $website->getSslStatusText()
             ]);
 
