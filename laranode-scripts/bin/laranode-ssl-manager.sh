@@ -99,44 +99,45 @@ generate_ssl_certificate() {
 create_ssl_vhost() {
     local domain=$1
     local document_root=$2
-    
-    print_status "Creating SSL-enabled virtual host for $domain..."
-    
-    local vhost_file="$APACHE_SITES_PATH/$domain-ssl.conf"
-    
-    cat > "$vhost_file" << EOF
-<VirtualHost *:443>
-    ServerName $domain
-    DocumentRoot $document_root
-    
-    SSLEngine on
-    SSLCertificateFile $SSL_CERTS_PATH/$domain/fullchain.pem
-    SSLCertificateKeyFile $SSL_CERTS_PATH/$domain/privkey.pem
-    
-    # Include SSL configuration
-    Include /etc/apache2/conf-available/ssl-params.conf
-    
-    # Security headers
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-    Header always set X-Content-Type-Options nosniff
-    Header always set X-Frame-Options DENY
-    Header always set X-XSS-Protection "1; mode=block"
-    
-    # Logging
-    ErrorLog \${APACHE_LOG_DIR}/$domain-ssl_error.log
-    CustomLog \${APACHE_LOG_DIR}/$domain-ssl_access.log combined
-</VirtualHost>
 
-# Redirect HTTP to HTTPS
-<VirtualHost *:80>
-    ServerName $domain
-    Redirect permanent / https://$domain/
-</VirtualHost>
-EOF
-    
-    # Enable the site
+    print_status "Creating SSL-enabled virtual host for $domain..."
+
+    local non_ssl_vhost="$APACHE_SITES_PATH/$domain.conf"
+    local vhost_file="$APACHE_SITES_PATH/$domain-ssl.conf"
+
+    if [[ ! -f "$non_ssl_vhost" ]]; then
+        print_error "Non-SSL vhost file not found: $non_ssl_vhost"
+        return 1
+    fi
+
+    # Extract everything between <VirtualHost> and </VirtualHost>
+    local inner_content
+    inner_content=$(awk '
+        /<VirtualHost/{flag=1; next}
+        /<\/VirtualHost>/{flag=0}
+        flag
+    ' "$non_ssl_vhost")
+
+    {
+        echo "<VirtualHost *:443>"
+        echo "    ServerName $domain"
+        echo "    SSLEngine on"
+        echo "    SSLCertificateFile \$SSL_CERTS_PATH/$domain/fullchain.pem"
+        echo "    SSLCertificateKeyFile \$SSL_CERTS_PATH/$domain/privkey.pem"
+        echo
+        echo "$inner_content" | sed 's/^/    /'
+        echo "</VirtualHost>"
+        echo
+        echo "# Redirect HTTP to HTTPS"
+        echo "<VirtualHost *:80>"
+        echo "    ServerName $domain"
+        echo "    Redirect permanent / https://$domain/"
+        echo "</VirtualHost>"
+    } > "$vhost_file"
+
+    # Enable the SSL site
     a2ensite "$domain-ssl.conf"
-    
+
     # Test Apache configuration
     if apache2ctl configtest; then
         systemctl reload apache2
@@ -147,6 +148,7 @@ EOF
         return 1
     fi
 }
+
 
 # Function to remove SSL certificate
 remove_ssl_certificate() {
