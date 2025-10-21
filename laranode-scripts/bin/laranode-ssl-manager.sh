@@ -122,8 +122,8 @@ create_ssl_vhost() {
         echo "<VirtualHost *:443>"
         echo "    ServerName $domain"
         echo "    SSLEngine on"
-        echo "    SSLCertificateFile \$SSL_CERTS_PATH/$domain/fullchain.pem"
-        echo "    SSLCertificateKeyFile \$SSL_CERTS_PATH/$domain/privkey.pem"
+        echo "    SSLCertificateFile $SSL_CERTS_PATH/$domain/fullchain.pem"
+        echo "    SSLCertificateKeyFile $SSL_CERTS_PATH/$domain/privkey.pem"
         echo
         echo "$inner_content" | sed 's/^/    /'
         echo "</VirtualHost>"
