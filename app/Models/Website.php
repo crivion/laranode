@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Website extends Model
 {
+
+    protected $appends = ['fullDocumentRoot'];
+
     protected $casts = [
         'ssl_enabled' => 'boolean',
         'ssl_expires_at' => 'datetime',
