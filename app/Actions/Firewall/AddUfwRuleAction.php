@@ -13,7 +13,11 @@ class AddUfwRuleAction
         if ($ruleSpec === '') {
             throw new RuntimeException('Empty rule spec');
         }
-        $proc = Process::run(['bash', '-lc', 'sudo ufw allow ' . escapeshellarg($ruleSpec)]);
+
+        $parts = preg_split('/\s+/', trim($ruleSpec));
+        $parts = array_filter($parts, fn($v) => $v !== '');
+        $proc = Process::run(array_merge(['sudo', 'ufw', 'allow'], $parts));
+
         if ($proc->failed()) {
             throw new RuntimeException('UFW allow failed: ' . $proc->errorOutput());
         }
