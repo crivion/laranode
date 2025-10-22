@@ -14,7 +14,7 @@ export default function FirewallIndex({ status, rules }) {
     const [newRule, setNewRule] = useState('');
     const [ruleType, setRuleType] = useState('allow');
 
-    const isEnabled = (status || '').toLowerCase().includes('active') || (status || '').toLowerCase().includes('enabled');
+    const isEnabled = (status || '').toLowerCase().includes('active') && !(status || '').toLowerCase().includes('inactive');
 
     const toggleFirewall = () => {
         router.post(route('firewall.toggle'), { enabled: !isEnabled }, {
