@@ -79,8 +79,30 @@ export default function FirewallIndex({ status, rules }) {
                                 <tr key={`rule-${idx}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{r.number}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{r.service}</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{r.action}</td>
-                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{r.direction}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div className={`flex items-center space-x-2 ${r.action === 'ALLOW' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} rounded-md px-2 py-1`}>
+                                            {r.action === 'ALLOW' ? (
+                                                <FaCheck className='w-4 h-4 inline mr-1' />
+                                            ) : (
+                                                <FaTimes className='w-4 h-4 inline mr-1' />
+                                            )}
+                                            <span className={`text-xs ${r.action === 'ALLOW' ? 'bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300' : 'bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300'} py-1 px-3 rounded-full`}>
+                                                {r.action}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <div className='flex items-center space-x-2'>
+                                            {r.direction === 'IN' ? (
+                                                <FaArrowUp className='w-4 h-4 text-green-500 inline mr-1' />
+                                            ) : (
+                                                <FaArrowDown className='w-4 h-4 text-red-500 inline mr-1' />
+                                            )}
+                                            <span className={`text-xs ${r.direction === 'IN' ? 'bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300' : 'bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300'} py-1 px-3 rounded-full`}>
+                                                {r.direction}
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{r.from}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center space-x-2'>
