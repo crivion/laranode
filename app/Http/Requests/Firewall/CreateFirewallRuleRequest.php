@@ -15,11 +15,11 @@ class CreateFirewallRuleRequest extends FormRequest
     {
         return [
             'type' => ['required', 'string', 'in:allow,deny'],
+            'direction' => ['required', 'string', 'in:in,out'],
             'protocol' => ['required', 'string', 'in:tcp,udp'],
             'port' => ['required', 'integer', 'min:1', 'max:65535'],
             'ip' => ['required', 'string'],
             'to' => ['required', 'string'],
-            'comment' => ['nullable', 'string', 'max:150'],
         ];
     }
 

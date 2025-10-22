@@ -37,11 +37,11 @@ class FirewallController extends Controller
     {
         $validated = $request->validated();
         $spec = (new BuildUfwRuleSpecAction())->execute(
+            strtolower($validated['direction']),
             strtolower($validated['protocol']),
             trim($validated['ip']),
             trim($validated['to']),
-            (int) $validated['port'],
-            $validated['comment'] ?? ''
+            (int) $validated['port']
         );
 
         if ($validated['type'] === 'allow') {

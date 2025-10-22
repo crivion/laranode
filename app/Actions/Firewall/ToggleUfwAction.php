@@ -20,4 +20,4 @@ class ToggleUfwAction
         }
         return trim($proc->output());
     }
-}
+}p

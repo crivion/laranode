@@ -21,11 +21,11 @@ export default function CreateFirewallRuleForm() {
         clearErrors,
     } = useForm({
         type: 'allow',
+        direction: 'in',
         protocol: 'tcp',
         port: '',
         ip: 'any',
         to: 'any',
-        comment: '',
     });
 
     const openModal = () => setShowModal(true);
@@ -33,7 +33,7 @@ export default function CreateFirewallRuleForm() {
     const closeModal = () => {
         setShowModal(false);
         clearErrors();
-        reset({ type: 'allow', protocol: 'tcp', port: '', ip: 'any', to: 'any', comment: '' });
+        reset({ type: 'allow', direction: 'in', protocol: 'tcp', port: '', ip: 'any', to: 'any' });
     };
 
     const submit = (e) => {
@@ -72,6 +72,21 @@ export default function CreateFirewallRuleForm() {
                                 <option value="deny">Deny</option>
                             </select>
                             <InputError message={errors.type} className="mt-2" />
+                        </div>
+
+                        <div>
+                            <InputLabel htmlFor="direction" value="Direction" className='my-2' />
+                            <select
+                                id="direction"
+                                name="direction"
+                                value={data.direction}
+                                onChange={(e) => setData('direction', e.target.value)}
+                                className="mt-1 block w-full flex-1 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                            >
+                                <option value="in">IN</option>
+                                <option value="out">OUT</option>
+                            </select>
+                            <InputError message={errors.direction} className="mt-2" />
                         </div>
 
                         <div>
@@ -132,18 +147,7 @@ export default function CreateFirewallRuleForm() {
                             <InputError message={errors.to} className="mt-2" />
                         </div>
 
-                        <div>
-                            <InputLabel htmlFor="comment" value="Comment" className='my-2' />
-                            <TextInput
-                                id="comment"
-                                name="comment"
-                                value={data.comment}
-                                onChange={(e) => setData('comment', e.target.value)}
-                                className="mt-1 block w-full"
-                                placeholder="Optional"
-                            />
-                            <InputError message={errors.comment} className="mt-2" />
-                        </div>
+                        
 
                         <div className="flex justify-end pb-6">
                             <PrimaryButton className="mr-3" disabled={processing}>
