@@ -34,7 +34,7 @@ case "$cmd" in
       echo "rule spec required" >&2
       exit 2
     fi
-    run allow $arg >/dev/null
+    run allow "$arg" >/dev/null
     echo "allowed: $arg"
     ;;
   deny)
@@ -42,7 +42,7 @@ case "$cmd" in
       echo "rule spec required" >&2
       exit 2
     fi
-    run deny $arg >/dev/null
+    run deny "$arg" >/dev/null
     echo "denied: $arg"
     ;;
   delete)
@@ -53,7 +53,7 @@ case "$cmd" in
     if [[ "$arg" =~ ^[0-9]+$ ]]; then
       yes | run delete "$arg" >/dev/null
     else
-      yes | run delete $arg >/dev/null
+      yes | run delete "$arg" >/dev/null
     fi
     echo "deleted: $arg"
     ;;
@@ -61,4 +61,4 @@ case "$cmd" in
     echo "unknown command" >&2
     exit 2
     ;;
-}
+esac
