@@ -14,10 +14,6 @@ use Inertia\Inertia;
 
 class FirewallController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', AdminMiddleware::class]);
-    }
 
     public function index(): \Inertia\Response
     {
