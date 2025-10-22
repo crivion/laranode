@@ -72,7 +72,7 @@ const SidebarNavi = () => {
                 {auth.user.role == 'admin' && (
                     <li>
                         <Link
-                            href="/admin/firewall"
+                            href={route('firewall.index')}
                             className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-900 text-gray-300 border-l-4 border-transparent hover:border-indigo-900 pr-6"
                         >
                             <div>

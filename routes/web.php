@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FilemanagerController;
+use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\PHPManagerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatsHistoryController;
@@ -42,6 +43,14 @@ Route::get('/mysql/charsets-collations', [MysqlController::class, 'getCharsetsAn
 Route::post('/mysql', [MysqlController::class, 'store'])->middleware(['auth'])->name('mysql.store');
 Route::patch('/mysql', [MysqlController::class, 'update'])->middleware(['auth'])->name('mysql.update');
 Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
+
+// Firewall [Admin]
+Route::middleware(['auth', AdminMiddleware::class])->group(function () {
+    Route::get('/admin/firewall', [FirewallController::class, 'index'])->name('firewall.index');
+    Route::post('/admin/firewall/toggle', [FirewallController::class, 'toggle'])->name('firewall.toggle');
+    Route::post('/admin/firewall/rules', [FirewallController::class, 'store'])->name('firewall.store');
+    Route::delete('/admin/firewall/rules/{id}', [FirewallController::class, 'destroy'])->name('firewall.destroy');
+});
 
 // Filemanager [Admin | User]
 Route::get('/filemanager', [FilemanagerController::class, 'index'])->middleware(['auth'])->name('filemanager');
