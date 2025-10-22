@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import ConfirmationButton from '@/Components/ConfirmationButton';
 import CreateFirewallRuleForm from './Partials/CreateFirewallRuleForm';
 import { MdSecurity } from 'react-icons/md';
-import { FaToggleOn, FaToggleOff } from 'react-icons/fa';
+import { FaToggleOn, FaToggleOff, FaCheck, FaTimes, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { TiDelete } from 'react-icons/ti';
 
 export default function FirewallIndex({ status, rules }) {

@@ -145,7 +145,7 @@ export default function CreateFirewallRuleForm() {
                             <InputError message={errors.comment} className="mt-2" />
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-end pb-6">
                             <PrimaryButton className="mr-3" disabled={processing}>
                                 Add Rule
                             </PrimaryButton>
