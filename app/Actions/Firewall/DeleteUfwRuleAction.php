@@ -13,8 +13,12 @@ class DeleteUfwRuleAction
         if ($idOrSpec === '') {
             throw new RuntimeException('Empty rule id/spec');
         }
-        $bin = config('laranode.laranode_bin_path') . '/laranode-ufw.sh';
-        $proc = Process::run(['sudo', $bin, 'delete', $idOrSpec]);
+        if (ctype_digit($idOrSpec)) {
+            $cmd = 'yes | sudo ufw delete ' . (int) $idOrSpec;
+        } else {
+            $cmd = 'yes | sudo ufw delete ' . escapeshellarg($idOrSpec);
+        }
+        $proc = Process::run(['bash', '-lc', $cmd]);
         if ($proc->failed()) {
             throw new RuntimeException('UFW delete failed: ' . $proc->errorOutput());
         }

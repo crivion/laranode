@@ -248,6 +248,17 @@ cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-queue-worker.serv
 cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-reverb.service /etc/systemd/system/laranode-reverb.service
 
 
+echo -e"\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Adding default UFW rules for SSH | HTTP | HTTPS | REVERB WEBSOCKETS"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+ufw allow 22
+ufw allow 80
+ufw allow 443
+ufw allow 8080
+
+
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
 echo "Setting permissions"

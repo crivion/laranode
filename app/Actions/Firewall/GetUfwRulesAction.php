@@ -8,8 +8,7 @@ class GetUfwRulesAction
 {
     public function execute(): array
     {
-        $bin = config('laranode.laranode_bin_path') . '/laranode-ufw.sh';
-        $proc = Process::run(['sudo', $bin, 'list']);
+        $proc = Process::run(['sudo', 'ufw', 'status', 'numbered']);
         if ($proc->failed()) {
             return [];
         }

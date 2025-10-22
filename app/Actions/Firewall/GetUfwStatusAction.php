@@ -8,11 +8,12 @@ class GetUfwStatusAction
 {
     public function execute(): string
     {
-        $bin = config('laranode.laranode_bin_path') . '/laranode-ufw.sh';
-        $proc = Process::run(['sudo', $bin, 'status']);
+        $proc = Process::run(['sudo', 'ufw', 'status']);
         if ($proc->failed()) {
             return 'unknown';
         }
-        return trim($proc->output());
+        $out = trim($proc->output());
+        $lines = preg_split("/\r?\n/", $out);
+        return trim($lines[0] ?? $out);
     }
 }

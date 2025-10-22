@@ -8,6 +8,9 @@ use App\Actions\Firewall\DeleteUfwRuleAction;
 use App\Actions\Firewall\GetUfwRulesAction;
 use App\Actions\Firewall\GetUfwStatusAction;
 use App\Actions\Firewall\ToggleUfwAction;
+use App\Http\Requests\Firewall\ToggleFirewallRequest;
+use App\Http\Requests\Firewall\CreateFirewallRuleRequest;
+use App\Actions\Firewall\BuildUfwRuleSpecAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,79 +24,26 @@ class FirewallController extends Controller
         return Inertia::render('Firewall/Index', compact('status', 'rules'));
     }
 
-    public function toggle(Request $request): RedirectResponse
+    public function toggle(ToggleFirewallRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'enabled' => 'required|boolean',
-        ]);
-
-        $enable = (bool) $validated['enabled'];
+        $enable = (bool) $request->validated('enabled');
         (new ToggleUfwAction())->execute($enable);
 
         session()->flash('success', 'Firewall ' . ($enable ? 'enabled' : 'disabled') . ' successfully.');
         return redirect()->route('firewall.index');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(CreateFirewallRuleRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'type'     => 'required|string|in:allow,deny',
-            'protocol' => 'required|string|in:tcp,udp',
-            'port'     => 'required|integer|min:1|max:65535',
-            'ip'       => 'required|string', // validated below for any|ip|cidr
-            'to'       => 'required|string',
-            'comment'  => 'nullable|string|max:150',
-        ]);
-
-        $from = trim($validated['ip']);
-        $to   = trim($validated['to']);
-
-        
-        $isAny  = fn(string $v) => strtolower($v) === 'any';
-        $isIp   = fn(string $v) => filter_var($v, FILTER_VALIDATE_IP) !== false;
-        $isCidr = fn(string $v) => (bool) preg_match(
-            '/^((25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3})\/(3[0-2]|[12]?\d)$/',
-            $v
+        $validated = $request->validated();
+        $spec = (new BuildUfwRuleSpecAction())->execute(
+            strtolower($validated['protocol']),
+            trim($validated['ip']),
+            trim($validated['to']),
+            (int) $validated['port'],
+            $validated['comment'] ?? ''
         );
 
-        if (!($isAny($from) || $isIp($from) || $isCidr($from))) {
-            return back()
-                ->withErrors(['ip' => 'IP must be "any", a valid IP address, or CIDR range.'])
-                ->withInput();
-        }
-
-        if (!($isAny($to) || $isIp($to))) {
-            return back()
-                ->withErrors(['to' => 'To must be "any" or a valid IP address.'])
-                ->withInput();
-        }
-
-        $proto   = strtolower($validated['protocol']);
-        $port    = (int) $validated['port'];
-        $comment = trim($validated['comment'] ?? '');
-
-        // Escape comment safely for shell passing
-        $commentEscaped = str_replace("'", "\\'", $comment);
-
-
-        $ruleSpecParts = [
-            'proto ' . $proto,
-            'from ' . $from,
-            'to ' . $to,
-            'port ' . $port,
-        ];
-
-        $spec = implode(' ', $ruleSpecParts);
-
-        if ($commentEscaped !== '') {
-            $spec .= " comment '" . $commentEscaped . "'";
-        }
-
-        if (empty(trim($spec))) {
-            throw new \RuntimeException('Empty rule spec — cannot execute UFW.');
-        }
-
-        
         if ($validated['type'] === 'allow') {
             (new AddUfwRuleAction())->execute($spec);
         } else {
