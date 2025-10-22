@@ -4,6 +4,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import ConfirmationButton from '@/Components/ConfirmationButton';
+import CreateFirewallRuleForm from './Partials/CreateFirewallRuleForm';
 import { MdSecurity } from 'react-icons/md';
 import { FaToggleOn, FaToggleOff } from 'react-icons/fa';
 import { TiDelete } from 'react-icons/ti';
@@ -23,15 +24,7 @@ export default function FirewallIndex({ status, rules }) {
         });
     };
 
-    const addRule = (e) => {
-        e.preventDefault();
-        if (!newRule.trim()) return;
-        router.post(route('firewall.store'), { rule: newRule.trim(), type: ruleType }, {
-            onBefore: () => toast('Adding rule...'),
-            onSuccess: () => { setNewRule(''); setRuleType('allow'); router.reload({ only: ['rules'] }); },
-            onError: () => toast('Failed to add rule')
-        });
-    };
+    // rule creation moved to modal form component
 
     const deleteRule = (idOrSpec) => {
         router.delete(route('firewall.destroy', { id: idOrSpec }), {
@@ -65,24 +58,9 @@ export default function FirewallIndex({ status, rules }) {
             <Head title="Firewall" />
 
             <div className="max-w-7xl px-4 my-8">
-                <form onSubmit={addRule} className="bg-white dark:bg-gray-850 p-4 rounded-md flex items-center space-x-3">
-                    <input
-                        type="text"
-                        className="w-full bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                        placeholder="e.g. 22/tcp or proto tcp from 1.2.3.4 to any port 22"
-                        value={newRule}
-                        onChange={(e) => setNewRule(e.target.value)}
-                    />
-                    <select
-                        className="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                        value={ruleType}
-                        onChange={(e) => setRuleType(e.target.value)}
-                    >
-                        <option value="allow">Allow</option>
-                        <option value="deny">Deny</option>
-                    </select>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">Add Rule</button>
-                </form>
+                <div className="bg-white dark:bg-gray-850 p-4 rounded-md flex items-center justify-between">
+                    <CreateFirewallRuleForm />
+                </div>
 
                 <div className="relative overflow-x-auto bg-white dark:bg-gray-850 mt-3">
                     <table className="w-full text-left rtl:text-right text-gray-500 dark:text-gray-400">
