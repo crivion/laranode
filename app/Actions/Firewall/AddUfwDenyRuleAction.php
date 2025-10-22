@@ -13,7 +13,11 @@ class AddUfwDenyRuleAction
         if ($ruleSpec === '') {
             throw new RuntimeException('Empty rule spec');
         }
-        $proc = Process::run(['bash', '-lc', 'sudo ufw deny ' . escapeshellarg($ruleSpec)]);
+    
+        $parts = preg_split('/\s+/', trim($ruleSpec));
+        $parts = array_filter($parts, fn($v) => $v !== '');
+        $proc = Process::run(array_merge(['sudo', 'ufw', 'deny'], $parts));
+        
         if ($proc->failed()) {
             throw new RuntimeException('UFW deny failed: ' . $proc->errorOutput());
         }
