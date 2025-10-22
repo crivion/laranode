@@ -6,8 +6,9 @@ import { toast } from 'react-toastify';
 import ConfirmationButton from '@/Components/ConfirmationButton';
 import CreateFirewallRuleForm from './Partials/CreateFirewallRuleForm';
 import { MdSecurity } from 'react-icons/md';
-import { FaToggleOn, FaToggleOff, FaCheck, FaTimes, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaToggleOn, FaToggleOff, FaCheck, FaTimes } from 'react-icons/fa';
 import { TiDelete } from 'react-icons/ti';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6';
 
 export default function FirewallIndex({ status, rules }) {
     const { auth } = usePage().props;
@@ -51,17 +52,13 @@ export default function FirewallIndex({ status, rules }) {
                                 {isEnabled ? <FaToggleOn className='w-5 h-5' /> : <FaToggleOff className='w-5 h-5' />}
                             </button>
                         </ConfirmationButton>
+                        <CreateFirewallRuleForm />
                     </div>
                 </div>
             }
         >
             <Head title="Firewall" />
-
             <div className="max-w-7xl px-4 my-8">
-                <div className="bg-white dark:bg-gray-850 p-4 rounded-md flex items-center justify-between">
-                    <CreateFirewallRuleForm />
-                </div>
-
                 <div className="relative overflow-x-auto bg-white dark:bg-gray-850 mt-3">
                     <table className="w-full text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
@@ -86,7 +83,7 @@ export default function FirewallIndex({ status, rules }) {
                                             ) : (
                                                 <FaTimes className='w-4 h-4 inline mr-1' />
                                             )}
-                                            <span className={`text-xs ${r.action === 'ALLOW' ? 'bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300' : 'bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300'} py-1 px-3 rounded-full`}>
+                                            <span>
                                                 {r.action}
                                             </span>
                                         </div>
@@ -94,11 +91,11 @@ export default function FirewallIndex({ status, rules }) {
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center space-x-2'>
                                             {r.direction === 'IN' ? (
-                                                <FaArrowUp className='w-4 h-4 text-green-500 inline mr-1' />
+                                                <FaArrowRight className='w-4 h-4 text-green-500 inline mr-1' />
                                             ) : (
-                                                <FaArrowDown className='w-4 h-4 text-red-500 inline mr-1' />
+                                                <FaArrowLeft className='w-4 h-4 text-red-500 inline mr-1' />
                                             )}
-                                            <span className={`text-xs ${r.direction === 'IN' ? 'bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300' : 'bg-red-200 dark:bg-red-800 text-red-700 dark:text-red-300'} py-1 px-3 rounded-full`}>
+                                            <span>
                                                 {r.direction}
                                             </span>
                                         </div>
