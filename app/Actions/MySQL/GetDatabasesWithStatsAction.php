@@ -12,7 +12,7 @@ class GetDatabasesWithStatsAction
 
     public function execute(): array
     {
-        $databases = Database::where('user_id', $this->user->id)->get();
+        $databases = Database::mine()->get();
         $items = [];
 
         foreach ($databases as $database) {
