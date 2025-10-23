@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Builder;
 
 class Database extends Model
 {
@@ -43,5 +44,11 @@ class Database extends Model
     public function setPasswordAttribute(string $password): void
     {
         $this->attributes['db_password'] = encrypt($password);
+    }
+
+    public function scopeMine(Builder $query): Builder
+    {
+        $user = auth()->user();
+        return $query->when($user && !$user->isAdmin(), fn($query) => $query->where('user_id', $user->id));
     }
 }

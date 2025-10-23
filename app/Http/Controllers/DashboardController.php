@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\SystemStatsService;
+use App\Models\Website;
+use App\Models\Database;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -41,6 +43,14 @@ class DashboardController extends Controller
 
     public function user()
     {
-        return Inertia::render('Dashboard/User/UserDashboard');
+        $user = auth()->user();
+        $websitesCount = Website::mine()->count();
+        $databasesCount = Database::mine()->count();
+        $websitesLimit = $user->domain_limit;
+        $databasesLimit = $user->database_limit;
+
+        return Inertia::render('Dashboard/User/UserDashboard', compact(
+            'websitesCount', 'websitesLimit', 'databasesCount', 'databasesLimit'
+        ));
     }
 }
