@@ -49,8 +49,11 @@ class DashboardController extends Controller
         $websitesLimit = $user->domain_limit;
         $databasesLimit = $user->database_limit;
 
+        $manager = app('impersonate');
+        $isImpersonating = $manager->isImpersonating();
+
         return Inertia::render('Dashboard/User/UserDashboard', compact(
-            'websitesCount', 'websitesLimit', 'databasesCount', 'databasesLimit'
+            'websitesCount', 'websitesLimit', 'databasesCount', 'databasesLimit', 'isImpersonating'
         ));
     }
 }

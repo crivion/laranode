@@ -8,7 +8,7 @@ import { usePage } from '@inertiajs/react';
 
 export default function UserDashboard() {
 
-    const { auth, websitesCount, websitesLimit, databasesCount, databasesLimit } = usePage().props;
+    const { auth, websitesCount, websitesLimit, databasesCount, databasesLimit, isImpersonating } = usePage().props;
 
     return (
         <AuthenticatedLayout
@@ -59,7 +59,7 @@ export default function UserDashboard() {
 
                 <div className="mt-8 text-sm text-gray-600 dark:text-gray-400">
                     Logged in as <span className="font-medium">{auth.user.username}</span>
-                    {auth.user?.is_impersonating && (
+                    {isImpersonating && (
                         <>
                             <span className="mx-2">•</span>
                             <Link href={route('accounts.leaveImpersonation')} className="text-blue-600 dark:text-blue-400 hover:underline">Leave Impersonation</Link>
