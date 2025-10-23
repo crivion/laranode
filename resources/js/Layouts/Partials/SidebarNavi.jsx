@@ -107,6 +107,7 @@ const SidebarNavi = () => {
                     </Link>
                 </li>
 
+                {/* Postponed for next release 
                 {auth.user.role == 'admin' && (
                     <li>
                         <Link
@@ -120,6 +121,7 @@ const SidebarNavi = () => {
                         </Link>
                     </li>
                 )}
+                */}
 
                 <li>
                     <Link
