@@ -4,11 +4,13 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 
 ## Features
 
-✅ **Self-Hosted** – Full control over your server with no licensing fees.
+✅ **Self-Hosted** – Full control over your server with NO licensing fees.
 
 ✅ **Multi-Account Support** – Role-based access control for admins and users.  
 
 ✅ **Website Management** – Easily create and manage multiple websites.  
+
+✅ **SSL with Let's Encrypt** – Secure your websites with free SSL certificates with a click of a button.
 
 ✅ **File Manager** – Built-in (from the ground up) web-based file manager for quick access.  
 
@@ -20,6 +22,7 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 
 ✅ **MySQL Database Management** – Create and control MySQL databases.  
 
+✅ **UFW Firewall** – Manage uncomplicated firewall rules with ease directly from the web interface.  
 
 ## Installation
 
@@ -55,11 +58,10 @@ Login with the credentials provided during installation.
 | <img src="laranode-screenshots/8-db.png" alt="Database Manager (Light)" width="400"/> | <img src="laranode-screenshots/8-db-dark.png" alt="Database Manager (Dark)" width="400"/> |
 
 
-## Roadmap
+## Roadmap - Future Release Plans
 
-Will be completed by Oct 30th 2025
-- 🔹 UFW Firewall Integration
-- 🔹 PHP Manager
+- 🔹 PHP Manager - install, update, remove PHP versions
+- 🔹 Backup Manager - backup websites, databases, and files
 
 ## Contributing
 Laranode is open-source and welcomes contributions! Feel free to submit issues, feature requests, or pull requests.
