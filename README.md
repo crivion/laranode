@@ -31,9 +31,9 @@ Laranode can be installed on a FRESH VPS or dedicated server. A one-line install
 ### Requirements
 - Ubuntu 24.04+
 
-### Quick Install (Coming Soon - Oct 30th 2025)
+### Quick Install
 ```bash
-curl -sSL https://laranode.com/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/crivion/laranode/refs/heads/main/laranode-scripts/bin/laranode-installer.sh | bash
 ```
 
 ## Getting Started
@@ -56,6 +56,7 @@ Login with the credentials provided during installation.
 | <img src="laranode-screenshots/6-websites.png" alt="Websites (Light)" width="400"/> | <img src="laranode-screenshots/6-websites-dark.png" alt="Websites (Dark)" width="400"/> |
 | <img src="laranode-screenshots/7-filemanager.png" alt="File Manager (Light)" width="400"/> | <img src="laranode-screenshots/7-filemanager-dark.png" alt="File Manager (Dark)" width="400"/> |
 | <img src="laranode-screenshots/8-db.png" alt="Database Manager (Light)" width="400"/> | <img src="laranode-screenshots/8-db-dark.png" alt="Database Manager (Dark)" width="400"/> |
+| <img src="laranode-screenshots/9-firewall.png" alt="Firewall (Light)" width="400"/> | <img src="laranode-screenshots/9-firewall-dark.png" alt="Firewall (Dark)" width="400"/> |
 
 
 ## Roadmap - Future Release Plans

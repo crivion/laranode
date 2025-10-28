@@ -269,6 +269,8 @@ chown -R laranode_ln:laranode_ln /home/laranode_ln
 find /home/laranode_ln -type d -exec chmod 770 {} \;
 find /home/laranode_ln -type f -exec chmod 660 {} \;
 find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} \;
+
 
 systemctl daemon-reload
 systemctl enable laranode-queue-worker.service
