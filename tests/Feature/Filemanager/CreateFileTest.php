@@ -22,6 +22,9 @@ test('user path for the filemanager is correct', function () {
 });
 
 test('it can create a new file', function () {
+    if (! getenv('LARANODE_SYSTEM_TESTS')) {
+        $this->markTestSkipped('Requires a Linux host with sudo + laranode scripts; run inside the dev container with LARANODE_SYSTEM_TESTS=1.');
+    }
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'file',
@@ -36,6 +39,9 @@ test('it can create a new file', function () {
 });
 
 test('it can create a new directory', function () {
+    if (! getenv('LARANODE_SYSTEM_TESTS')) {
+        $this->markTestSkipped('Requires a Linux host with sudo + laranode scripts; run inside the dev container with LARANODE_SYSTEM_TESTS=1.');
+    }
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'directory',

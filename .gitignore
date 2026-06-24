@@ -25,3 +25,4 @@ yarn-error.log
 package-lock.json
 *.DS_Store*
 *.php-cs-fixer.cache*
+/local-dev
