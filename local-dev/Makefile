@@ -1,3 +1,12 @@
+# Local dev environment — Docker-based "VPS-in-a-box" for Laranode.
+#
+# WINDOWS REQUIREMENT: Run make and docker compose from PowerShell or cmd.
+# Git Bash (MSYS) strips the Windows environment that docker.exe needs to find
+# its compose plugin — recipes will fail with "unknown command: docker compose".
+# Plain `docker exec laranode-lab ...` works from any shell.
+#
+# Run all recipes from the REPO ROOT (not from inside local-dev/).
+
 COMPOSE = docker compose -f local-dev/docker-compose.yml
 EXEC = $(COMPOSE) exec laranode bash -lc
 
