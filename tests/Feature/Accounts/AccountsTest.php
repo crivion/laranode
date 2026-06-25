@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Process;
 
 test('admin can see accounts page', function () {
     $user = User::factory()->isAdmin()->create();
@@ -13,6 +14,8 @@ test('admin can see accounts page', function () {
 });
 
 test('admin can create accounts', function () {
+    Process::fake();
+
     $user = User::factory()->isAdmin()->create();
 
     $response = $this
