@@ -60,7 +60,7 @@ SQL
 
 # --- app: .env, deps, key, migrate, seed ---
 cd "$PANEL"
-[ -f .env ] || cp local-dev/.env.docker .env
+cp -f local-dev/.env.docker .env
 mkdir -p storage/logs
 [ -d vendor ] && [ -n "$(ls -A vendor 2>/dev/null)" ] || composer install --no-interaction
 grep -q '^APP_KEY=base64' .env || php artisan key:generate --force
