@@ -15,5 +15,5 @@ test('the websites page renders for an authenticated admin', async ({ page }) =>
     await page.click('button:has-text("Log in")');
     await page.waitForURL(/dashboard/);
     await page.goto('/websites');
-    await expect(page.locator('body')).toContainText(/website/i);
+    await expect(page.getByRole('heading', { name: /websites/i })).toBeVisible();
 });
