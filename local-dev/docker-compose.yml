@@ -1,0 +1,65 @@
+services:
+  laranode:
+    build:
+      context: ..
+      dockerfile: local-dev/Dockerfile
+    image: laranode-lab:dev
+    container_name: laranode-lab
+    privileged: true
+    cgroup: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    stop_signal: SIGRTMIN+3
+    volumes:
+      - ../:/home/laranode_ln/panel
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - laranode-vendor:/home/laranode_ln/panel/vendor
+      - laranode-node-modules:/home/laranode_ln/panel/node_modules
+      - laranode-mysql:/var/lib/mysql
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "5173:5173"
+      - "3306:3306"
+
+  pebble:
+    image: ghcr.io/letsencrypt/pebble:latest
+    profiles: ["ssl"]
+    command: -config /test/config/pebble-config.json -dnsserver 10.30.50.3:8053
+    environment:
+      PEBBLE_VA_ALWAYS_VALID: "1"
+    ports:
+      - "14000:14000"
+      - "15000:15000"
+    networks:
+      default:
+        ipv4_address: 10.30.50.2
+    depends_on:
+      - challtestsrv
+
+  challtestsrv:
+    image: ghcr.io/letsencrypt/pebble-challtestsrv:latest
+    profiles: ["ssl"]
+    command: -defaultIPv4 ""
+    ports:
+      - "8055:8055"
+    networks:
+      default:
+        ipv4_address: 10.30.50.3
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.30.50.0/24
+
+volumes:
+  laranode-vendor:
+  laranode-node-modules:
+  laranode-mysql:
