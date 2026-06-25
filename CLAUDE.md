@@ -15,14 +15,18 @@ Key targets (run from repo root):
 - `make verify` — check all services running + HTTP panel response
 - `make test` — run Pest suite inside container
 - `make test-system` — Pest with `LARANODE_SYSTEM_TESTS=1` (exercises sudo scripts)
-- `make ssl-test` — bring up Pebble ACME sidecar + test SSL issuance
+- `make ssl-test` — bring up Pebble ACME sidecars (pebble + challtestsrv) + test SSL issuance
 - `make nuke` — destroy container + all named volumes (full reset)
 
 Admin login: `admin@laranode.test` / `password`
 
 > **Windows:** Run `make` and `docker compose` from **PowerShell or cmd**, NOT Git Bash.
-> Git Bash (MSYS) strips the Windows environment that `docker.exe` needs to locate its
-> compose plugin. Plain `docker exec laranode-lab …` works from any shell.
+> Git Bash (MSYS) breaks docker two ways: it strips the Windows environment that
+> `docker.exe` needs to locate its compose plugin, and it rewrites in-container paths
+> (`/home/…`, `/opt/…`) passed to `docker exec` into `C:/msys64/…`, which breaks the
+> provisioning recipes. The Makefile's `MSYS_*` exports fix the path rewriting, but the
+> plugin-discovery failure remains — so use PowerShell/cmd. Plain `docker exec
+> laranode-lab …` works from any shell.
 
 ## Commands
 
