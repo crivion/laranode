@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# SSL Certificate Manager for Laranode
-# This script handles SSL certificate generation and management using Let's Encrypt
+# SSL Certificate Manager for Laranode — LOCAL-DEV PATCHED COPY
+# Patched copy of laranode-scripts/bin/laranode-ssl-manager.sh with local deltas:
+#   (1) check_domain_accessibility warns instead of exit 1 (local domains aren't public)
+#   (2) certbot targets $LARANODE_ACME_SERVER (defaults to the Pebble sidecar) with --no-verify-ssl
+# Re-sync these deltas if the upstream script changes.
 
 set -e
 
@@ -17,6 +20,11 @@ CERTBOT_PATH="/usr/bin/certbot"
 APACHE_SITES_PATH="/etc/apache2/sites-available"
 APACHE_ENABLED_PATH="/etc/apache2/sites-enabled"
 SSL_CERTS_PATH="/etc/letsencrypt/live"
+
+# Local-dev: default the ACME server to the Pebble sidecar so the panel's SSL
+# toggle (GenerateWebsiteSslAction → sudo this script, which does not pass env)
+# targets Pebble instead of real Let's Encrypt. Export LARANODE_ACME_SERVER to override.
+LARANODE_ACME_SERVER="${LARANODE_ACME_SERVER:-https://pebble:14000/dir}"
 
 # Function to print colored output
 print_status() {

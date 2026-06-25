@@ -43,6 +43,13 @@ test('admin can create accounts', function () {
         'domain_limit' => null,
         'database_limit' => null,
     ]);
+
+    // the system user must actually be provisioned, not just the DB row
+    Process::assertRan(fn ($process) =>
+        str_contains($process->command[1] ?? '', 'laranode-user-manager.sh')
+        && ($process->command[2] ?? null) === 'create'
+        && ($process->command[3] ?? null) === 'test-user_ln'
+    );
 });
 
 test('admin can impersonate other users', function () {

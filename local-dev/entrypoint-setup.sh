@@ -60,6 +60,11 @@ SQL
 
 # --- app: .env, deps, key, migrate, seed ---
 cd "$PANEL"
+# .env is the bind-mounted file (shared with the Windows host). Back up any
+# existing one ONCE, then force the container's known-good config so a fresh
+# clone self-provisions without hand-editing. Restore from .env.local-backup
+# if you keep a separate host .env.
+if [ -f .env ] && [ ! -f .env.local-backup ]; then cp .env .env.local-backup; fi
 cp -f local-dev/.env.docker .env
 mkdir -p storage/logs
 [ -d vendor ] && [ -n "$(ls -A vendor 2>/dev/null)" ] || composer install --no-interaction
