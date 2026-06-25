@@ -7,6 +7,8 @@ SENTINEL=/home/laranode_ln/.laranode-setup-done
 
 log() { echo -e "\033[34m[setup]\033[0m $*"; }
 
+[ -f "$SENTINEL" ] && { log "already provisioned; skipping."; exit 0; }
+
 # --- wait for systemd ---
 log "waiting for systemd..."
 for i in $(seq 1 30); do
@@ -23,9 +25,10 @@ systemctl enable --now apache2 mysql php8.4-fpm sysstat
 # --- wait for mysql socket ---
 log "waiting for mysql..."
 for i in $(seq 1 30); do
-  mysqladmin ping >/dev/null 2>&1 && break
+  mysqladmin -u root ping >/dev/null 2>&1 && break
   sleep 1
 done
+mysqladmin -u root ping >/dev/null 2>&1 || { log "ERROR: mysql did not start"; exit 1; }
 
 # --- load env (for DB_PASSWORD, ADMIN_*, etc.) ---
 set -a; . "$PANEL/local-dev/.env.docker"; set +a
@@ -75,7 +78,7 @@ log "seeding admin"
 php artisan tinker --execute "
 \App\Models\User::firstOrCreate(
   ['username' => 'laranode'],
-  ['name' => 'Admin', 'email' => env('ADMIN_EMAIL'), 'password' => bcrypt(env('ADMIN_PASSWORD')), 'role' => 'admin', 'ssh_access' => true]
+  ['name' => 'Admin', 'email' => '${ADMIN_EMAIL}', 'password' => bcrypt('${ADMIN_PASSWORD}'), 'role' => 'admin', 'ssh_access' => true]
 );"
 
 # --- apache default vhost (serves the panel from /public) ---
