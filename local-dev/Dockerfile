@@ -19,19 +19,22 @@ RUN apt-get update && apt-get install -y \
         ufw \
         certbot python3-certbot-apache \
     && add-apt-repository -y ppa:ondrej/php \
-    && apt-get update
+    && apt-get update \
+    && rm -rf /var/lib/apt/lists/*
 
 # PHP 8.4 + the exact extension set from laranode-scripts/bin/laranode-installer.sh
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
         php8.4 php8.4-fpm php8.4-cli php8.4-common php8.4-curl php8.4-mbstring \
         php8.4-xml php8.4-bcmath php8.4-zip php8.4-mysql php8.4-sqlite3 php8.4-pgsql \
         php8.4-gd php8.4-imagick php8.4-intl php8.4-readline php8.4-tokenizer php8.4-fileinfo \
-        php8.4-soap php8.4-opcache
+        php8.4-soap php8.4-opcache \
+    && rm -rf /var/lib/apt/lists/*
 
 # Composer (php is present now) + Node 22
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
 # Apache modules + php-fpm conf, enabled at build (no service start needed for a2enmod)
 RUN a2enmod proxy_fcgi rewrite setenvif headers ssl && a2enconf php8.4-fpm
