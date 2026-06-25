@@ -27,6 +27,10 @@ services:
       - "8080:8080"
       - "5173:5173"
       - "3306:3306"
+    networks:
+      default:
+        # fixed IP so the container can't DHCP-grab pebble's 10.30.50.2 (ssl profile)
+        ipv4_address: 10.30.50.10
 
   pebble:
     image: ghcr.io/letsencrypt/pebble:latest

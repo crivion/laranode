@@ -6,6 +6,13 @@
 # Plain `docker exec laranode-lab ...` works from any shell.
 #
 # Run all recipes from the REPO ROOT (not from inside local-dev/).
+#
+# MSYS (the make/sh that ships with Git Bash & MSYS2) rewrites in-container
+# absolute paths like /home/... into Windows paths (C:/msys64/home/...) when it
+# calls the native docker.exe — which breaks `exec` of in-container scripts.
+# Disable that conversion for every recipe. No-op on Linux/macOS.
+export MSYS_NO_PATHCONV := 1
+export MSYS2_ARG_CONV_EXCL := *
 
 COMPOSE = docker compose -f local-dev/docker-compose.yml
 EXEC = $(COMPOSE) exec laranode bash -lc
