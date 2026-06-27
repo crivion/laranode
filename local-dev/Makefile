@@ -34,11 +34,14 @@ verify:
 	@echo "--- HTTP check ---"
 	@curl -s -o /dev/null -w "panel http status: %{http_code}\n" http://localhost || true
 
+# Clear cached config first: with config cached, phpunit.xml's DB_CONNECTION=sqlite
+# override is ignored and RefreshDatabase runs against the live MySQL panel DB,
+# wiping it. Re-cache afterwards (Reverb relies on it), preserving the exit code.
 test:
-	$(EXEC) 'cd /home/laranode_ln/panel && php artisan test'
+	$(EXEC) 'cd /home/laranode_ln/panel && php artisan config:clear && php artisan test; rc=$$?; php artisan config:cache >/dev/null; exit $$rc'
 
 test-system:
-	$(EXEC) 'cd /home/laranode_ln/panel && LARANODE_SYSTEM_TESTS=1 php artisan test'
+	$(EXEC) 'cd /home/laranode_ln/panel && php artisan config:clear && LARANODE_SYSTEM_TESTS=1 php artisan test; rc=$$?; php artisan config:cache >/dev/null; exit $$rc'
 
 build-assets:
 	$(EXEC) 'cd /home/laranode_ln/panel && npm run build'
