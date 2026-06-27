@@ -2,6 +2,7 @@ import { Tooltip } from 'react-tooltip'
 import { useEffect, useState } from "react";
 import { FaSitemap, FaArrowDown91 } from 'react-icons/fa6';
 import { ImSpinner9 } from "react-icons/im";
+import TopProcessesChart from './TopProcessesChart';
 
 
 const TopProcesses = () => {
@@ -66,6 +67,7 @@ const TopProcesses = () => {
                     </>)}
             </div>
         </div>
+        <TopProcessesChart topStats={topStats} sortBy={sortBy} />
         <div className="relative overflow-x-auto pb-12 bg-white dark:bg-gray-850 mt-3">
             <table className="w-full  text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
