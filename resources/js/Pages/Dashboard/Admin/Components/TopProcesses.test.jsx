@@ -5,10 +5,12 @@ import TopProcessesChart from './TopProcessesChart';
 // Capture data passed to the Doughnut component so we can verify aggregation logic.
 // We mock react-chartjs-2 to avoid the canvas/WebGL environment unavailable in jsdom.
 let capturedChartData = null;
+let capturedChartOptions = null;
 
 vi.mock('react-chartjs-2', () => ({
-    Doughnut: ({ data }) => {
+    Doughnut: ({ data, options }) => {
         capturedChartData = data;
+        capturedChartOptions = options;
         return <canvas data-testid="doughnut-chart" />;
     },
 }));
@@ -40,6 +42,7 @@ const makeSample = (n = 12) =>
 
 beforeEach(() => {
     capturedChartData = null;
+    capturedChartOptions = null;
     vi.clearAllMocks();
 });
 
@@ -58,6 +61,18 @@ describe('TopProcessesChart', () => {
     it('renders nothing (no canvas) when topStats is empty', () => {
         render(<TopProcessesChart topStats={[]} sortBy="cpu" />);
         expect(screen.queryByTestId('doughnut-chart')).not.toBeInTheDocument();
+    });
+
+    it('sizes from width via a fixed aspect ratio, not the parent height', () => {
+        // Regression guard: with maintainAspectRatio:false the chart mounts on
+        // the first websocket payload while the parent height can be 0, sizes to
+        // that, and never recovers — rendering a tiny dot. Deriving height from
+        // width (maintainAspectRatio:true + aspectRatio) avoids the zero-height trap.
+        render(<TopProcessesChart topStats={makeSample()} sortBy="cpu" />);
+        expect(capturedChartOptions).not.toBeNull();
+        expect(capturedChartOptions.maintainAspectRatio).toBe(true);
+        expect(capturedChartOptions.aspectRatio).toBeGreaterThan(0);
+        expect(capturedChartOptions.plugins.legend.position).toBe('bottom');
     });
 
     it('uses memory metric when sortBy is "memory"', () => {

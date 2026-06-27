@@ -71,9 +71,16 @@ const TopProcessesChart = ({ topStats, sortBy = 'cpu' }) => {
 
     const options = {
         responsive: true,
-        maintainAspectRatio: false,
+        // Derive height from width (aspect ratio) rather than the parent's
+        // height. With maintainAspectRatio:false the chart mounts on the first
+        // websocket payload — at which point the parent's height can momentarily
+        // be 0 — and chart.js sizes to that and never re-measures a height
+        // change, leaving the doughnut a tiny dot. Width is always non-zero and
+        // chart.js does observe width changes, so this stays correctly sized.
+        maintainAspectRatio: true,
+        aspectRatio: 1.6,
         plugins: {
-            legend: { position: 'right' },
+            legend: { position: 'bottom' },
             tooltip: {
                 callbacks: {
                     label: (ctx) => {
@@ -87,7 +94,7 @@ const TopProcessesChart = ({ topStats, sortBy = 'cpu' }) => {
     };
 
     return (
-        <div className="relative h-48 mt-3">
+        <div className="relative w-full max-w-md mx-auto mt-3">
             <Doughnut data={data} options={options} />
         </div>
     );
