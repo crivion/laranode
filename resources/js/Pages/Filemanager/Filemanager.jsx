@@ -291,16 +291,17 @@ const Filemanager = () => {
                         </div>
                     )}
 
-                    {goBack && goBack != "" && (<div className='flex items-center space-x-2 text-xs'>
-                        <div className="bg-white dark:bg-gray-850 py-3 px-6  hover:bg-gray-200 dark:hover:bg-gray-800">
-                            <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onDoubleClick={() => cdIntoPath(goBack)}>
-                                <RiFolderReceivedLine className="text-gray-500 dark:text-gray-300 mr-1" />
-                                Back
-                            </button>
-                        </div>
+                    <div className='flex items-center space-x-2 text-xs mb-2'>
+                        {goBack && goBack != "" && (
+                            <div className="bg-white dark:bg-gray-850 py-3 px-6  hover:bg-gray-200 dark:hover:bg-gray-800">
+                                <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onClick={() => cdIntoPath(goBack)}>
+                                    <RiFolderReceivedLine className="text-gray-500 dark:text-gray-300 mr-1" />
+                                    Back
+                                </button>
+                            </div>
+                        )}
                         <Breadcrumb path={path} onNavigate={cdIntoPath} />
                     </div>
-                    )}
 
 
                     {files

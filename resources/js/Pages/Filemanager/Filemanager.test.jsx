@@ -123,3 +123,79 @@ describe('Filemanager — D10 hint banner', () => {
         ).not.toBeInTheDocument();
     });
 });
+
+describe('Filemanager — current path + back navigation', () => {
+    // fetch stub whose payload reports the given goBack value
+    const fetchReturning = (goBack) =>
+        vi.fn(() =>
+            Promise.resolve({
+                ok: true,
+                body: {
+                    getReader: () => {
+                        let done = false;
+                        return {
+                            read: () => {
+                                if (done) return Promise.resolve({ value: undefined, done: true });
+                                done = true;
+                                const json = JSON.stringify({ files: [], goBack });
+                                return Promise.resolve({
+                                    value: new TextEncoder().encode(json),
+                                    done: false,
+                                });
+                            },
+                        };
+                    },
+                },
+            })
+        );
+
+    beforeEach(() => {
+        // hide the hint banner so it doesn't interfere
+        localStorage.setItem('laranode_fm_hint_dismissed', 'true');
+        vi.clearAllMocks();
+    });
+
+    it('always renders the breadcrumb (current path) even at the root with no goBack', async () => {
+        global.fetch = fetchReturning(false);
+        render(<Filemanager />);
+        await waitFor(() =>
+            expect(screen.queryByText('Loading files list...')).not.toBeInTheDocument()
+        );
+
+        const crumb = screen.getByTestId('breadcrumb');
+        expect(crumb).toBeInTheDocument();
+        expect(crumb).toHaveAttribute('data-path', '/');
+    });
+
+    it('hides the Back button at the root (no goBack)', async () => {
+        global.fetch = fetchReturning(false);
+        render(<Filemanager />);
+        await waitFor(() =>
+            expect(screen.queryByText('Loading files list...')).not.toBeInTheDocument()
+        );
+
+        expect(screen.queryByText('Back')).not.toBeInTheDocument();
+    });
+
+    it('shows Back inside a folder and navigates up on a SINGLE click', async () => {
+        const fetchMock = fetchReturning('/parent');
+        global.fetch = fetchMock;
+        render(<Filemanager />);
+        await waitFor(() =>
+            expect(screen.queryByText('Loading files list...')).not.toBeInTheDocument()
+        );
+
+        const backBtn = screen.getByText('Back');
+        expect(backBtn).toBeInTheDocument();
+
+        // one click must fetch the parent directory (regression guard: was onDoubleClick)
+        fireEvent.click(backBtn);
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(
+                    ([url]) => typeof url === 'string' && url.includes('path=/parent')
+                )
+            ).toBe(true)
+        );
+    });
+});
