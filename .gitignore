@@ -29,3 +29,7 @@ package-lock.json
 /playwright-report
 /.playwright-mcp
 /dark-*.jpeg
+/graphs-dark.jpeg
+/notif-dark-fixed.jpeg
+/pie-fixed.jpeg
+.env.local-backup
