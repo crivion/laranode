@@ -6,7 +6,7 @@ import { router } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import { TbBrandPhp } from 'react-icons/tb';
 
-export default function InstallPHPForm() {
+export default function InstallPHPForm({ installedVersions = [] }) {
     const [showModal, setShowModal] = useState(false);
     const [version, setVersion] = useState('');
     const [isInstalling, setIsInstalling] = useState(false);
@@ -69,11 +69,14 @@ export default function InstallPHPForm() {
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white sm:text-sm"
                         >
                             <option value="">Select a version</option>
-                            {availableVersions.map((v) => (
-                                <option key={v} value={v}>
-                                    PHP {v}
-                                </option>
-                            ))}
+                            {availableVersions.map((v) => {
+                                const isInstalled = installedVersions.some((p) => p.version === v);
+                                return (
+                                    <option key={v} value={v} disabled={isInstalled}>
+                                        PHP {v}{isInstalled ? ' (installed)' : ''}
+                                    </option>
+                                );
+                            })}
                         </select>
                     </div>
 
