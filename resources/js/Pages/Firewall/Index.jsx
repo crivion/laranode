@@ -10,18 +10,36 @@ import { FaToggleOn, FaToggleOff, FaCheck, FaTimes } from 'react-icons/fa';
 import { TiDelete } from 'react-icons/ti';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6';
 
-export default function FirewallIndex({ status, rules }) {
+export default function FirewallIndex({ status, rules, safety }) {
     const { auth } = usePage().props;
     const [newRule, setNewRule] = useState('');
     const [ruleType, setRuleType] = useState('allow');
 
     const isEnabled = (status || '').toLowerCase().includes('active') && !(status || '').toLowerCase().includes('inactive');
 
+    // Lockout protection: only safe to enable once SSH and the panel/web ports are allowed.
+    const missing = safety?.missing ?? [];
+    const canEnableSafely = (safety?.coversSsh ?? true) && (safety?.coversWeb ?? true);
+    const detectedIp = safety?.detectedIp;
+
     const toggleFirewall = () => {
+        // Block the client-side path too — the backend refuses regardless.
+        if (!isEnabled && !canEnableSafely) {
+            toast('Add an SSH and a panel/website allow rule first, or use Safe Setup — enabling now would lock you out.', { type: 'error' });
+            return;
+        }
         router.post(route('firewall.toggle'), { enabled: !isEnabled }, {
             onBefore: () => toast(`${!isEnabled ? 'Enabling' : 'Disabling'} firewall...`),
-            onSuccess: () => router.reload({ only: ['status'] }),
+            onSuccess: () => router.reload({ only: ['status', 'safety'] }),
             onError: () => toast('Failed to toggle firewall')
+        });
+    };
+
+    const safeSetup = (sshFromIp = null) => {
+        router.post(route('firewall.safe-setup'), sshFromIp ? { ssh_from_ip: sshFromIp } : {}, {
+            onBefore: () => toast('Setting up a safe baseline and enabling firewall...'),
+            onSuccess: () => router.reload(),
+            onError: () => toast('Safe Setup failed', { type: 'error' })
         });
     };
 
@@ -59,6 +77,38 @@ export default function FirewallIndex({ status, rules }) {
         >
             <Head title="Firewall" />
             <div className="max-w-7xl px-4 my-8">
+
+                {!isEnabled && !canEnableSafely && (
+                    <div className="mb-5 rounded-md border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30 p-4 text-sm text-amber-800 dark:text-amber-200">
+                        <div className="font-semibold flex items-center mb-1">
+                            <MdSecurity className="mr-2" />
+                            Enabling the firewall now would lock you out
+                        </div>
+                        <p className="mb-2">
+                            The firewall defaults to blocking everything. You have no allow rule for{' '}
+                            {missing.length ? missing.join('; ') : 'SSH and the panel/websites'}. Add the
+                            missing rule(s) yourself, or use Safe Setup to stage them and enable safely:
+                        </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <button
+                                onClick={() => safeSetup()}
+                                className="inline-flex items-center justify-center px-3 py-2 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-medium"
+                            >
+                                Safe Setup (allow SSH, HTTP, HTTPS)
+                            </button>
+                            {detectedIp && (
+                                <button
+                                    onClick={() => safeSetup(detectedIp)}
+                                    className="inline-flex items-center justify-center px-3 py-2 rounded-md border border-amber-500 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-800/40 font-medium"
+                                    title="Allows SSH only from your current IP instead of anywhere"
+                                >
+                                    Safe Setup, but restrict SSH to my IP ({detectedIp})
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="relative overflow-x-auto bg-white dark:bg-gray-850 mt-3">
                     <table className="w-full text-left rtl:text-right text-gray-500 dark:text-gray-400">
                         <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">
