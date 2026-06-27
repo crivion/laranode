@@ -45,6 +45,19 @@ php artisan laranode:create-admin   # interactive admin creation (username is fo
 
 Tests use Pest with `RefreshDatabase` (see `tests/Pest.php`); feature tests live in `tests/Feature/<Domain>/`.
 
+## Verify every feature before calling it done
+
+After implementing ANY feature or bug fix, run this gate before declaring it complete (and before committing):
+
+1. **Backend tests** — `./vendor/bin/pest` (or `--filter` for the touched domain, then the full suite to catch regressions).
+2. **Frontend tests** — `npx vitest run` for the touched component, then the full Vitest suite.
+3. **Build assets** — `npm run build` (the lab serves `public/build/`, not Vite dev — stale assets are why a change "doesn't show"). Clear caches if a blade/route changed: `php artisan optimize:clear`.
+4. **Playwright check** — drive the running panel (lab container, admin `admin@laranode.test` / `password`) to confirm the change actually works in the real app and toggle dark mode on the affected page(s). Verify against the live result, not just the diff.
+
+Run all four in the lab container, e.g. `docker exec laranode-lab bash -lc 'cd /home/laranode_ln/panel && <cmd>'`.
+
+**Pint scope:** only format files you changed (`./vendor/bin/pint <file> ...`). NEVER run `pint app/` or a whole-tree pint — it sweeps dozens of pre-existing unformatted files into your diff.
+
 ## Environment caveat
 
 System-touching features (sudo scripts, `systemctl`, `/proc`, `certbot`, `ufw`) only run on a real Linux host. On Windows/macOS dev machines those `Process` calls fail — exercise that behavior on a Linux VPS, not locally. DB is MySQL in prod (`.env.example`).
