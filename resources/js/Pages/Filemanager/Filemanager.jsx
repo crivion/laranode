@@ -7,6 +7,7 @@ import { RiFolderReceivedLine } from "react-icons/ri";
 import { FileIcon, defaultStyles } from 'react-file-icon';
 import { ToastContainer, toast } from 'react-toastify';
 import Checkbox from '@/Components/Checkbox';
+import Breadcrumb from './Components/Breadcrumb';
 import CreateFile from './Components/CreateFile';
 import EditFile from './Components/EditFile';
 import DeleteFiles from './Components/DeleteFiles';
@@ -40,6 +41,7 @@ const Filemanager = () => {
     const [showUploadFile, setShowUploadFile] = useState(false);
     const [copyFiles, setCopyFiles] = useState(false);
     const [cutFiles, setCutFiles] = useState(false);
+    const [hintDismissed, setHintDismissed] = useState(() => localStorage.getItem('laranode_fm_hint_dismissed') === 'true');
 
 
     useEffect(() => {
@@ -276,6 +278,19 @@ const Filemanager = () => {
 
                     </div>
 
+                    {!hintDismissed && (
+                        <div className="mb-3 flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-4 py-2 text-sm text-blue-700 dark:text-blue-300">
+                            <span>Double-click a folder to enter it, or a file to edit it.</span>
+                            <button
+                                onClick={() => { setHintDismissed(true); localStorage.setItem('laranode_fm_hint_dismissed', 'true'); }}
+                                className="ml-4 text-blue-500 hover:text-blue-700 font-bold"
+                                aria-label="Dismiss hint"
+                            >
+                                &times;
+                            </button>
+                        </div>
+                    )}
+
                     {goBack && goBack != "" && (<div className='flex items-center space-x-2 text-xs'>
                         <div className="bg-white dark:bg-gray-850 py-3 px-6  hover:bg-gray-200 dark:hover:bg-gray-800">
                             <button className="dark:text-gray-300 text-gray-900 flex items-center space-x-2" onDoubleClick={() => cdIntoPath(goBack)}>
@@ -283,9 +298,7 @@ const Filemanager = () => {
                                 Back
                             </button>
                         </div>
-                        <div className="bg-white dark:bg-gray-850 py-3 px-6 dark:text-gray-300 text-gray-900 flex items-center space-x-2">
-                            Path: {path}
-                        </div>
+                        <Breadcrumb path={path} onNavigate={cdIntoPath} />
                     </div>
                     )}
 
