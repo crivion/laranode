@@ -52,6 +52,10 @@ class AccountsController extends Controller
      */
     public function destroy($account): RedirectResponse
     {
+        if ((int) $account === auth()->id()) {
+            abort(403, 'Cannot delete your own account.');
+        }
+
         (new DeleteAccountService(User::findOrFail($account)))->handle();
 
         session()->flash('success', 'Account deleted successfully!');

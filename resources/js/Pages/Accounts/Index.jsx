@@ -111,9 +111,11 @@ export default function Accounts({ accounts }) {
 
                                             <Tooltip id={`tooltip-impersonate-${account.id}`} />
 
-                                            <ConfirmationButton doAction={() => deleteUser(account.id)}>
-                                                <TiDelete className='w-6 h-6 text-red-500' />
-                                            </ConfirmationButton>
+                                            {account.id !== auth.user.id && (
+                                                <ConfirmationButton doAction={() => deleteUser(account.id)}>
+                                                    <TiDelete className='w-6 h-6 text-red-500' />
+                                                </ConfirmationButton>
+                                            )}
                                         </div>
 
                                     </td>

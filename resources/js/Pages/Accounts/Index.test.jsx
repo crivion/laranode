@@ -87,3 +87,13 @@ describe('Accounts/Index impersonate link visibility', () => {
         expect(selfLink).toBeUndefined();
     });
 });
+
+describe('Accounts/Index delete button visibility', () => {
+    it('renders the delete button only for other users, not the own row', () => {
+        const { container } = render(<Accounts accounts={accounts} />);
+        // The delete icon (TiDelete) carries the text-red-500 class; one per
+        // non-self row. With self (id 1) + one other (id 2), exactly 1 shows.
+        const deleteIcons = container.querySelectorAll('svg.text-red-500');
+        expect(deleteIcons.length).toBe(1);
+    });
+});
