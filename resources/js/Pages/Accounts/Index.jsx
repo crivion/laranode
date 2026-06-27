@@ -1,6 +1,6 @@
 import { FaUsers } from "react-icons/fa6";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import CreateUserForm from './Partials/CreateAccountForm';
 import EditAccountForm from './Partials/EditAccountForm';
 import ConfirmationButton from "@/Components/ConfirmationButton";
@@ -13,6 +13,7 @@ import { FaDatabase, FaEdit } from "react-icons/fa";
 import { Tooltip } from 'react-tooltip'
 
 export default function Accounts({ accounts }) {
+    const { auth } = usePage().props;
 
     const deleteUser = (id) => {
         router.delete(route('accounts.destroy', { account: id }), {
@@ -98,13 +99,15 @@ export default function Accounts({ accounts }) {
                                         <div className='flex items-center space-x-2'>
                                             <EditAccountForm account={account} />
 
-                                            <Link href={route('accounts.impersonate', { user: account.id })}
-                                                data-tooltip-id={`tooltip-impersonate-${account.id}`}
-                                                data-tooltip-content="Impersonate User"
-                                                data-tooltip-place="top"
-                                            >
-                                                <RiLoginCircleLine className='w-4 h-4' />
-                                            </Link>
+                                            {account.id !== auth.user.id && (
+                                                <Link href={route('accounts.impersonate', { user: account.id })}
+                                                    data-tooltip-id={`tooltip-impersonate-${account.id}`}
+                                                    data-tooltip-content="Impersonate User"
+                                                    data-tooltip-place="top"
+                                                >
+                                                    <RiLoginCircleLine className='w-4 h-4' />
+                                                </Link>
+                                            )}
 
                                             <Tooltip id={`tooltip-impersonate-${account.id}`} />
 
