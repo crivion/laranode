@@ -23,8 +23,8 @@ class UpdateDatabaseRequest extends FormRequest
     {
         return [
             'id' => ['required', 'integer'],
-            'charset' => ['required', 'string'],
-            'collation' => ['required', 'string'],
+            'charset' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9_]+$/'],
+            'collation' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9_]+$/'],
             'db_password' => ['nullable', 'string', 'min:8'],
         ];
     }

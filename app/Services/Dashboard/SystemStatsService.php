@@ -16,7 +16,6 @@ class SystemStatsService
         return trim(Process::run('top -bn1 | grep "Cpu(s)" | awk \'{print $2+$4}\'')->output());
     }
 
-
     /**
      * Fetch memory usage.
      */
@@ -24,7 +23,7 @@ class SystemStatsService
     {
         $memory = Process::pipe([
             'free -m',
-            "awk '/Mem:/ {print $4,$3,$6,$2}'"
+            "awk '/Mem:/ {print $4,$3,$6,$2}'",
         ]);
 
         if ($memory->failed()) {
@@ -32,13 +31,13 @@ class SystemStatsService
         }
 
         $stats = $memory->output();
-        $stats = explode(" ", $stats);
+        $stats = explode(' ', $stats);
 
         return [
             'free' => $stats[0] ?? 0,
             'used' => $stats[1] ?? 0,
             'buffcache' => $stats[2] ?? 0,
-            'total' => $stats[3] ?? 0
+            'total' => $stats[3] ?? 0,
         ];
     }
 
@@ -56,7 +55,7 @@ class SystemStatsService
                 'size' => $diskUsageParts[0],
                 'used' => $diskUsageParts[1],
                 'free' => $diskUsageParts[2],
-                'percent' => $diskUsageParts[3]
+                'percent' => $diskUsageParts[3],
             ];
         }
 
@@ -112,7 +111,7 @@ class SystemStatsService
 
         return [
             'status' => $status,
-            'memory' => $memory
+            'memory' => $memory,
         ];
     }
 
@@ -125,29 +124,43 @@ class SystemStatsService
     }
 
     /**
-     * Fetch MySQL Server status.
+     * Fetch status for a named systemd service.
+     *
+     * @return array{pid: mixed, memory: mixed, cpuTime: mixed, uptime: mixed}
      */
-    public function getMysqlStatus(): array
+    private function getServiceStatus(string $service): array
     {
-        /* $mysqlStatus = Process::run('systemctl status mysql')->output(); */
-
-        $mysqlStatus = Process::pipe([
-            'systemctl status mysql',
-            "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'"
+        $output = Process::pipe([
+            ['systemctl', 'status', $service],
+            "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'",
         ])->output();
 
-        $mysqlStatus = explode("|", $mysqlStatus);
-
-        $mysqlStatus = array_map(function ($item) {
-            return trim($item);
-        },  $mysqlStatus);
+        $parts = array_map('trim', explode('|', $output));
 
         return [
-            'pid' => $mysqlStatus[0] ?? 0,
-            'memory' => $mysqlStatus[1] ?? 0,
-            'cpuTime' => $mysqlStatus[2] ?? 0,
-            'uptime' => $mysqlStatus[3] ?? 0
+            'pid' => $parts[0] ?? 0,
+            'memory' => $parts[1] ?? 0,
+            'cpuTime' => $parts[2] ?? 0,
+            'uptime' => $parts[3] ?? 0,
         ];
+    }
+
+    /**
+     * Return status for all active DB engines, keyed by engine name.
+     *
+     * @return array<string, array{pid: mixed, memory: mixed, cpuTime: mixed, uptime: mixed}>
+     */
+    public function getDbEnginesStatus(): array
+    {
+        $activeEngines = (new \App\Databases\EngineManager)->available();
+
+        $result = [];
+
+        foreach ($activeEngines as $engineKey => $serviceName) {
+            $result[$engineKey] = $this->getServiceStatus($serviceName);
+        }
+
+        return $result;
     }
 
     /**
@@ -163,7 +176,7 @@ class SystemStatsService
             $output = Process::pipe([
                 'systemctl list-unit-files --type=service',
                 'grep php.*fpm | awk \'{print $1}\'',
-                "awk '{print $1}'"
+                "awk '{print $1}'",
             ]);
 
             if ($output->failed()) {
@@ -178,32 +191,34 @@ class SystemStatsService
         foreach ($phpFpmServices as $service) {
 
             $status = Process::pipe([
-                'systemctl status ' . $service,
-                "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'"
+                'systemctl status '.$service,
+                "awk '/PID:/ {pid=$3} /Memory:/ {mem=$2} /CPU:/ {cpu=$2\" \"$3\" \"$4} /Active:/ {split($0,a,\";\"); active=a[2]} END {print pid,\"|\",mem,\"|\",cpu,\"|\",active}'",
             ])->output();
 
-            $status = explode("|", $status);
+            $status = explode('|', $status);
 
             $status = array_map(function ($item) {
                 return trim($item);
-            },  $status);
+            }, $status);
 
-            $phpFpmStatuses[strtoupper(str_ireplace(".service", "", $service))] = [
+            $phpFpmStatuses[strtoupper(str_ireplace('.service', '', $service))] = [
                 'pid' => $status[0] ?? 0,
                 'memory' => $status[1] ?? 0,
                 'cpuTime' => $status[2] ?? 0,
-                'uptime' => $status[3] ?? 0
+                'uptime' => $status[3] ?? 0,
             ];
         }
 
         return $phpFpmStatuses;
     }
+
     /**
      * Fetch SSL (Let's Encrypt) status.
      */
     public function getSslStatus(): string
     {
         $sslStatus = Process::run('certbot certificates | grep "VALID"')->output();
+
         return $sslStatus ? 'Active' : 'Inactive';
     }
 
@@ -213,6 +228,7 @@ class SystemStatsService
     public function getNginxPort(): string
     {
         $nginxPort = Process::run('netstat -nltp | grep nginx | awk \'{print $4}\'')->output();
+
         return $nginxPort;
     }
 
@@ -222,6 +238,7 @@ class SystemStatsService
     public function getWhoami(): string
     {
         $whoami = Process::run('whoami')->output();
+
         return $whoami;
     }
 
@@ -264,7 +281,7 @@ class SystemStatsService
         foreach ($lines as $line) {
             if (preg_match('/^\s*(\S+):\s*(\d+)\s+(\d+)/', trim($line), $matches)) {
                 $stats[] = [
-                    'interface' => rtrim($matches[1], ":"),
+                    'interface' => rtrim($matches[1], ':'),
                     'rx' => round($matches[2] / $gb, 2),
                     'tx' => round($matches[3] / $gb, 2),
                 ];
@@ -274,31 +291,31 @@ class SystemStatsService
         return $stats;
     }
 
-
     /**
      * Fetch all system stats.
      */
     public function getAllStats(): array
     {
         $stats = [
-            /*'whoami'           => $this->getWhoami(),*/
-            'cpuStats'         => [
-                'usage'        => $this->getCpuUsage(),
-                'loadTimes'    => $this->getLoadTimes(),
-                'uptime'       => $this->getUptime(),
+            /* 'whoami'           => $this->getWhoami(), */
+            'cpuStats' => [
+                'usage' => $this->getCpuUsage(),
+                'loadTimes' => $this->getLoadTimes(),
+                'uptime' => $this->getUptime(),
                 'processCount' => $this->getProcessCount(),
             ],
-            'diskStats'        => $this->getDiskUsage(),
-            'memoryStats'      => $this->getMemoryUsage(),
-            /*'nginxStatus'      => $this->getNginxStatus(),*/
-            'phpFpm'        => $this->getPhpFpmStatus(),
-            /*'sslStatus'        => $this->getSslStatus(),*/
-            /*'nginxPort'        => $this->getNginxPort(),*/
-            'apache'           => $this->getApacheStatus(),
-            'mysql'            => $this->getMysqlStatus(),
-            'network'          => $this->getNetworkStats(),
-            'domainCount'      => rand(1, 100),
-            'userCount'        => $this->getUserCount(),
+            'diskStats' => $this->getDiskUsage(),
+            'memoryStats' => $this->getMemoryUsage(),
+            'gpu' => (new GpuStatsService)->stats(),
+            /* 'nginxStatus'      => $this->getNginxStatus(), */
+            'phpFpm' => $this->getPhpFpmStatus(),
+            /* 'sslStatus'        => $this->getSslStatus(), */
+            /* 'nginxPort'        => $this->getNginxPort(), */
+            'apache' => $this->getApacheStatus(),
+            'dbEngines' => $this->getDbEnginesStatus(),
+            'network' => $this->getNetworkStats(),
+            'domainCount' => rand(1, 100),
+            'userCount' => $this->getUserCount(),
         ];
 
         return $stats;

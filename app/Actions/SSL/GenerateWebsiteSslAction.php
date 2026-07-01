@@ -8,7 +8,7 @@ use Exception;
 
 class GenerateWebsiteSslAction
 {
-    public function execute(Website $website, string $email): void
+    public function execute(Website $website, string $email, ?callable $onOutput = null): void
     {
         // Update status to pending and mark enabled
         $website->update([
@@ -23,7 +23,13 @@ class GenerateWebsiteSslAction
             $website->url,
             $email,
             $website->fullDocumentRoot,
-        ]);
+        ], $onOutput ? function (string $type, string $buffer) use ($onOutput) {
+            foreach (preg_split('/\r?\n/', rtrim($buffer, "\r\n")) as $line) {
+                if ($line !== '') {
+                    $onOutput($line);
+                }
+            }
+        } : null);
 
         if ($result->failed()) {
             $website->update([

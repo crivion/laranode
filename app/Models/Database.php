@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Builder;
 
 class Database extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'db_user',
         'db_password',
         'charset',
         'collation',
+        'engine',
         'user_id',
     ];
 
@@ -32,10 +35,11 @@ class Database extends Model
 
     /**
      * Get the decrypted database password.
+     * The 'encrypted' cast on db_password already decrypts on read.
      */
     public function getDecryptedPasswordAttribute(): string
     {
-        return decrypt($this->db_password);
+        return $this->db_password;
     }
 
     /**
@@ -49,6 +53,7 @@ class Database extends Model
     public function scopeMine(Builder $query): Builder
     {
         $user = auth()->user();
-        return $query->when($user && !$user->isAdmin(), fn($query) => $query->where('user_id', $user->id));
+
+        return $query->when($user && ! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
     }
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=Laranode FrankenPHP site server for {domain}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={user}
+Group={user}
+WorkingDirectory=/home/{user}/domains/{domain}{document_root}
+ExecStart=/usr/local/bin/frankenphp php-server --listen 127.0.0.1:{port} --root /home/{user}/domains/{domain}{document_root}
+Restart=on-failure
+RestartSec=5s
+SyslogIdentifier=laranode-frankenphp-{domain}
+
+[Install]
+WantedBy=multi-user.target

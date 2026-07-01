@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SystemStatsService;
-use App\Models\Website;
 use App\Models\Database;
-
+use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-
     public function index(Request $r)
     {
         if ($r->user()->isAdmin()) {
@@ -24,7 +21,9 @@ class DashboardController extends Controller
 
     public function admin()
     {
-        return Inertia::render('Dashboard/Admin/AdminDashboard');
+        $initialStats = Cache::get('dashboard_stats_last_known', []);
+
+        return Inertia::render('Dashboard/Admin/AdminDashboard', compact('initialStats'));
     }
 
     public function getTopSort()
@@ -39,6 +38,21 @@ class DashboardController extends Controller
         Cache::put('ps_aux_sort_by', $r->sortBy);
 
         return ['sortBy' => $r->sortBy];
+    }
+
+    /**
+     * Re-probe the host for a GPU on demand (the dashboard cogwheel). Detection
+     * otherwise only runs at install, so a GPU added later isn't missed.
+     */
+    public function rescanGpu(\App\Services\Dashboard\GpuStatsService $gpu): \Illuminate\Http\RedirectResponse
+    {
+        $profile = $gpu->detect();
+
+        session()->flash('success', $profile['detected']
+            ? "Detected {$profile['vendor']} GPU: {$profile['name']}."
+            : 'No GPU detected on this server.');
+
+        return back();
     }
 
     public function user()

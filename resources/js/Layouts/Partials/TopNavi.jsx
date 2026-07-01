@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import NotificationBell from '@/Components/NotificationBell';
 import { useState, useEffect } from 'react';
 import { MdOutlineLogout, MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 import { HiOutlineLogin } from "react-icons/hi";
@@ -32,6 +33,8 @@ const TopNavi = () => {
                 </div>
             </div>
             <div className="flex items-center space-x-2 pr-3">
+                <NotificationBell />
+
                 <button
                     onClick={toggleTheme}
                     className="text-white font-bold"

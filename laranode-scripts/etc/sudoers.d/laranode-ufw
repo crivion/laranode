@@ -1,0 +1,9 @@
+# Laranode firewall (UFW) sudoers drop-in
+# Mode 0440. Managed by laranode-installer.sh — do not edit manually.
+# The firewall Actions call `sudo ufw ...` directly (status/show/allow/deny/
+# delete/enable/disable). Grant www-data NOPASSWD for the ufw binary only,
+# and disable requiretty so it works from the web SAPI (no controlling tty).
+# Admin-gated in-app; enabling is protected by the lockout guard.
+
+Defaults!/usr/sbin/ufw !requiretty
+www-data ALL=(ALL) NOPASSWD: /usr/sbin/ufw

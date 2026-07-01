@@ -11,6 +11,8 @@ class PhpVersion extends Model
     /** @use HasFactory<\Database\Factories\PhpVersionFactory> */
     use HasFactory;
 
+    protected $fillable = ['version', 'active', 'is_default'];
+
     protected function casts(): array
     {
         return [

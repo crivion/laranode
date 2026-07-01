@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+    ServerName {domain}
+    ServerAlias www.{domain}
+
+    DocumentRoot /home/{user}/domains/{domain}{document_root}
+
+    ErrorLog /home/{user}/logs/apache-error.log
+    CustomLog /home/{user}/logs/apache-access.log combined
+
+    # ACME challenge served from disk (required for certbot --webroot renewal)
+    ProxyPass /.well-known/acme-challenge/ !
+    <Directory /home/{user}/domains/{domain}{document_root}/.well-known/acme-challenge>
+        Options None
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ProxyPreserveHost On
+    ProxyPass / http://127.0.0.1:{port}/
+    ProxyPassReverse / http://127.0.0.1:{port}/
+
+    <Directory /home/{user}/domains/{domain}{document_root}>
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+</VirtualHost>

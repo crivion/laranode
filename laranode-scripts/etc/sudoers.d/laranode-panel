@@ -1,0 +1,51 @@
+# Laranode panel sudoers drop-in
+# Mode 0440. Managed by laranode-installer.sh — do not edit manually.
+# One explicit NOPASSWD entry per privileged script; no wildcards.
+
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-add-php-fpm-pool.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-add-vhost.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-backup-files.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-create-directory.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-db-backup.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-file-permissions.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-php-install.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-php-list.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-php-service.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-php-uninstall.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-postgres.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-remove-all-user-php-fpm-pools.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-remove-php-fpm-pool-for-user.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-restart-php-fpm.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-restore-db.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-restore-files.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-ssl-manager.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-update-php-version.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-update-sh-access.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-update-sh-password.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-user-manager.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-db-service.sh !requiretty
+
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-add-php-fpm-pool.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-add-vhost.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-backup-files.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-create-directory.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-db-backup.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-file-permissions.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-php-install.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-php-list.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-php-service.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-php-uninstall.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-postgres.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-remove-all-user-php-fpm-pools.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-remove-php-fpm-pool-for-user.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-restart-php-fpm.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-restore-db.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-restore-files.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-ssl-manager.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-update-php-version.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-update-sh-access.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-update-sh-password.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-user-manager.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-db-service.sh
+www-data ALL=(ALL) NOPASSWD: /usr/sbin/a2dissite
+www-data ALL=(ALL) NOPASSWD: /bin/rm /etc/apache2/sites-available/*.conf

@@ -7,6 +7,13 @@
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+    <!-- Apply persisted theme before first paint to avoid a flash of light mode on reload -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     <!-- Fonts -->
     <link href="{{ asset('fonts/satoshi/css/satoshi.css') }}" rel="stylesheet" />
 

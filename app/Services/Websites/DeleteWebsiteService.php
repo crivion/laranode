@@ -15,6 +15,7 @@ class DeleteWebsiteService
 
     public function handle(): void
     {
+        $this->teardownRuntime(); // FIRST — clean shutdown before files deleted (FIXED: review fix #5)
         $this->deleteWebsiteFiles();
         $this->disableWebsite();
         $this->removeVhostFile();
@@ -26,30 +27,51 @@ class DeleteWebsiteService
         $this->website->delete();
     }
 
+    /**
+     * Stop and remove the non-FPM runtime unit before deleting website files.
+     * Non-zero exit is logged but does not block deletion.
+     * Uses laranode-runtime-manage.sh remove (FIXED: no raw sudo rm, review fix #3).
+     */
+    private function teardownRuntime(): void
+    {
+        if ($this->website->runtime === 'php-fpm') {
+            return;
+        }
+
+        $unit = "laranode-{$this->website->runtime}-{$this->website->url}.service";
+
+        Process::run([
+            'sudo',
+            config('laranode.laranode_bin_path').'/laranode-runtime-manage.sh',
+            'remove',
+            $unit,
+        ]);
+    }
+
     private function deleteWebsiteFiles(): void
     {
-        $deleteWebsite = Process::run('rm -rf ' . $this->website->websiteRoot);
+        $deleteWebsite = Process::run('rm -rf '.$this->website->websiteRoot);
 
         if ($deleteWebsite->failed()) {
-            throw new DeleteWebsiteException('Failed to delete website files: ' . $deleteWebsite->errorOutput());
+            throw new DeleteWebsiteException('Failed to delete website files: '.$deleteWebsite->errorOutput());
         }
     }
 
     private function disableWebsite(): void
     {
-        $disableWebsite = Process::run('sudo a2dissite ' . $this->website->url . '.conf');
+        $disableWebsite = Process::run('sudo a2dissite '.$this->website->url.'.conf');
 
         if ($disableWebsite->failed()) {
-            throw new DeleteWebsiteException('Failed to disable (a2dissite) website: ' . $disableWebsite->errorOutput());
+            throw new DeleteWebsiteException('Failed to disable (a2dissite) website: '.$disableWebsite->errorOutput());
         }
     }
 
     private function removeVhostFile(): void
     {
-        $removeVhostFile = Process::run('sudo rm /etc/apache2/sites-available/' . $this->website->url . '.conf');
+        $removeVhostFile = Process::run('sudo rm /etc/apache2/sites-available/'.$this->website->url.'.conf');
 
         if ($removeVhostFile->failed()) {
-            throw new DeleteWebsiteException('Failed to remove vhost file: ' . $removeVhostFile->errorOutput());
+            throw new DeleteWebsiteException('Failed to remove vhost file: '.$removeVhostFile->errorOutput());
         }
     }
 
@@ -65,7 +87,6 @@ class DeleteWebsiteService
             ->where('php_version_id', $phpVersion->id)
             ->count();
 
-
         if ($sitesUsingThisPHPVersion > 1) {
             return;
         }
@@ -73,13 +94,13 @@ class DeleteWebsiteService
         // user doesn't have other websites with the same php version, remove pool
         $removePhpFpmPool = Process::run([
             'sudo',
-            config('laranode.laranode_bin_path') . '/laranode-remove-php-fpm-pool-for-user.sh',
+            config('laranode.laranode_bin_path').'/laranode-remove-php-fpm-pool-for-user.sh',
             $this->website->user->systemUsername,
             $thisPhpVersion,
         ]);
 
         if ($removePhpFpmPool->failed()) {
-            throw new DeleteWebsiteException('Failed to remove php-fpm pool: ' . $removePhpFpmPool->errorOutput());
+            throw new DeleteWebsiteException('Failed to remove php-fpm pool: '.$removePhpFpmPool->errorOutput());
         }
     }
 }

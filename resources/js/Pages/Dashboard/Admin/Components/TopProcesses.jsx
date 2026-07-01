@@ -1,50 +1,11 @@
 import { Tooltip } from 'react-tooltip'
-import { useEffect, useState } from "react";
 import { FaSitemap, FaArrowDown91 } from 'react-icons/fa6';
 import { ImSpinner9 } from "react-icons/im";
+import TopProcessesChart from './TopProcessesChart';
 
-
-const TopProcesses = () => {
-    const [topStats, setTopStats] = useState([]);
-    const [sortBy, setSortBy] = useState("cpu");
-    const [spinner, showSpinner] = useState(false);
-
-    const echo = window.Echo;
-
-    const setSortPreferrence = (sortBy) => {
-        window.axios.patch("/dashboard/admin/set/top-sort", { sortBy }).then((response) => {
-            setSortBy(response.data.sortBy);
-            showSpinner(true);
-        });
-    }
-
-    useEffect(() => {
-
-        const topStatsChannel = echo.private("topstats");
-
-        window.axios.get("/dashboard/admin/get/top-sort").then((response) => {
-            setSortBy(response.data.sortBy);
-        });
-
-        topStatsChannel.listen("TopStatsEvent", (data) => {
-            setTopStats(data);
-            showSpinner(false);
-        });
-
-        // Set interval to "whisper" every 2 seconds
-        // Makes it so we get stats via sockets
-        const whisperInterval = setInterval(() => {
-            topStatsChannel.whisper("typing", { requesting: "dashboard-top-stats" });
-        }, 2000);
-
-        return () => {
-            clearInterval(whisperInterval);
-            echo.leave("topstats");
-        };
-    }, []);
-
-
-    { topStats?.error && <ShowError error={topStats?.error} /> }
+// Presentational: data + sort control are owned by AdminDashboard so the
+// `topstats` channel is subscribed exactly once for the whole page.
+const TopProcesses = ({ topStats = [], sortBy = "cpu", onSort, spinner = false }) => {
 
     return (<>
         <div className="flex items-center justify-between flex-wrap mt-3">
@@ -55,17 +16,18 @@ const TopProcesses = () => {
             <div className="inline-flex">
                 {spinner ? <ImSpinner9 className="animate-spin w-4 h-4 mr-1" /> :
                     (<>
-                        <button className={`flex items-center ${sortBy === "memory" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("memory")}>
+                        <button className={`flex items-center ${sortBy === "memory" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => onSort("memory")}>
                             <FaArrowDown91 className='mr-1.5' />
                             Memory
                         </button>
-                        <button className={`ml-1.5 flex items-center ${sortBy === "cpu" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => setSortPreferrence("cpu")}>
+                        <button className={`ml-1.5 flex items-center ${sortBy === "cpu" ? "text-indigo-500 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`} onClick={() => onSort("cpu")}>
                             <FaArrowDown91 className='mr-1.5' />
                             CPU
                         </button>
                     </>)}
             </div>
         </div>
+        <TopProcessesChart topStats={topStats} sortBy={sortBy} />
         <div className="relative overflow-x-auto pb-12 bg-white dark:bg-gray-850 mt-3">
             <table className="w-full  text-left rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead className="text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-300 text-sm">

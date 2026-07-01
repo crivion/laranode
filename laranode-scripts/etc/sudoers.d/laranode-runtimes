@@ -1,0 +1,9 @@
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-install.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-manage.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-unit.sh !requiretty
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-vhost-switch.sh !requiretty
+
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-install.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-manage.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-runtime-unit.sh
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-vhost-switch.sh

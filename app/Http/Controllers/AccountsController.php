@@ -5,13 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateAccountRequest;
 use App\Http\Requests\EditAccountRequest;
 use App\Models\User;
-use App\Services\Accounts\CreateAccountException;
 use App\Services\Accounts\CreateAccountService;
 use App\Services\Accounts\DeleteAccountService;
 use App\Services\Accounts\UpdateAccountService;
-use Exception;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AccountsController extends Controller
@@ -22,6 +19,7 @@ class AccountsController extends Controller
     public function index(): \Inertia\Response
     {
         $accounts = User::all();
+
         return Inertia::render('Accounts/Index', compact('accounts'));
     }
 
@@ -37,7 +35,6 @@ class AccountsController extends Controller
         return redirect()->route('accounts.index');
     }
 
-
     /**
      * Update the specified resource in storage.
      */
@@ -50,12 +47,15 @@ class AccountsController extends Controller
         return redirect()->route('accounts.index');
     }
 
-
     /**
      * Remove the specified resource from storage.
      */
     public function destroy($account): RedirectResponse
     {
+        if ((int) $account === auth()->id()) {
+            abort(403, 'Cannot delete your own account.');
+        }
+
         (new DeleteAccountService(User::findOrFail($account)))->handle();
 
         session()->flash('success', 'Account deleted successfully!');
@@ -68,7 +68,16 @@ class AccountsController extends Controller
      */
     public function impersonate(User $user): RedirectResponse
     {
+        if ($user->id === auth()->id()) {
+            abort(403, 'Cannot impersonate yourself.');
+        }
+
+        if (! $user->canBeImpersonated()) {
+            abort(403, 'This user cannot be impersonated.');
+        }
+
         auth()->user()->impersonate($user);
+
         return redirect()->route('dashboard');
     }
 
@@ -78,6 +87,7 @@ class AccountsController extends Controller
     public function leaveImpersonation(): RedirectResponse
     {
         auth()->user()->leaveImpersonation();
+
         return redirect()->route('dashboard');
     }
 }

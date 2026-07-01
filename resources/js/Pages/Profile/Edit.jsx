@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -35,6 +35,21 @@ export default function Edit({ mustVerifyEmail, status }) {
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-950">
                         <DeleteUserForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-950">
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+                            Notification Preferences
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                            Manage which notifications you receive and how they are delivered.
+                        </p>
+                        <Link
+                            href="/profile/notifications"
+                            className="inline-block px-4 py-2 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        >
+                            Manage Notifications
+                        </Link>
                     </div>
                 </div>
             </div>

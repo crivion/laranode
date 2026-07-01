@@ -1,0 +1,2 @@
+Defaults!/home/laranode_ln/panel/laranode-scripts/bin/laranode-cron.sh !requiretty
+www-data ALL=(www-data) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-cron.sh

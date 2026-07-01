@@ -112,6 +112,70 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        // Privileged admin connections for Laranode database management.
+        // These use dedicated MYSQL_ADMIN_* / PGSQL_* env vars — never share
+        // credentials with the panel's own DB_* connection.
+
+        'mysql_admin' => [
+            'driver' => 'mysql',
+            'url' => null,
+            'host' => env('MYSQL_ADMIN_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('MYSQL_ADMIN_PORT', env('DB_PORT', '3306')),
+            'database' => env('MYSQL_ADMIN_DB', 'mysql'),
+            'username' => env('MYSQL_ADMIN_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('MYSQL_ADMIN_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            // PDO_EMULATE_PREPARES enables client-side binding for DDL statements
+            // like "CREATE USER ... IDENTIFIED BY ?" which MySQL's server-side
+            // prepared statement protocol does not support for DDL clauses.
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ]) : [PDO::ATTR_EMULATE_PREPARES => true],
+        ],
+
+        'mariadb_admin' => [
+            'driver' => 'mariadb',
+            'url' => null,
+            'host' => env('MYSQL_ADMIN_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('MYSQL_ADMIN_PORT', env('DB_PORT', '3306')),
+            'database' => env('MYSQL_ADMIN_DB', 'mysql'),
+            'username' => env('MYSQL_ADMIN_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('MYSQL_ADMIN_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ]) : [PDO::ATTR_EMULATE_PREPARES => true],
+        ],
+
+        'pgsql_admin' => [
+            'driver' => 'pgsql',
+            'url' => null,
+            'host' => env('PGSQL_HOST', '127.0.0.1'),
+            'port' => env('PGSQL_PORT', '5432'),
+            'database' => env('PGSQL_DB', 'postgres'),
+            'username' => env('PGSQL_USERNAME', 'postgres'),
+            'password' => env('PGSQL_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
     ],
 
     /*

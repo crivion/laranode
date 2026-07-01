@@ -9,9 +9,10 @@ use App\Actions\Filemanager\GetFileContentsAction;
 use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
+use App\Observers\NotificationsObserver;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
@@ -38,13 +39,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->when($laranodeFileManagerClasses)
             ->needs(Filesystem::class)
             ->give(function () {
-                if (!Auth::check()) return null;
+                if (! Auth::check()) {
+                    return null;
+                }
 
                 $userHome = Auth::user()->homedir;
 
                 Config::set('laranode.user_base_path', $userHome);
 
                 $adapter = new LocalFilesystemAdapter($userHome, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
+
                 return new Filesystem($adapter);
             });
     }
@@ -55,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        DatabaseNotification::observe(NotificationsObserver::class);
 
         if (Auth::check()) {
             $user = Auth::user();

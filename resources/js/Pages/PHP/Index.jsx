@@ -107,7 +107,7 @@ export default function PHPIndex() {
                         <TbBrandPhp className='mr-2' />
                         PHP Versions
                     </h2>
-                    <InstallPHPForm />
+                    <InstallPHPForm installedVersions={phpVersions} />
                 </div>
             }
         >

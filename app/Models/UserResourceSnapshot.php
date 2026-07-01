@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class UserResourceSnapshot extends Model
+{
+    use MassPrunable;
+
+    protected $fillable = [
+        'user_id',
+        'snapshotted_at',
+        'disk_bytes',
+        'apache_request_count',
+    ];
+
+    protected $casts = [
+        'snapshotted_at' => 'datetime',
+        'disk_bytes' => 'integer',
+        'apache_request_count' => 'integer',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function prunable(): Builder
+    {
+        return static::where('snapshotted_at', '<', now()->subDays(90));
+    }
+}

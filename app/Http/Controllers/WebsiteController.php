@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SSL\CheckWebsiteSslStatusAction;
+use App\Actions\SSL\RemoveWebsiteSslAction;
 use App\Http\Requests\CreateWebsiteRequest;
+use App\Http\Requests\SwitchRuntimeRequest;
 use App\Http\Requests\UpdateWebsitePHPVersionRequest;
+use App\Jobs\SwitchRuntimeOperationJob;
+use App\Models\Operation;
 use App\Models\Website;
-use App\Models\PhpVersion;
 use App\Services\Websites\CreateWebsiteService;
 use App\Services\Websites\DeleteWebsiteService;
 use App\Services\Websites\UpdateWebsitePHPVersionService;
-use App\Actions\SSL\GenerateWebsiteSslAction;
-use App\Actions\SSL\RemoveWebsiteSslAction;
-use App\Actions\SSL\CheckWebsiteSslStatusAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
@@ -49,7 +50,6 @@ class WebsiteController extends Controller
         return redirect()->route('websites.index');
     }
 
-
     /**
      * Update the specified resource in storage.
      */
@@ -61,11 +61,36 @@ class WebsiteController extends Controller
 
         $validated = $request->validated();
 
-        (new UpdateWebsitePHPVersionService($website, (int) $validated['php_version_id']))->handle();
+        try {
+            (new UpdateWebsitePHPVersionService($website, (int) $validated['php_version_id']))->handle();
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->withErrors(['runtime' => $e->getMessage()]);
+        }
 
         session()->flash('success', 'Website updated successfully.');
 
         return redirect()->route('websites.index');
+    }
+
+    /**
+     * Switch the PHP runtime for a website (async via OperationJob).
+     */
+    public function switchRuntime(SwitchRuntimeRequest $request, Website $website)
+    {
+        Gate::authorize('update', $website);
+
+        $runtime = $request->validated()['runtime'];
+
+        $operation = Operation::create([
+            'user_id' => $request->user()->id,
+            'type' => 'runtime.switch',
+            'target' => $website->url,
+            'status' => 'queued',
+        ]);
+
+        SwitchRuntimeOperationJob::dispatch($operation, $website, $runtime);
+
+        return response()->json(['operation_id' => $operation->id]);
     }
 
     /**
@@ -91,24 +116,30 @@ class WebsiteController extends Controller
     {
         Gate::authorize('update', $website);
 
-        $request->validate([
-            'enabled' => 'required|boolean'
-        ]);
+        $request->validate(['enabled' => 'required|boolean']);
 
+        if ($request->enabled) {
+            $operation = \App\Models\Operation::create([
+                'user_id' => $request->user()->id,
+                'type' => 'ssl.generate',
+                'target' => $website->url,
+                'status' => 'queued',
+            ]);
+
+            \App\Jobs\GenerateSslOperationJob::dispatch($operation, $website, $request->user()->email);
+
+            return response()->json(['operation_id' => $operation->id]);
+        }
+
+        // Disable path stays synchronous (fast).
         try {
-            if ($request->enabled) {
-                // Generate SSL certificate
-                (new GenerateWebsiteSslAction())->execute($website, $request->user()->email);
-            } else {
-                // Remove SSL certificate
-                (new RemoveWebsiteSslAction())->execute($website);
-            }
+            (new RemoveWebsiteSslAction)->execute($website);
+            session()->flash('success', 'SSL certificate removed successfully');
 
-            session()->flash('success', $request->enabled ? 'SSL certificate generated successfully' : 'SSL certificate removed successfully');
             return redirect()->route('websites.index');
-
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to ' . ($request->enabled ? 'generate' : 'remove') . ' SSL certificate: ' . $e->getMessage());
+            session()->flash('error', 'Failed to remove SSL certificate: '.$e->getMessage());
+
             return redirect()->back();
         }
     }
@@ -121,19 +152,19 @@ class WebsiteController extends Controller
         Gate::authorize('view', $website);
 
         try {
-            $result = (new CheckWebsiteSslStatusAction())->execute($website);
+            $result = (new CheckWebsiteSslStatusAction)->execute($website);
 
             return response()->json([
                 'success' => true,
                 'ssl_status' => $result['ssl_status'],
                 'ssl_enabled' => $result['ssl_enabled'],
-                'status_text' => $website->getSslStatusText()
+                'status_text' => $website->getSslStatusText(),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to check SSL status: ' . $e->getMessage()
+                'message' => 'Failed to check SSL status: '.$e->getMessage(),
             ], 500);
         }
     }

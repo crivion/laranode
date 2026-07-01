@@ -2,10 +2,9 @@
 
 namespace App\Services\Websites;
 
-use App\Services\Laranode\AddVhostEntryService;
-use App\Services\Laranode\CreatePhpFpmPoolService;
 use App\Models\PhpVersion;
 use App\Models\Website;
+use App\Services\Laranode\CreatePhpFpmPoolService;
 use Illuminate\Support\Facades\Process;
 
 class UpdateWebsitePHPVersionService
@@ -14,6 +13,10 @@ class UpdateWebsitePHPVersionService
 
     public function handle(): void
     {
+        if ($this->website->runtime !== 'php-fpm') {
+            throw new \InvalidArgumentException('PHP version switching is not supported for this runtime.');
+        }
+
         // ensure selected PHP version is active
         $phpVersion = PhpVersion::active()->findOrFail($this->phpVersionId);
 
@@ -24,12 +27,11 @@ class UpdateWebsitePHPVersionService
 
         Process::run([
             'sudo',
-            $laranodeBinPath . '/laranode-update-php-version.sh',
+            $laranodeBinPath.'/laranode-update-php-version.sh',
             $this->website->url,
             $this->website->phpVersion->version,
             $phpVersion->version,
         ]);
-
 
         // update website with the selected active PHP version
         $this->website->update([
@@ -37,5 +39,3 @@ class UpdateWebsitePHPVersionService
         ]);
     }
 }
-
-

@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,8 +13,9 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-    use Notifiable;
+
     use Impersonate;
+    use Notifiable;
 
     public $appends = ['homedir', 'systemUsername'];
 
@@ -32,7 +32,8 @@ class User extends Authenticatable
         'role',
         'domain_limit',
         'database_limit',
-        'ssh_access'
+        'ssh_access',
+        'webhook_url',
     ];
 
     /**
@@ -43,6 +44,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'webhook_url',
     ];
 
     /**
@@ -56,6 +58,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'ssh_access' => 'boolean',
+            'webhook_url' => 'encrypted',
         ];
     }
 
@@ -65,6 +68,11 @@ class User extends Authenticatable
     public function canImpersonate()
     {
         return $this->isAdmin();
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return ! $this->isAdmin();
     }
 
     /**
@@ -77,24 +85,27 @@ class User extends Authenticatable
 
     /**
      * not using casts as it's not working in some scenarios
-     * @return string
      */
     public function getHomedirAttribute(): string
     {
-        return '/home/' . $this->systemUsername;
+        return '/home/'.$this->systemUsername;
     }
 
     /**
      * not using casts as it's not working in some scenarios
-     * @return string
      */
     public function getSystemUsernameAttribute(): string
     {
-        return $this->username . '_ln';
+        return $this->username.'_ln';
     }
 
     public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Website::class);
+    }
+
+    public function databases(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Database::class);
     }
 }

@@ -1,0 +1,1 @@
+www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/laranode-postgres.sh

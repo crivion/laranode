@@ -10,12 +10,14 @@
   "license": "MIT",
   "require": {
     "php": "^8.2",
+    "dragonmantank/cron-expression": "^3.6",
     "inertiajs/inertia-laravel": "^2.0",
     "lab404/laravel-impersonate": "^1.7",
     "laravel/framework": "^12.0",
     "laravel/reverb": "^1.4",
     "laravel/sanctum": "^4.0",
     "laravel/tinker": "^2.9",
+    "league/flysystem-aws-s3-v3": "^3.35",
     "league/flysystem-memory": "^3.29",
     "league/mime-type-detection": "^1.16",
     "tightenco/ziggy": "^2.0"
