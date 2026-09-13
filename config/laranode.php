@@ -10,7 +10,7 @@ return [
     | binary. This is used to create and delete system users.
     |
     */
-    'laranode_bin_path' => base_path('laranode-scripts/bin'),
+    'laranode_bin_path' => env('LARANODE_BIN_PATH', base_path('laranode-scripts/bin')),
 
     /*
     |--------------------------------------------------------------------------

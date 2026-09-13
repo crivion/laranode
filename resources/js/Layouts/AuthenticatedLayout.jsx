@@ -34,7 +34,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     )}
 
-                    <div className="ml-3 pr-3">
+                    <div className="ml-3 pr-3 mx-auto max-w-screen-xl">
                         {children}
                     </div>
                 </main>

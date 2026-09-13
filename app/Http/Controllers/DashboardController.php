@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SystemStatsService;
-use App\Models\Website;
 use App\Models\Database;
-
+use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-
     public function index(Request $r)
     {
         if ($r->user()->isAdmin()) {
@@ -24,7 +21,9 @@ class DashboardController extends Controller
 
     public function admin()
     {
-        return Inertia::render('Dashboard/Admin/AdminDashboard');
+        $initialStats = Cache::get('dashboard_stats_last_known', []);
+
+        return Inertia::render('Dashboard/Admin/AdminDashboard', compact('initialStats'));
     }
 
     public function getTopSort()

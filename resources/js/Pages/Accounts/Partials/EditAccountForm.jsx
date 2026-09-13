@@ -80,7 +80,7 @@ export default function EditAccountForm({ account }) {
                         Edit Account
                     </h2>
 
-                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[500px] overflow-scroll">
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto">
 
                         <div>
                             <InputLabel

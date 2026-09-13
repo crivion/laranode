@@ -5,9 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\PhpVersion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Process;
 
 class PHPManagerController extends Controller
 {
+    private function isVersionInstalled(string $version): bool
+    {
+        $scriptPath = base_path('laranode-scripts/bin/laranode-php-list.sh');
+        $result = Process::run(['sudo', 'bash', $scriptPath]);
+        $installed = json_decode($result->output(), true) ?? [];
+
+        return collect($installed)->contains('version', $version);
+    }
 
     public function getVersions(): JsonResponse
     {
@@ -47,24 +56,33 @@ class PHPManagerController extends Controller
         ]);
 
         $version = $request->input('version');
+
+        if ($this->isVersionInstalled($version)) {
+            return response()->json([
+                'success' => false,
+                'message' => "PHP {$version} is already installed",
+            ], 409);
+        }
+
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-install.sh');
 
         // Execute installation script
-        $output = shell_exec("sudo bash {$scriptPath} {$version} 2>&1");
+        $result = Process::run(['sudo', 'bash', $scriptPath, $version]);
+        $output = $result->output();
 
         // Check if installation was successful
         if (strpos($output, 'installed successfully') !== false) {
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} installed successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to install PHP {$version}",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -88,14 +106,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} uninstalled successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to uninstall PHP {$version}",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -123,14 +141,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version}-FPM service {$action}d successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to {$action} PHP {$version}-FPM service",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -154,14 +172,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version}-FPM service restarted successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to restart PHP {$version}-FPM service",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 }

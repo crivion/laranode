@@ -11,9 +11,9 @@ import MySQLLive from './Components/MySQLLive';
 import PHPFPMLive from './Components/PHPFPMLive';
 
 
-export default function Dashboard() {
+export default function Dashboard({ initialStats }) {
 
-    const [liveStats, setLiveStats] = useState([]);
+    const [liveStats, setLiveStats] = useState(initialStats ?? []);
 
     const echo = window.Echo;
 

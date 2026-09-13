@@ -56,6 +56,7 @@ Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/firewall', [FirewallController::class, 'index'])->name('firewall.index');
     Route::post('/admin/firewall/toggle', [FirewallController::class, 'toggle'])->name('firewall.toggle');
+    Route::post('/admin/firewall/safe-setup', [FirewallController::class, 'safeSetup'])->name('firewall.safe-setup');
     Route::post('/admin/firewall/rules', [FirewallController::class, 'store'])->name('firewall.store');
     Route::delete('/admin/firewall/rules/{id}', [FirewallController::class, 'destroy'])->name('firewall.destroy');
 });

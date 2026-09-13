@@ -1,0 +1,50 @@
+# Parallel lab instance — a standalone, port-parameterized copy of the main
+# local-dev lab, for building a feature in an isolated git worktree.
+#
+# Isolation comes from `docker compose -p laranode-<instance>`: the project name
+# namespaces the container, the default network, and ALL named volumes
+# (vendor/node-modules/mysql/postgres) so instances never share state.
+#
+# No pebble/SSL profile and no fixed IP/custom subnet here (the main lab keeps
+# those) — parallel instances use Docker's per-project default network so several
+# can run at once without subnet clashes.
+#
+# Paths are relative to THIS file (local-dev/parallel/), so when launched from a
+# worktree the build context + bind mount resolve to that worktree's root.
+# Launch via local-dev/parallel/up-instance.ps1.
+services:
+  laranode:
+    build:
+      context: ../..
+      dockerfile: local-dev/Dockerfile
+    image: laranode-lab:dev
+    container_name: ${INSTANCE_NAME:-laranode-lab-parallel}
+    privileged: true
+    cgroup: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    stop_signal: SIGRTMIN+3
+    volumes:
+      - ../../:/home/laranode_ln/panel
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - vendor:/home/laranode_ln/panel/vendor
+      - node-modules:/home/laranode_ln/panel/node_modules
+      - mysql:/var/lib/mysql
+      - postgres:/var/lib/postgresql
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    ports:
+      - "${HTTP_PORT:-8091}:80"
+      - "${HTTPS_PORT:-8441}:443"
+      - "${REVERB_PORT:-8101}:8080"
+      - "${VITE_PORT:-5181}:5173"
+      - "${MYSQL_PORT:-33061}:3306"
+
+volumes:
+  vendor:
+  node-modules:
+  mysql:
+  postgres:
