@@ -1,0 +1,16 @@
+[Unit]
+Description=Laranode Queue Worker
+After=network-online.target mysql.service laranode-bootstrap.service
+Wants=network-online.target
+Requires=laranode-bootstrap.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/laranode
+ExecStart=/usr/bin/php /opt/laranode/artisan queue:work --sleep=1 --tries=1
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

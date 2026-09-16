@@ -1,0 +1,9 @@
+[Unit]
+Description=Snapshot Laranode system state every few minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

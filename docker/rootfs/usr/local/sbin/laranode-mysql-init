@@ -1,0 +1,9 @@
+#!/bin/bash
+# Initialise MySQL's datadir when it is empty (fresh docker volume).
+set -e
+
+if [ ! -d /var/lib/mysql/mysql ]; then
+    echo "Initialising MySQL data directory..."
+    install -d -o mysql -g mysql -m 700 /var/lib/mysql
+    mysqld --initialize-insecure --user=mysql --datadir=/var/lib/mysql
+fi

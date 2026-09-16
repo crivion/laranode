@@ -1,0 +1,97 @@
+#!/bin/bash
+# Persist the parts of /etc that Laranode changes at runtime, so hosting accounts survive
+# the container being recreated (docker compose down/up, image upgrades).
+#
+#   save         snapshot *_ln system users, Apache vhosts, PHP-FPM pools, UFW rules,
+#                SSH host keys and installed PHP versions into /var/lib/laranode/system
+#   restore      apply the snapshot at boot, before any of those services start
+#   restore-php  reinstall PHP versions added through the PHP manager (needs network)
+set -euo pipefail
+umask 077
+
+STATE_DIR=/var/lib/laranode/system
+RESTORED_MARKER=/run/laranode-state-restored
+ACCOUNT_FILES=(passwd shadow group gshadow)
+BIN=/opt/laranode/laranode-scripts/bin
+
+installed_php_versions() {
+    dpkg-query -W -f='${Package} ${db:Status-Status}\n' 'php*-fpm' 2>/dev/null \
+        | awk '$2 == "installed" { sub(/^php/, "", $1); sub(/-fpm$/, "", $1); print $1 }'
+}
+
+save() {
+    # never overwrite a good snapshot with a half-restored system
+    if [ ! -f "$RESTORED_MARKER" ]; then
+        echo "State was not restored during this boot, skipping save"
+        return 0
+    fi
+
+    install -d -m 700 "$STATE_DIR"
+    local tmp
+    tmp="$(mktemp -d "$STATE_DIR/.save.XXXXXX")"
+
+    for f in "${ACCOUNT_FILES[@]}"; do
+        grep -E '^[^:]+_ln:' "/etc/$f" > "$tmp/$f" || true
+    done
+
+    installed_php_versions > "$tmp/php-versions"
+
+    local paths=()
+    cd /
+    for p in etc/apache2/sites-available etc/apache2/sites-enabled \
+             etc/php/*/fpm/pool.d/*_ln.conf \
+             etc/ufw/ufw.conf etc/ufw/user.rules etc/ufw/user6.rules \
+             etc/ssh/ssh_host_*; do
+        [ -e "$p" ] && paths+=("$p")
+    done
+    tar --exclude='*/000-default.conf' --exclude='*/default-ssl.conf' \
+        -czf "$tmp/config.tar.gz" "${paths[@]}"
+
+    for f in "$tmp"/*; do
+        mv -f "$f" "$STATE_DIR/"
+    done
+    rmdir "$tmp"
+    echo "Laranode system state saved"
+}
+
+restore() {
+    if [ -d "$STATE_DIR" ]; then
+        for f in "${ACCOUNT_FILES[@]}"; do
+            [ -s "$STATE_DIR/$f" ] || continue
+            { grep -vE '^[^:]+_ln:' "/etc/$f" || true; cat "$STATE_DIR/$f"; } > "/etc/$f.laranode"
+            # cat keeps the original owner and mode (e.g. root:shadow 0640)
+            cat "/etc/$f.laranode" > "/etc/$f"
+            rm -f "/etc/$f.laranode"
+        done
+
+        if [ -f "$STATE_DIR/config.tar.gz" ]; then
+            tar -xzpf "$STATE_DIR/config.tar.gz" -C /
+        fi
+
+        echo "Laranode system state restored"
+    fi
+
+    touch "$RESTORED_MARKER"
+}
+
+restore_php() {
+    [ -f "$STATE_DIR/php-versions" ] || return 0
+
+    local installed
+    installed="$(installed_php_versions)"
+
+    while read -r version; do
+        [ -n "$version" ] || continue
+        if ! grep -qx "$version" <<< "$installed"; then
+            echo "Reinstalling PHP $version"
+            "$BIN/laranode-php-install.sh" "$version"
+        fi
+    done < "$STATE_DIR/php-versions"
+}
+
+case "${1:-}" in
+    save) save ;;
+    restore) restore ;;
+    restore-php) restore_php ;;
+    *) echo "Usage: $0 {save|restore|restore-php}"; exit 1 ;;
+esac

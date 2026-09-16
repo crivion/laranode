@@ -1,0 +1,8 @@
+[Unit]
+Description=Laranode system state snapshot
+After=laranode-state.service
+Requires=laranode-state.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/laranode-state save

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Run artisan as the same user as PHP-FPM / queue / reverb so storage stays writable.
+# Usage: docker compose exec laranode laranode-artisan laranode:create-admin
+cd /opt/laranode && exec setpriv --reuid=www-data --regid=www-data --init-groups env HOME=/tmp php artisan "$@"
