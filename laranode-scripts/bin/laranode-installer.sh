@@ -275,10 +275,13 @@ echo "--------------------------------------------------------------------------
 echo -e "\033[0m"
 mkdir -p /home/laranode_ln/logs
 chown -R laranode_ln:laranode_ln /home/laranode_ln
-find /home/laranode_ln -type d -exec chmod 770 {} \;
-find /home/laranode_ln -type f -exec chmod 660 {} \;
-find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
-find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} \;
+# "+" passes many files to one chmod, "\;" would spawn one process per file
+find /home/laranode_ln -type d -exec chmod 770 {} +
+find /home/laranode_ln -type f -exec chmod 660 {} +
+find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} +
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} +
+# the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
+chmod -R ug+x /home/laranode_ln/panel/node_modules/.bin /home/laranode_ln/panel/vendor/bin 2>/dev/null
 
 
 systemctl daemon-reload

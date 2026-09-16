@@ -49,6 +49,8 @@ sudo -u "$PANEL_USER" php artisan migrate --force
 step "Rebuilding frontend assets"
 
 npm install
+# earlier installs chmod 660 across the panel, which leaves vite unexecutable
+chmod -R ug+x "$PANEL_PATH/node_modules/.bin" "$PANEL_PATH/vendor/bin" 2>/dev/null
 npm run build
 
 step "Updating sudoers rules for www-data"
@@ -79,9 +81,9 @@ bash "$PANEL_PATH/laranode-scripts/bin/laranode-fpm-sandbox.sh"
 step "Fixing ownership and permissions"
 
 chown -R "$PANEL_USER:$PANEL_USER" "$PANEL_PATH"
-find "$PANEL_PATH/laranode-scripts/bin" -type f -exec chmod 100 {} \;
-find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod 775 {} \;
-find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type f -exec chmod 664 {} \;
+find "$PANEL_PATH/laranode-scripts/bin" -type f -exec chmod 100 {} +
+find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod 775 {} +
+find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type f -exec chmod 664 {} +
 
 step "Restarting services"
 
