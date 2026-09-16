@@ -32,8 +32,9 @@ create_user() {
 
   # Create the user
   if [ "$ALLOW_LOGIN" = "yes" ]; then
-    # Create user with login shell
-    useradd -m "$USERNAME"
+    # Create user with login shell. -s is explicit because useradd would otherwise
+    # fall back to /bin/sh, while laranode-update-sh-access.sh grants /bin/bash
+    useradd -m -s /bin/bash "$USERNAME"
     if [ $? -ne 0 ]; then
       echo "Error: Failed to create user $USERNAME."
       exit 1

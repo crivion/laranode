@@ -35,6 +35,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'isImpersonating' => app('impersonate')->isImpersonating(),
             ],
+            'ssh' => [
+                'host' => parse_url(config('app.url'), PHP_URL_HOST) ?: $request->getHost(),
+                'port' => (int) config('laranode.ssh_port'),
+            ],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),

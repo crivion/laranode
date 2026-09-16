@@ -1,0 +1,15 @@
+[Unit]
+Description=Reinstall PHP versions previously added through the Laranode PHP manager
+Wants=network-online.target
+After=network-online.target laranode-state.service laranode-bootstrap.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/laranode-state restore-php
+TimeoutStartSec=30min
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

@@ -2,16 +2,15 @@ import { useState } from 'react';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
-import { router } from '@inertiajs/react';
 import { toast } from 'react-toastify';
 import { TbBrandPhp } from 'react-icons/tb';
 
-export default function InstallPHPForm() {
+export default function InstallPHPForm({ onInstalled }) {
     const [showModal, setShowModal] = useState(false);
     const [version, setVersion] = useState('');
     const [isInstalling, setIsInstalling] = useState(false);
 
-    const availableVersions = ['8.4', '8.3', '8.2', '8.1', '8.0', '7.4'];
+    const availableVersions = ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0', '7.4'];
 
     const handleInstall = () => {
         if (!version) {
@@ -20,24 +19,23 @@ export default function InstallPHPForm() {
         }
 
         setIsInstalling(true);
+        toast('Installing PHP ' + version + '...');
 
-        router.post(route('php.install'), 
-            { version },
-            {
-                onBefore: () => toast('Installing PHP ' + version + '...'),
-                onSuccess: () => {
-                    toast.success('PHP ' + version + ' installed successfully');
+        // the endpoint answers with json, so it is called with axios rather than an
+        // inertia visit, which would reject the response
+        window.axios.post(route('php.install'), { version })
+            .then(({ data }) => {
+                if (data.success) {
+                    toast.success(data.message);
                     setShowModal(false);
                     setVersion('');
-                    router.reload();
-                },
-                onError: (errors) => {
-                    toast.error('Failed to install PHP ' + version);
-                    console.error(errors);
-                },
-                onFinish: () => setIsInstalling(false),
-            }
-        );
+                    onInstalled?.();
+                } else {
+                    toast.error(data.message);
+                }
+            })
+            .catch(() => toast.error('Failed to install PHP ' + version))
+            .finally(() => setIsInstalling(false));
     };
 
     return (

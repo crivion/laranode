@@ -1,0 +1,171 @@
+#!/bin/bash
+# Idempotent boot-time setup of the Laranode panel inside the container.
+# Mirrors the post-install part of laranode-scripts/bin/laranode-installer.sh.
+set -euo pipefail
+
+PANEL=/opt/laranode
+STATE=/var/lib/laranode
+ENV_FILE="$STATE/.env"
+
+log() { echo -e "\033[34m[laranode]\033[0m $*"; }
+as_www() { (cd "$PANEL" && setpriv --reuid=www-data --regid=www-data --init-groups env HOME=/tmp "$@"); }
+artisan() { as_www php artisan "$@"; }
+sql() { mysql --protocol=socket -uroot -NBe "$1" laranode; }
+
+# systemd does not pass the container environment to services, read it from PID 1
+while IFS='=' read -r -d '' key value; do
+    case "$key" in
+        LARANODE_*|TZ) export "$key=$value" ;;
+    esac
+done < /proc/1/environ
+
+LARANODE_URL="${LARANODE_URL:-http://localhost}"
+url_host="$(echo "$LARANODE_URL" | sed -E 's#^[a-z]+://##; s#[:/].*$##')"
+LARANODE_REVERB_HOST="${LARANODE_REVERB_HOST:-$url_host}"
+LARANODE_REVERB_PORT="${LARANODE_REVERB_PORT:-8080}"
+LARANODE_REVERB_SCHEME="${LARANODE_REVERB_SCHEME:-http}"
+LARANODE_SSH_PORT="${LARANODE_SSH_PORT:-2222}"
+
+set_env() {
+    # values are read through ENVIRON so they never need escaping
+    K="$1" V="$2" awk '
+        index($0, ENVIRON["K"] "=") == 1 { print ENVIRON["K"] "=" ENVIRON["V"]; found = 1; next }
+        { print }
+        END { if (!found) print ENVIRON["K"] "=" ENVIRON["V"] }
+    ' "$ENV_FILE" > "$ENV_FILE.tmp"
+    cat "$ENV_FILE.tmp" > "$ENV_FILE" && rm -f "$ENV_FILE.tmp"
+}
+
+get_env() {
+    { grep -E "^$1=" "$ENV_FILE" || true; } | head -n1 | cut -d= -f2- | sed -E 's/^"(.*)"$/\1/'
+}
+
+install -d -o root -g www-data -m 750 "$STATE"
+
+"$PANEL/laranode-scripts/bin/laranode-fpm-sandbox.sh"
+
+# --------------------------------------------------------------------------------
+# Firewall: the installer allows these on a VPS, so enabling UFW from the panel
+# does not lock everyone out of the container (ports are fixed inside it)
+# --------------------------------------------------------------------------------
+for port in 22 80 443 8080; do
+    ufw allow "$port" > /dev/null
+done
+
+# --------------------------------------------------------------------------------
+# Storage volume (may be empty or owned by root on first mount)
+# --------------------------------------------------------------------------------
+mkdir -p "$PANEL"/storage/{app/public,framework/{cache/data,sessions,views},logs}
+chown -R www-data:www-data "$PANEL/storage" "$PANEL/bootstrap/cache"
+chmod -R ug+rwX "$PANEL/storage" "$PANEL/bootstrap/cache"
+
+# --------------------------------------------------------------------------------
+# .env
+# --------------------------------------------------------------------------------
+if [ ! -f "$ENV_FILE" ]; then
+    log "Creating .env"
+    cp "$PANEL/.env.example" "$ENV_FILE"
+    set_env APP_NAME Laranode
+    set_env APP_ENV production
+    set_env APP_DEBUG false
+    set_env DB_PASSWORD "\"$(openssl rand -hex 16)\""
+    set_env BROADCAST_CONNECTION reverb
+    set_env REVERB_APP_ID "$(shuf -i 100000-999999 -n 1)"
+    set_env REVERB_APP_KEY "$(openssl rand -hex 10)"
+    set_env REVERB_APP_SECRET "$(openssl rand -hex 10)"
+fi
+chown root:www-data "$ENV_FILE"
+chmod 640 "$ENV_FILE"
+
+# values derived from the container environment are refreshed on every boot
+set_env APP_URL "\"$LARANODE_URL\""
+[ -n "${TZ:-}" ] && set_env APP_TIMEZONE "$TZ"
+# the backend talks to reverb locally, the browser uses the published host/port
+set_env REVERB_HOST '"127.0.0.1"'
+set_env REVERB_PORT 8080
+set_env REVERB_SCHEME http
+set_env VITE_REVERB_APP_KEY "\"$(get_env REVERB_APP_KEY)\""
+set_env VITE_REVERB_HOST "\"$LARANODE_REVERB_HOST\""
+set_env VITE_REVERB_PORT "\"$LARANODE_REVERB_PORT\""
+set_env VITE_REVERB_SCHEME "\"$LARANODE_REVERB_SCHEME\""
+# sshd listens on 22 inside the container, docker publishes it elsewhere
+set_env SSH_PORT "$LARANODE_SSH_PORT"
+
+if [ -z "$(get_env APP_KEY)" ]; then
+    log "Generating application key"
+    set_env APP_KEY "base64:$(openssl rand -base64 32)"
+fi
+
+# --------------------------------------------------------------------------------
+# MySQL: root via unix socket only, dedicated laranode user (like the installer)
+# --------------------------------------------------------------------------------
+log "Configuring MySQL"
+for _ in $(seq 1 60); do
+    mysqladmin --protocol=socket -uroot ping > /dev/null 2>&1 && break
+    sleep 1
+done
+
+if ! mysql --protocol=socket -uroot -NBe "SELECT 1 FROM information_schema.plugins WHERE plugin_name = 'auth_socket'" | grep -q 1; then
+    mysql --protocol=socket -uroot -e "INSTALL PLUGIN auth_socket SONAME 'auth_socket.so'"
+fi
+
+DB_PASSWORD="$(get_env DB_PASSWORD)"
+mysql --protocol=socket -uroot <<SQL
+ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;
+CREATE USER IF NOT EXISTS 'laranode'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+ALTER USER 'laranode'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON *.* TO 'laranode'@'localhost' WITH GRANT OPTION;
+CREATE DATABASE IF NOT EXISTS laranode;
+FLUSH PRIVILEGES;
+SQL
+
+# --------------------------------------------------------------------------------
+# Laravel
+# --------------------------------------------------------------------------------
+log "Running migrations"
+artisan config:clear > /dev/null
+artisan migrate --force --no-interaction
+
+if [ "$(sql 'SELECT COUNT(*) FROM php_versions')" = "0" ]; then
+    log "Seeding database"
+    artisan db:seed --force --no-interaction
+fi
+
+ln -sfn "$PANEL/storage/app/public" "$PANEL/public/storage"
+
+admin_exists() { [ "$(sql "SELECT COUNT(*) FROM users WHERE role = 'admin'")" != "0" ]; }
+
+if ! admin_exists && [ -n "${LARANODE_ADMIN_EMAIL:-}" ] && [ -n "${LARANODE_ADMIN_PASSWORD:-}" ]; then
+    log "Creating admin account for $LARANODE_ADMIN_EMAIL"
+    # values are passed through the environment to avoid any quoting issues
+    ADMIN_NAME="${LARANODE_ADMIN_NAME:-Admin}" ADMIN_EMAIL="$LARANODE_ADMIN_EMAIL" ADMIN_PASSWORD="$LARANODE_ADMIN_PASSWORD" \
+        as_www php -r '
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+            App\Models\User::create([
+                "username" => "laranode", // same as laranode:create-admin
+                "name" => getenv("ADMIN_NAME"),
+                "email" => getenv("ADMIN_EMAIL"),
+                "password" => getenv("ADMIN_PASSWORD"),
+                "role" => "admin",
+                "ssh_access" => true,
+            ]);'
+fi
+
+# --------------------------------------------------------------------------------
+# Frontend assets: VITE_* values are compiled in, rebuild whenever they change
+# --------------------------------------------------------------------------------
+vite_hash="$(grep -E '^VITE_' "$ENV_FILE" | sha256sum | cut -d' ' -f1)"
+if [ ! -f "$PANEL/public/build/manifest.json" ] || [ "$(cat "$STATE/.vite-hash" 2>/dev/null)" != "$vite_hash" ]; then
+    log "Compiling frontend assets"
+    (cd "$PANEL" && npm run build)
+    echo "$vite_hash" > "$STATE/.vite-hash"
+fi
+
+if ! admin_exists; then
+    log "No admin account yet. Create one with:"
+    log "  docker compose exec laranode laranode-artisan laranode:create-admin"
+fi
+
+log "Laranode is ready at $LARANODE_URL"

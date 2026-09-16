@@ -1,0 +1,17 @@
+[Unit]
+Description=Laranode bootstrap (.env, database, migrations, assets)
+Wants=network-online.target
+After=network-online.target mysql.service laranode-state.service
+Requires=mysql.service
+Before=apache2.service laranode-queue-worker.service laranode-reverb.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/laranode-bootstrap
+TimeoutStartSec=15min
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

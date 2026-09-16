@@ -30,7 +30,7 @@ class PHPManagerController extends Controller
     public function list(): JsonResponse
     {
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-list.sh');
-        $output = shell_exec("sudo bash {$scriptPath}");
+        $output = shell_exec("sudo {$scriptPath}");
 
         $phpVersions = json_decode($output, true) ?? [];
 
@@ -50,10 +50,17 @@ class PHPManagerController extends Controller
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-install.sh');
 
         // Execute installation script
-        $output = shell_exec("sudo bash {$scriptPath} {$version} 2>&1");
+        $output = shell_exec("sudo {$scriptPath} {$version} 2>&1");
 
         // Check if installation was successful
         if (strpos($output, 'installed successfully') !== false) {
+
+            // make the version selectable when creating or editing websites
+            PhpVersion::updateOrCreate(
+                ['version' => $version],
+                ['active' => true]
+            );
+
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} installed successfully",
@@ -81,10 +88,15 @@ class PHPManagerController extends Controller
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-uninstall.sh');
 
         // Execute uninstallation script
-        $output = shell_exec("sudo bash {$scriptPath} {$version} 2>&1");
+        $output = shell_exec("sudo {$scriptPath} {$version} 2>&1");
 
         // Check if uninstallation was successful
         if (strpos($output, 'uninstalled successfully') !== false) {
+
+            // keep the record so existing websites still resolve their version,
+            // but stop offering it for new ones
+            PhpVersion::where('version', $version)->update(['active' => false]);
+
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} uninstalled successfully",
@@ -116,7 +128,7 @@ class PHPManagerController extends Controller
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-service.sh');
 
         // Execute service management script
-        $output = shell_exec("sudo bash {$scriptPath} {$action} {$version} 2>&1");
+        $output = shell_exec("sudo {$scriptPath} {$action} {$version} 2>&1");
 
         // Check if action was successful
         if (strpos($output, 'completed successfully') !== false) {
@@ -147,7 +159,7 @@ class PHPManagerController extends Controller
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-service.sh');
 
         // Execute restart script
-        $output = shell_exec("sudo bash {$scriptPath} restart {$version} 2>&1");
+        $output = shell_exec("sudo {$scriptPath} restart {$version} 2>&1");
 
         // Check if restart was successful
         if (strpos($output, 'completed successfully') !== false) {

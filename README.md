@@ -2,6 +2,10 @@
 
 Laranode is a simple but powerful open-source alternative to cPanel and Plesk, designed to simplify VPS and dedicated server management. With an intuitive interface and robust features, Laranode makes it easy to deploy and manage websites, databases, SSL certificates, and more.
 
+**[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
+
+---
+
 ## Features
 
 ✅ **Self-Hosted** – Full control over your server with NO licensing fees.
@@ -17,6 +21,8 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 ✅ **Live System Stats** – Monitor CPU, memory, and network usage in real-time. 
 
 ✅ **LAMP Stack Administration** – Manage Apache, MySQL, and PHP with ease.  
+
+✅ **PHP Manager** – Install, enable and remove PHP versions (7.4 up to 8.5) and assign them per website.
 
 ✅ **User-Friendly Interface** – Clean and simple UI designed for efficiency.  
 
@@ -37,6 +43,33 @@ Laranode can be installed on a FRESH VPS or dedicated server.
 ### Quick Install
 ```bash
 curl -sSL https://raw.githubusercontent.com/crivion/laranode/refs/heads/main/laranode-scripts/bin/laranode-installer.sh | bash
+```
+
+### Docker
+Laranode also runs as a single Docker container that boots systemd and hosts Apache, MySQL, PHP-FPM, the queue worker and reverb inside it, the same way the installer sets up a VPS.
+
+```bash
+git clone https://github.com/crivion/laranode.git && cd laranode
+docker compose up -d --build
+docker compose exec laranode laranode-artisan laranode:create-admin
+```
+
+📖 **[Running Laranode in Docker](docs/DOCKER.md)** covers the settings, the volumes and how upgrades work.
+
+## Upgrading
+
+Existing installations are upgraded with:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/crivion/laranode/refs/heads/main/laranode-scripts/bin/laranode-upgrade.sh | bash
+```
+
+It pulls the latest release, updates dependencies, runs migrations, rebuilds the assets and re-applies the system configuration the panel needs (sudoers rules and the PHP-FPM systemd sandbox). Every step is safe to run repeatedly. Pass `PANEL_PATH=/path/to/panel` if Laranode is not installed in `/home/laranode_ln/panel`.
+
+Docker installations upgrade by rebuilding the image instead, which applies the same steps on boot:
+
+```bash
+git pull && docker compose up -d --build
 ```
 
 ## Getting Started
@@ -69,7 +102,6 @@ Login with the credentials provided during installation.
 
 ## Roadmap - Future Release Plans
 
-- 🔹 PHP Manager - install, update, remove PHP versions
 - 🔹 Backup Manager - backup websites, databases, and files
 
 ## Contributing

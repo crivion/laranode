@@ -169,7 +169,7 @@ echo "Adding www-data to sudoers and allowing to run laranode scripts"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf" >> /etc/sudoers
+echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf, /usr/sbin/ufw" >> /etc/sudoers
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -202,8 +202,17 @@ echo "--------------------------------------------------------------------------
 echo "Cloning Laranode"
 echo -e "\033[0m"
 
-git clone https://github.com/crivion/laranode.git /home/laranode_ln/panel
+# install a specific branch with: curl -sSL <installer url> | LARANODE_BRANCH=my-branch bash
+git clone -b "${LARANODE_BRANCH:-main}" https://github.com/crivion/laranode.git /home/laranode_ln/panel
 echo "--------------------------------------------------------------------------------"
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Relaxing PHP-FPM systemd sandbox so the panel can administer the system"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+bash /home/laranode_ln/panel/laranode-scripts/bin/laranode-fpm-sandbox.sh 8.4
+
 
 
 echo -e "\033[34m"
@@ -266,10 +275,14 @@ echo "--------------------------------------------------------------------------
 echo -e "\033[0m"
 mkdir -p /home/laranode_ln/logs
 chown -R laranode_ln:laranode_ln /home/laranode_ln
-find /home/laranode_ln -type d -exec chmod 770 {} \;
-find /home/laranode_ln -type f -exec chmod 660 {} \;
-find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} \;
-find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} \;
+# "+" passes many files to one chmod, "\;" would spawn one process per file
+find /home/laranode_ln -type d -exec chmod 770 {} +
+find /home/laranode_ln -type f -exec chmod 660 {} +
+find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} +
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} +
+# the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
+# globbed, not -R: these are symlinks and chmod only follows them when named directly
+chmod ug+x /home/laranode_ln/panel/node_modules/.bin/* /home/laranode_ln/panel/vendor/bin/* 2>/dev/null
 
 
 systemctl daemon-reload

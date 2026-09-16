@@ -1,0 +1,17 @@
+[Unit]
+Description=Laranode system state (users, vhosts, PHP-FPM pools, firewall) persistence
+DefaultDependencies=no
+After=local-fs.target
+Before=sysinit.target shutdown.target apache2.service mysql.service ssh.service ufw.service laranode-bootstrap.service
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/laranode-state restore
+ExecStop=/usr/local/sbin/laranode-state save
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=sysinit.target
