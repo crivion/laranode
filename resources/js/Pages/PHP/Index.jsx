@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { TbBrandPhp } from 'react-icons/tb';
 import { TiDelete } from 'react-icons/ti';
 import { FaToggleOn, FaToggleOff, FaSync } from 'react-icons/fa';
@@ -56,47 +56,51 @@ export default function PHPIndex() {
         };
     }, []);
 
+    // these endpoints answer with json, so they are called with axios rather than
+    // an inertia visit, which would reject the response
     const uninstallPhp = (version) => {
-        router.delete(route('php.uninstall'), {
-            data: { version },
-            onBefore: () => toast('Uninstalling PHP ' + version + '...'),
-            onSuccess: () => {
-                toast.success('PHP ' + version + ' uninstalled successfully');
+        toast('Uninstalling PHP ' + version + '...');
+
+        window.axios.delete(route('php.uninstall'), { data: { version } })
+            .then(({ data }) => {
+                data.success
+                    ? toast.success(data.message)
+                    : toast.error(data.message);
+
                 fetchPhpVersions();
-            },
-            onError: () => toast.error('Failed to uninstall PHP ' + version),
-        });
+            })
+            .catch(() => toast.error('Failed to uninstall PHP ' + version));
     };
 
     const toggleService = (version, currentEnabled) => {
         const enabled = !currentEnabled;
         const action = enabled ? 'enable' : 'disable';
 
-        router.post(route('php.service.toggle'),
-            { version, enabled },
-            {
-                onBefore: () => toast(`${action === 'enable' ? 'Enabling' : 'Disabling'} PHP ${version}-FPM...`),
-                onSuccess: () => {
-                    toast.success(`PHP ${version}-FPM ${action}d successfully`);
-                    fetchPhpVersions();
-                },
-                onError: () => toast.error(`Failed to ${action} PHP ${version}-FPM`),
-            }
-        );
+        toast(`${enabled ? 'Enabling' : 'Disabling'} PHP ${version}-FPM...`);
+
+        window.axios.post(route('php.service.toggle'), { version, enabled })
+            .then(({ data }) => {
+                data.success
+                    ? toast.success(data.message)
+                    : toast.error(data.message);
+
+                fetchPhpVersions();
+            })
+            .catch(() => toast.error(`Failed to ${action} PHP ${version}-FPM`));
     };
 
     const restartService = (version) => {
-        router.post(route('php.service.restart'),
-            { version },
-            {
-                onBefore: () => toast('Restarting PHP ' + version + '-FPM...'),
-                onSuccess: () => {
-                    toast.success('PHP ' + version + '-FPM restarted successfully');
-                    fetchPhpVersions();
-                },
-                onError: () => toast.error('Failed to restart PHP ' + version + '-FPM'),
-            }
-        );
+        toast('Restarting PHP ' + version + '-FPM...');
+
+        window.axios.post(route('php.service.restart'), { version })
+            .then(({ data }) => {
+                data.success
+                    ? toast.success(data.message)
+                    : toast.error(data.message);
+
+                fetchPhpVersions();
+            })
+            .catch(() => toast.error('Failed to restart PHP ' + version + '-FPM'));
     };
 
     return (
@@ -107,7 +111,7 @@ export default function PHPIndex() {
                         <TbBrandPhp className='mr-2' />
                         PHP Versions
                     </h2>
-                    <InstallPHPForm />
+                    <InstallPHPForm onInstalled={fetchPhpVersions} />
                 </div>
             }
         >
