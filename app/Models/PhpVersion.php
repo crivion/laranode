@@ -11,6 +11,17 @@ class PhpVersion extends Model
     /** @use HasFactory<\Database\Factories\PhpVersionFactory> */
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'version',
+        'active',
+        'is_default',
+    ];
+
     protected function casts(): array
     {
         return [

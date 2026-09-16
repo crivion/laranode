@@ -11,7 +11,7 @@ export default function InstallPHPForm() {
     const [version, setVersion] = useState('');
     const [isInstalling, setIsInstalling] = useState(false);
 
-    const availableVersions = ['8.4', '8.3', '8.2', '8.1', '8.0', '7.4'];
+    const availableVersions = ['8.5', '8.4', '8.3', '8.2', '8.1', '8.0', '7.4'];
 
     const handleInstall = () => {
         if (!version) {
