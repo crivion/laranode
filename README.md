@@ -42,7 +42,9 @@ curl -sSL https://raw.githubusercontent.com/crivion/laranode/refs/heads/main/lar
 ```
 
 ### Docker
-Laranode can also run as a single Docker container. Because the panel manages the machine it runs on (system users, Apache, PHP-FPM, MySQL, UFW, Let's Encrypt) and reads its stats from systemd and sysstat, the container boots systemd and runs all of those services inside it, just like a VPS. That is why it needs `privileged: true`.
+Laranode can also run as a single Docker container. Because the panel manages the machine it runs on (system users, Apache, PHP-FPM, MySQL, UFW, Let's Encrypt) and reads its stats from systemd and sysstat, the container boots systemd and runs all of those services inside it, just like a VPS.
+
+It does **not** run privileged. It needs `NET_ADMIN` and `NET_RAW` for the firewall page, and a writable cgroup mount so systemd can manage its own services; the default seccomp and AppArmor profiles stay in force. The container still administers a full machine, so treat it like a VPS: give it its own host, not one shared with unrelated workloads. If systemd cannot start on your host (cgroup v1, or a host that will not provide a writable cgroup mount), swap those settings for `privileged: true`.
 
 ```bash
 git clone https://github.com/crivion/laranode.git && cd laranode
