@@ -24,6 +24,7 @@ url_host="$(echo "$LARANODE_URL" | sed -E 's#^[a-z]+://##; s#[:/].*$##')"
 LARANODE_REVERB_HOST="${LARANODE_REVERB_HOST:-$url_host}"
 LARANODE_REVERB_PORT="${LARANODE_REVERB_PORT:-8080}"
 LARANODE_REVERB_SCHEME="${LARANODE_REVERB_SCHEME:-http}"
+LARANODE_SSH_PORT="${LARANODE_SSH_PORT:-2222}"
 
 set_env() {
     # values are read through ENVIRON so they never need escaping
@@ -87,6 +88,8 @@ set_env VITE_REVERB_APP_KEY "\"$(get_env REVERB_APP_KEY)\""
 set_env VITE_REVERB_HOST "\"$LARANODE_REVERB_HOST\""
 set_env VITE_REVERB_PORT "\"$LARANODE_REVERB_PORT\""
 set_env VITE_REVERB_SCHEME "\"$LARANODE_REVERB_SCHEME\""
+# sshd listens on 22 inside the container, docker publishes it elsewhere
+set_env SSH_PORT "$LARANODE_SSH_PORT"
 
 if [ -z "$(get_env APP_KEY)" ]; then
     log "Generating application key"

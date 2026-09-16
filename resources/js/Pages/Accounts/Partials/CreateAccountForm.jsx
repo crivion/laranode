@@ -6,13 +6,14 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import Checkbox from '@/Components/Checkbox';
 import TextInput from '@/Components/TextInput';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { FaUserPlus } from 'react-icons/fa6';
 import InputRadio from '@/Components/InputRadio';
 import { toast } from 'react-toastify';
 
 export default function CreateAccountForm() {
+    const { ssh } = usePage().props;
     const [showModal, setShowModal] = useState(false);
 
     const randomPassword = () => {
@@ -293,6 +294,16 @@ export default function CreateAccountForm() {
                                 Allow SSH/SFTP access
                             </div>
                         </div>
+
+                        {data.ssh_access && (
+                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                Connects as <span className="font-mono text-gray-700 dark:text-gray-300">{(data.username || 'username') + '_ln'}</span>
+                                {ssh?.port !== 22 && <> on port <span className="font-mono text-gray-700 dark:text-gray-300">{ssh?.port}</span></>}:
+                                <div className="mt-1 font-mono text-xs text-gray-700 dark:text-gray-300">
+                                    ssh {ssh?.port !== 22 && `-p ${ssh?.port} `}{(data.username || 'username') + '_ln'}@{ssh?.host}
+                                </div>
+                            </div>
+                        )}
 
                         <div>
                             <div className='mt-4 flex items-center space-x-4'>

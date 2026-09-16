@@ -37,6 +37,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Laranode SSH Port
+    |--------------------------------------------------------------------------
+    |
+    | The port accounts with shell access connect to. It is 22 on a normal
+    | install; in docker the container's sshd is published on another port.
+    |
+    */
+    'ssh_port' => env('SSH_PORT', 22),
+
+    /*
+    |--------------------------------------------------------------------------
     | Laranode File Manager - Editable Mime Types
     |--------------------------------------------------------------------------
     |

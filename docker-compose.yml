@@ -36,6 +36,8 @@ services:
             LARANODE_REVERB_HOST: "${LARANODE_REVERB_HOST:-}"
             LARANODE_REVERB_PORT: "${LARANODE_REVERB_PORT:-8080}"
             LARANODE_REVERB_SCHEME: "${LARANODE_REVERB_SCHEME:-http}"
+            # the port accounts with shell access connect to, shown in the panel
+            LARANODE_SSH_PORT: "${LARANODE_SSH_PORT:-2222}"
             # optional: create the admin account on first boot instead of running laranode:create-admin
             LARANODE_ADMIN_NAME: "${LARANODE_ADMIN_NAME:-}"
             LARANODE_ADMIN_EMAIL: "${LARANODE_ADMIN_EMAIL:-}"
