@@ -50,7 +50,7 @@ step "Rebuilding frontend assets"
 
 npm install
 # earlier installs chmod 660 across the panel, which leaves vite unexecutable
-chmod -R ug+x "$PANEL_PATH/node_modules/.bin" "$PANEL_PATH/vendor/bin" 2>/dev/null
+chmod ug+x "$PANEL_PATH"/node_modules/.bin/* "$PANEL_PATH"/vendor/bin/* 2>/dev/null
 npm run build
 
 step "Updating sudoers rules for www-data"

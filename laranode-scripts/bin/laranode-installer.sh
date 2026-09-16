@@ -281,7 +281,8 @@ find /home/laranode_ln -type f -exec chmod 660 {} +
 find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} +
 find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} +
 # the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
-chmod -R ug+x /home/laranode_ln/panel/node_modules/.bin /home/laranode_ln/panel/vendor/bin 2>/dev/null
+# globbed, not -R: these are symlinks and chmod only follows them when named directly
+chmod ug+x /home/laranode_ln/panel/node_modules/.bin/* /home/laranode_ln/panel/vendor/bin/* 2>/dev/null
 
 
 systemctl daemon-reload
