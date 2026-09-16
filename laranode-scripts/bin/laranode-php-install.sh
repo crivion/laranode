@@ -38,6 +38,9 @@ if [ $? -eq 0 ]; then
     
     # Start the service
     systemctl start php${PHP_VERSION}-fpm
+
+    # the panel administers the system through sudo from php-fpm children
+    "$(dirname "$0")/laranode-fpm-sandbox.sh" ${PHP_VERSION}
     
     echo "PHP $PHP_VERSION-FPM service enabled and started"
     exit 0

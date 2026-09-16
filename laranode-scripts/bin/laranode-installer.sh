@@ -169,7 +169,7 @@ echo "Adding www-data to sudoers and allowing to run laranode scripts"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 
-echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf" >> /etc/sudoers
+echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf, /usr/sbin/ufw" >> /etc/sudoers
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -202,8 +202,17 @@ echo "--------------------------------------------------------------------------
 echo "Cloning Laranode"
 echo -e "\033[0m"
 
-git clone https://github.com/crivion/laranode.git /home/laranode_ln/panel
+# install a specific branch with: curl -sSL <installer url> | LARANODE_BRANCH=my-branch bash
+git clone -b "${LARANODE_BRANCH:-main}" https://github.com/crivion/laranode.git /home/laranode_ln/panel
 echo "--------------------------------------------------------------------------------"
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Relaxing PHP-FPM systemd sandbox so the panel can administer the system"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+bash /home/laranode_ln/panel/laranode-scripts/bin/laranode-fpm-sandbox.sh 8.4
+
 
 
 echo -e "\033[34m"
