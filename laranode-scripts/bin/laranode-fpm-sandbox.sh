@@ -25,18 +25,28 @@ for unit in $units; do
     UNIT_NAME=$(basename "$unit")
     DROPIN="/etc/systemd/system/$UNIT_NAME.d/laranode.conf"
 
-    [ -f "$DROPIN" ] && continue
-
     mkdir -p "$(dirname "$DROPIN")"
-    cat > "$DROPIN" <<EOF
+
+    # written to a temp file first so an older override from a previous release is
+    # replaced rather than kept
+    cat > "$DROPIN.new" <<EOF
 # Laranode administers the system through sudo from PHP-FPM children, which the
 # unit's ProtectSystem=full would block. See laranode-fpm-sandbox.sh
 [Service]
 ProtectSystem=false
 ProtectKernelTunables=false
 ProtectKernelModules=false
+# PrivateDevices/RestrictNamespaces/RestrictRealtime in the unit make systemd imply
+# NoNewPrivileges, which stops sudo dead: "the no new privileges flag is set"
+NoNewPrivileges=false
 EOF
 
+    if cmp -s "$DROPIN.new" "$DROPIN"; then
+        rm -f "$DROPIN.new"
+        continue
+    fi
+
+    mv "$DROPIN.new" "$DROPIN"
     echo "Relaxed systemd sandbox for $UNIT_NAME"
     changed=1
 done
@@ -46,10 +56,9 @@ if [ "$changed" = "1" ]; then
 
     for unit in $units; do
         [ -e "$unit" ] || continue
-        UNIT_NAME=$(basename "$unit")
-        if systemctl is-active --quiet "$UNIT_NAME"; then
-            systemctl restart "$UNIT_NAME"
-        fi
+        # try-restart covers units that are still starting up, which "is-active"
+        # reports as inactive, and does nothing for units that are stopped
+        systemctl try-restart "$(basename "$unit")"
     done
 fi
 

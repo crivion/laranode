@@ -5,11 +5,9 @@
 #   docker compose exec laranode laranode-artisan laranode:create-admin
 #
 # Laranode manages system users, Apache, PHP-FPM, MySQL and UFW inside the container,
-# so it runs systemd as PID 1. It does NOT need a privileged container: the settings
-# below are the narrowest set that works, and the default seccomp and AppArmor profiles
-# stay in force. If systemd fails to start on your host (cgroup v1, or a host that will
-# not hand out a writable cgroup mount), replace cap_add, cgroup and the /sys/fs/cgroup
-# volume with "privileged: true".
+# so it runs systemd as PID 1 and needs a privileged container. Dropping privileged
+# costs systemd the ability to set up its per-unit sandboxes, and it then forces
+# NoNewPrivileges on, which stops the panel running its own scripts through sudo.
 # Optional overrides go in a .env file next to this file (see the variables below).
 
 services:
@@ -18,12 +16,7 @@ services:
         image: laranode:latest
         container_name: laranode
         hostname: laranode
-        cap_add:
-            # ufw/iptables, for the firewall page; drop both if you do not use it
-            - NET_ADMIN
-            - NET_RAW
-        # systemd has to manage its own cgroup, which docker otherwise mounts read-only
-        cgroup: host
+        privileged: true
         tty: true
         stop_signal: SIGRTMIN+3
         stop_grace_period: 1m
@@ -49,7 +42,6 @@ services:
             LARANODE_ADMIN_PASSWORD: "${LARANODE_ADMIN_PASSWORD:-}"
             TZ: "${TZ:-UTC}"
         volumes:
-            - /sys/fs/cgroup:/sys/fs/cgroup:rw
             # panel .env and snapshot of system users, vhosts, PHP-FPM pools and firewall rules
             - laranode-state:/var/lib/laranode
             - laranode-storage:/opt/laranode/storage
