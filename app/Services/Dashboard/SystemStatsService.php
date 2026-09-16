@@ -230,48 +230,76 @@ class SystemStatsService
  */
     public function getNetworkStats()
     {
-        $procFile = File::get('/proc/net/dev');
-        $lines = explode("\n", $procFile);
-
         /*
-        cat /proc/net/dev | awk '// {print $1,$2,$10}'                                                                                                      08:59:12
-        Inter-| Receive
-        face |bytes packets
-        lo: 1255453024 1255453024
-        enp1s0: 226070613 421595340
-        wlo1: 0 0
+        /proc/net/dev holds one line per interface, bytes received in the first
+        column and bytes transmitted in the ninth:
+
+        Inter-|   Receive                    |  Transmit
+         face |bytes    packets errs drop ... bytes    packets errs drop ...
+            lo: 1255453024 1255453024 0 0 ... 1255453024 1255453024 0 0 ...
+        enp1s0: 226070613  421595340 0 0 ...  226070613  421595340 0 0 ...
         */
-
-        $cmd = Process::pipe([
-            'cat /proc/net/dev',
-            'awk \'// {print $1,$2,$10}\'',
-        ]);
-
-        if ($cmd->failed()) {
-            return [];
-        }
-
-        $output = $cmd->output();
-
-        $lines = explode("\n", $output);
-        $lines = array_map('trim', array_filter($lines));
-        $lines = array_slice($lines, 1);
+        $lines = explode("\n", File::get('/proc/net/dev'));
 
         $stats = [];
+        $everyInterface = [];
         // nerd way to do 1024*1024*1024
         $gb = 1 << 30;
 
         foreach ($lines as $line) {
-            if (preg_match('/^\s*(\S+):\s*(\d+)\s+(\d+)/', trim($line), $matches)) {
-                $stats[] = [
-                    'interface' => rtrim($matches[1], ":"),
-                    'rx' => round($matches[2] / $gb, 2),
-                    'tx' => round($matches[3] / $gb, 2),
+            if (preg_match('/^\s*(\S+):\s*(\d+)(?:\s+\d+){7}\s+(\d+)/', $line, $matches)) {
+
+                $interface = $matches[1];
+                $rx = (int) $matches[2];
+                $tx = (int) $matches[3];
+
+                $stat = [
+                    'interface' => $interface,
+                    'rx' => round($rx / $gb, 2),
+                    'tx' => round($tx / $gb, 2),
                 ];
+
+                if ('lo' !== $interface) {
+                    $everyInterface[] = $stat;
+                }
+
+                if ($this->isRelevantInterface($interface, $rx, $tx)) {
+                    $stats[] = $stat;
+                }
             }
         }
 
-        return $stats;
+        // never leave the dashboard without a card to show
+        return $stats ?: $everyInterface;
+    }
+
+    /**
+     * Decide whether an interface is worth a card on the dashboard.
+     *
+     * Inside a container only its own uplink is meaningful. On a host we drop loopback,
+     * the tunnel placeholders the kernel always creates and the per-container veth and
+     * bridge pairs docker adds, which alone can be dozens of empty cards.
+     */
+    private function isRelevantInterface(string $interface, int $rx, int $tx): bool
+    {
+        if ($this->isContainerized()) {
+            return (bool) preg_match('/^(eth|en)/', $interface);
+        }
+
+        if (preg_match('/^(lo|veth|br-|virbr|tunl|gre|gretap|erspan|ip_vti|ip6_vti|sit|ip6tnl|ip6gre|dummy)/', $interface)) {
+            return false;
+        }
+
+        // interfaces that never carried any traffic are noise too
+        return $rx > 0 || $tx > 0;
+    }
+
+    /**
+     * Whether Laranode is running inside a container rather than on the host.
+     */
+    private function isContainerized(): bool
+    {
+        return file_exists('/.dockerenv') || file_exists('/run/.containerenv');
     }
 
 
