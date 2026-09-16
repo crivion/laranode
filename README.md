@@ -2,6 +2,10 @@
 
 Laranode is a simple but powerful open-source alternative to cPanel and Plesk, designed to simplify VPS and dedicated server management. With an intuitive interface and robust features, Laranode makes it easy to deploy and manage websites, databases, SSL certificates, and more.
 
+**[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
+
+---
+
 ## Features
 
 ✅ **Self-Hosted** – Full control over your server with NO licensing fees.
@@ -42,32 +46,15 @@ curl -sSL https://raw.githubusercontent.com/crivion/laranode/refs/heads/main/lar
 ```
 
 ### Docker
-Laranode can also run as a single Docker container. Because the panel manages the machine it runs on (system users, Apache, PHP-FPM, MySQL, UFW, Let's Encrypt) and reads its stats from systemd and sysstat, the container boots systemd and runs all of those services inside it, just like a VPS. That is why it needs `privileged: true`: without it systemd cannot set up the sandboxes its units ask for, and it then forces `NoNewPrivileges` on, which stops the panel from running its own scripts through `sudo`.
-
-The container administers a full machine, so treat it like a VPS and give it its own host rather than one shared with unrelated workloads.
+Laranode also runs as a single Docker container that boots systemd and hosts Apache, MySQL, PHP-FPM, the queue worker and reverb inside it, the same way the installer sets up a VPS.
 
 ```bash
 git clone https://github.com/crivion/laranode.git && cd laranode
 docker compose up -d --build
-docker compose logs -f   # the first boot compiles the frontend assets, give it a few minutes
 docker compose exec laranode laranode-artisan laranode:create-admin
 ```
 
-Set these in a `.env` file next to `docker-compose.yml` to change the defaults:
-
-| Variable | Default | Description |
-|---|---|---|
-| `LARANODE_URL` | `http://localhost` | Public URL of the panel |
-| `LARANODE_HTTP_PORT` / `LARANODE_HTTPS_PORT` | `80` / `443` | Published web ports |
-| `LARANODE_REVERB_HOST` | host of `LARANODE_URL` | Host browsers use to reach the websocket server |
-| `LARANODE_REVERB_PORT` | `8080` | Published websocket port (live stats) |
-| `LARANODE_SSH_PORT` | `2222` | Published SSH port for accounts with shell access |
-| `LARANODE_ADMIN_NAME` / `LARANODE_ADMIN_EMAIL` / `LARANODE_ADMIN_PASSWORD` | | Optional, creates the admin account on first boot |
-| `TZ` | `UTC` | Timezone |
-
-Data lives in named volumes: MySQL, `/home` (websites), Let's Encrypt certificates, sysstat history, panel storage and `.env`. System users, Apache vhosts, PHP-FPM pools, firewall rules and PHP versions added through the PHP manager are saved to the state volume on shutdown (and every 5 minutes), then restored on boot, so `docker compose down` and image upgrades keep your hosting accounts.
-
-Stats such as CPU, memory, uptime and disk describe the Docker host (or the Docker Desktop VM), because containers share the host kernel.
+📖 **[Running Laranode in Docker](docs/DOCKER.md)** covers the settings, the volumes and how upgrades work.
 
 ## Upgrading
 
