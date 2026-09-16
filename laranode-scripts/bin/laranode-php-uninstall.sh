@@ -19,6 +19,13 @@ systemctl stop php${PHP_VERSION}-fpm
 # Disable the service
 systemctl disable php${PHP_VERSION}-fpm
 
+# keep package scripts from restarting apache and the pool serving this request
+cat > /usr/sbin/policy-rc.d <<'POLICY'
+#!/bin/sh
+exit 101
+POLICY
+chmod +x /usr/sbin/policy-rc.d
+
 # Remove PHP packages
 apt-get remove -y php${PHP_VERSION}-* 
 
@@ -28,7 +35,14 @@ apt-get purge -y php${PHP_VERSION}-*
 # Clean up
 apt-get autoremove -y
 
-if [ $? -eq 0 ]; then
+UNINSTALL_STATUS=$?
+
+rm -f /usr/sbin/policy-rc.d
+
+# reload in the background so this request can finish first
+(sleep 2 && systemctl reload apache2) >/dev/null 2>&1 &
+
+if [ $UNINSTALL_STATUS -eq 0 ]; then
     echo "PHP $PHP_VERSION uninstalled successfully"
     exit 0
 else

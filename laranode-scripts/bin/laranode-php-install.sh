@@ -16,6 +16,15 @@ echo "Installing PHP $PHP_VERSION-FPM..."
 # Update apt cache
 apt-get update -qq
 
+# Debian package scripts restart apache and the php-fpm pool that is serving this very
+# request, which kills it mid-install and leaves the panel showing an error even though
+# the install worked. Block service actions while apt runs and reload afterwards.
+cat > /usr/sbin/policy-rc.d <<'POLICY'
+#!/bin/sh
+exit 101
+POLICY
+chmod +x /usr/sbin/policy-rc.d
+
 # Install PHP-FPM and common extensions
 apt-get install -y \
   php${PHP_VERSION}-fpm \
@@ -30,7 +39,11 @@ apt-get install -y \
   php${PHP_VERSION}-bcmath \
   php${PHP_VERSION}-intl
 
-if [ $? -eq 0 ]; then
+INSTALL_STATUS=$?
+
+rm -f /usr/sbin/policy-rc.d
+
+if [ $INSTALL_STATUS -eq 0 ]; then
     echo "PHP $PHP_VERSION installed successfully"
     
     # Enable the service
@@ -42,6 +55,9 @@ if [ $? -eq 0 ]; then
     # the panel administers the system through sudo from php-fpm children
     "$(dirname "$0")/laranode-fpm-sandbox.sh" ${PHP_VERSION}
     
+    # reload in the background so this request can finish first
+    (sleep 2 && systemctl reload apache2) >/dev/null 2>&1 &
+
     echo "PHP $PHP_VERSION-FPM service enabled and started"
     exit 0
 else
