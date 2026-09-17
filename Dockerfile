@@ -69,7 +69,8 @@ RUN chmod 440 /etc/sudoers.d/laranode \
         apache2.service mysql.service php${PHP_VERSION}-fpm.service sysstat.service \
         ssh.service ufw.service certbot.timer \
         laranode-state.service laranode-state-save.timer laranode-php-restore.service \
-        laranode-bootstrap.service laranode-queue-worker.service laranode-reverb.service
+        laranode-bootstrap.service laranode-queue-worker.service laranode-reverb.service \
+        laranode-scheduler.timer
 
 # --------------------------------------------------------------------------------
 # Laranode panel
@@ -89,6 +90,7 @@ RUN composer dump-autoload --optimize \
     # runtime state lives in volumes: .env in /var/lib/laranode, storage in its own volume
     && rm -f .env && ln -s /var/lib/laranode/.env .env \
     && rm -rf public/storage public/hot public/build \
+    && mkdir -p storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache \
     && chmod 700 laranode-scripts/bin/*.sh

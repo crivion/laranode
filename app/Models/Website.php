@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Website extends Model
 {
+    use HasFactory;
 
     protected $appends = ['fullDocumentRoot'];
 
@@ -29,19 +32,20 @@ class Website extends Model
 
     public function getWebsiteRootAttribute(): string
     {
-        return $this->user?->homedir . '/domains/' . $this->url;
+        return $this->user?->homedir.'/domains/'.$this->url;
     }
 
     // not using casts as it's not working in some scenarios
     public function getFullDocumentRootAttribute(): string
     {
-        return $this->user?->homedir . '/domains/' . $this->url . $this->document_root;
+        return $this->user?->homedir.'/domains/'.$this->url.$this->document_root;
     }
 
     public function scopeMine(Builder $query): Builder
     {
         $user = auth()->user();
-        return $query->when($user && !$user->isAdmin(), fn($query) => $query->where('user_id', $user->id));
+
+        return $query->when($user && ! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
     }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -52,6 +56,16 @@ class Website extends Model
     public function phpVersion(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(PhpVersion::class);
+    }
+
+    public function databases(): HasMany
+    {
+        return $this->hasMany(Database::class);
+    }
+
+    public function backups(): HasMany
+    {
+        return $this->hasMany(Backup::class);
     }
 
     /**
@@ -67,7 +81,7 @@ class Website extends Model
      */
     public function isSslExpired(): bool
     {
-        return $this->ssl_status === 'expired' || 
+        return $this->ssl_status === 'expired' ||
                ($this->ssl_expires_at && $this->ssl_expires_at->isPast());
     }
 
@@ -76,7 +90,7 @@ class Website extends Model
      */
     public function getSslStatusText(): string
     {
-        return match($this->ssl_status) {
+        return match ($this->ssl_status) {
             'active' => 'SSL Active',
             'expired' => 'SSL Expired',
             'pending' => 'SSL Pending',
@@ -89,7 +103,7 @@ class Website extends Model
      */
     public function getSslStatusColor(): string
     {
-        return match($this->ssl_status) {
+        return match ($this->ssl_status) {
             'active' => 'text-green-600',
             'expired' => 'text-red-600',
             'pending' => 'text-yellow-600',

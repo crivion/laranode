@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Website;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDatabaseRequest extends FormRequest
@@ -26,6 +27,16 @@ class UpdateDatabaseRequest extends FormRequest
             'charset' => ['required', 'string'],
             'collation' => ['required', 'string'],
             'db_password' => ['nullable', 'string', 'min:8'],
+            'website_id' => ['nullable', 'integer', 'exists:websites,id'],
         ];
+    }
+
+    protected function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->filled('website_id') && ! Website::whereKey($this->integer('website_id'))->where('user_id', $this->user()->id)->exists()) {
+                $validator->errors()->add('website_id', 'The selected website does not belong to this account.');
+            }
+        });
     }
 }

@@ -8,7 +8,7 @@ import EditDatabaseForm from './Partials/EditDatabaseForm';
 import ConfirmationButton from '@/Components/ConfirmationButton';
 import { Tooltip } from 'react-tooltip';
 
-export default function MysqlIndex({ databases = [] }) {
+export default function MysqlIndex({ databases = [], websites = [] }) {
 
     const { auth } = usePage().props;
 
@@ -28,7 +28,7 @@ export default function MysqlIndex({ databases = [] }) {
                         <TbDatabase className='mr-2' />
                         MySQL Databases ({databases.length}/{auth.user.database_limit || 'unlimited'})
                     </h2>
-                    <CreateDatabaseForm />
+                    <CreateDatabaseForm websites={websites} />
                 </div>
             }
         >
@@ -41,6 +41,7 @@ export default function MysqlIndex({ databases = [] }) {
                             <tr>
                                 <th className="px-6 py-3">Database</th>
                                 <th className="px-6 py-3">User</th>
+                                <th className="px-6 py-3">Website</th>
                                 <th className="px-6 py-3">Tables</th>
                                 <th className="px-6 py-3">Size (MB)</th>
                                 <th className="px-6 py-3">Charset</th>
@@ -53,13 +54,14 @@ export default function MysqlIndex({ databases = [] }) {
                                 <tr key={`db-${index}`} className="bg-white border-b text-gray-700 dark:text-gray-200 dark:bg-gray-850 dark:border-gray-700 border-gray-200">
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.name}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.db_user}</td>
+                                    <td className="px-6 py-4">{db.website_url || 'Unassigned'}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.tables}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.sizeMb}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.charset || '-'}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{db.collation || '-'}</td>
                                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         <div className='flex items-center space-x-2'>
-                                            <EditDatabaseForm database={db} />
+                                            <EditDatabaseForm database={db} websites={websites} />
                                             <ConfirmationButton doAction={() => deleteDb(db.id)}>
                                                 <TiDelete className='w-6 h-6 text-red-500' />
                                             </ConfirmationButton>
@@ -74,5 +76,4 @@ export default function MysqlIndex({ databases = [] }) {
         </AuthenticatedLayout>
     );
 }
-
 

@@ -87,10 +87,18 @@ find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type f -exec chmod 664
 
 step "Restarting services"
 
+cp "$PANEL_PATH/laranode-scripts/templates/laranode-queue-worker.service" /etc/systemd/system/laranode-queue-worker.service
+cp "$PANEL_PATH/laranode-scripts/templates/laranode-scheduler.service" /etc/systemd/system/laranode-scheduler.service
+cp "$PANEL_PATH/laranode-scripts/templates/laranode-scheduler.timer" /etc/systemd/system/laranode-scheduler.timer
+mkdir -p /var/lib/laranode/backups
+chown root:www-data /var/lib/laranode/backups
+chmod 750 /var/lib/laranode/backups
+
 sudo -u "$PANEL_USER" php artisan config:clear
 sudo -u "$PANEL_USER" php artisan cache:clear
 
 systemctl daemon-reload
+systemctl enable --now laranode-scheduler.timer
 systemctl restart laranode-queue-worker.service
 systemctl restart laranode-reverb.service
 systemctl reload apache2

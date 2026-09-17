@@ -17,7 +17,7 @@ class CreateDatabaseService
     {
         $this->createMySQLDatabase();
         $this->createMySQLUser();
-        
+
         return $this->createDatabaseRecord();
     }
 
@@ -30,7 +30,7 @@ class CreateDatabaseService
         try {
             DB::statement("CREATE DATABASE `$name` CHARACTER SET $charset COLLATE $collation");
         } catch (Exception $e) {
-            throw new CreateDatabaseException('Failed to create MySQL database: ' . $e->getMessage());
+            throw new CreateDatabaseException('Failed to create MySQL database: '.$e->getMessage());
         }
     }
 
@@ -43,11 +43,11 @@ class CreateDatabaseService
         try {
             DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY '$dbPass'");
             DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO `$dbUser`@'localhost'");
-            DB::statement("FLUSH PRIVILEGES");
+            DB::statement('FLUSH PRIVILEGES');
         } catch (Exception $e) {
             // Rollback database creation if user creation fails
             DB::statement("DROP DATABASE IF EXISTS `{$this->validated['name']}`");
-            throw new CreateDatabaseException('Failed to create MySQL user: ' . $e->getMessage());
+            throw new CreateDatabaseException('Failed to create MySQL user: '.$e->getMessage());
         }
     }
 
@@ -60,6 +60,7 @@ class CreateDatabaseService
             'charset' => $this->validated['charset'],
             'collation' => $this->validated['collation'],
             'user_id' => $this->user->id,
+            'website_id' => $this->validated['website_id'] ?? null,
         ]);
     }
 }

@@ -255,6 +255,11 @@ echo -e "\033[0m"
 
 cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-queue-worker.service /etc/systemd/system/laranode-queue-worker.service
 cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-reverb.service /etc/systemd/system/laranode-reverb.service
+cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-scheduler.service /etc/systemd/system/laranode-scheduler.service
+cp /home/laranode_ln/panel/laranode-scripts/templates/laranode-scheduler.timer /etc/systemd/system/laranode-scheduler.timer
+mkdir -p /var/lib/laranode/backups
+chown root:www-data /var/lib/laranode/backups
+chmod 750 /var/lib/laranode/backups
 
 
 echo -e"\033[34m"
@@ -288,8 +293,10 @@ chmod ug+x /home/laranode_ln/panel/node_modules/.bin/* /home/laranode_ln/panel/v
 systemctl daemon-reload
 systemctl enable laranode-queue-worker.service
 systemctl enable laranode-reverb.service
+systemctl enable laranode-scheduler.timer
 systemctl start laranode-queue-worker.service
 systemctl start laranode-reverb.service
+systemctl start laranode-scheduler.timer
 systemctl restart apache2
 systemctl restart php8.4-fpm
 

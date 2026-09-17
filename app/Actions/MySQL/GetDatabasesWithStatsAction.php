@@ -12,7 +12,7 @@ class GetDatabasesWithStatsAction
 
     public function execute(): array
     {
-        $databases = Database::where('user_id', $this->user->id)->get();
+        $databases = Database::with('website:id,url')->where('user_id', $this->user->id)->get();
         $items = [];
 
         foreach ($databases as $database) {
@@ -41,13 +41,15 @@ class GetDatabasesWithStatsAction
             'sizeMb' => $sizeMb,
             'charset' => $database->charset,
             'collation' => $database->collation,
+            'website_id' => $database->website_id,
+            'website_url' => $database->website?->url,
         ];
     }
 
     private function getTableCount(string $dbName): int
     {
         $tables = DB::select(
-            "SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ?",
+            'SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = ?',
             [$dbName]
         );
 
@@ -57,9 +59,9 @@ class GetDatabasesWithStatsAction
     private function getDatabaseSize(string $dbName): float
     {
         $sizeRow = DB::selectOne(
-            "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb
+            'SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb
              FROM information_schema.tables
-             WHERE table_schema = ?",
+             WHERE table_schema = ?',
             [$dbName]
         );
 

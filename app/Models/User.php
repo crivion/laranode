@@ -4,8 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
@@ -14,8 +14,9 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-    use Notifiable;
+
     use Impersonate;
+    use Notifiable;
 
     public $appends = ['homedir', 'systemUsername'];
 
@@ -32,7 +33,7 @@ class User extends Authenticatable
         'role',
         'domain_limit',
         'database_limit',
-        'ssh_access'
+        'ssh_access',
     ];
 
     /**
@@ -77,24 +78,37 @@ class User extends Authenticatable
 
     /**
      * not using casts as it's not working in some scenarios
-     * @return string
      */
     public function getHomedirAttribute(): string
     {
-        return '/home/' . $this->systemUsername;
+        return '/home/'.$this->systemUsername;
     }
 
     /**
      * not using casts as it's not working in some scenarios
-     * @return string
      */
     public function getSystemUsernameAttribute(): string
     {
-        return $this->username . '_ln';
+        return $this->username.'_ln';
     }
 
     public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Website::class);
+    }
+
+    public function databases(): HasMany
+    {
+        return $this->hasMany(Database::class);
+    }
+
+    public function backups(): HasMany
+    {
+        return $this->hasMany(Backup::class);
+    }
+
+    public function backupSchedules(): HasMany
+    {
+        return $this->hasMany(BackupSchedule::class);
     }
 }

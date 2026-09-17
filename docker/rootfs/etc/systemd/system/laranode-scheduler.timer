@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the Laranode scheduler every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+Unit=laranode-scheduler.service
+
+[Install]
+WantedBy=timers.target

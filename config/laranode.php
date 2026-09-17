@@ -12,6 +12,8 @@ return [
     */
     'laranode_bin_path' => base_path('laranode-scripts/bin'),
 
+    'backup_path' => env('LARANODE_BACKUP_PATH', '/var/lib/laranode/backups'),
+
     /*
     |--------------------------------------------------------------------------
     | Laranode PHP-FPM Pools
@@ -34,7 +36,6 @@ return [
     */
     'apache_vhost_template' => base_path('laranode-scripts/templates/apache-vhost.template'),
 
-
     /*
     |--------------------------------------------------------------------------
     | Laranode SSH Port
@@ -54,8 +55,7 @@ return [
     | This option allows you to specify the mime types that can be edited
     | in the file manager.
     */
-    'editable_mime_types' =>
-    [
+    'editable_mime_types' => [
         'text/plain',              // .txt, .log, .ini, .env, .conf, .md, .sh, .bash, .zsh
         'text/html',               // .html, .htm
         'text/css',                // .css
@@ -83,6 +83,6 @@ return [
         'text/rtf',
         'application/x-sh',        // .sh
         'application/x-sql',       // .sql
-    ]
+    ],
 
 ];

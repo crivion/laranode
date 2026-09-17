@@ -2,7 +2,7 @@
 
 Laranode is a simple but powerful open-source alternative to cPanel and Plesk, designed to simplify VPS and dedicated server management. With an intuitive interface and robust features, Laranode makes it easy to deploy and manage websites, databases, SSL certificates, and more.
 
-**[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
+**[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Backups](#backup-and-restore)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
 
 ---
 
@@ -30,6 +30,8 @@ Laranode is a simple but powerful open-source alternative to cPanel and Plesk, d
 
 ✅ **UFW Firewall** – Manage uncomplicated firewall rules with ease directly from the web interface.  
 
+✅ **Backup Manager** – Back up and restore accounts, website files, and databases locally, over S3, or over SFTP, on demand or on a retention schedule.
+
 ## Installation
 
 Laranode can be installed on a FRESH VPS or dedicated server.
@@ -55,6 +57,32 @@ docker compose exec laranode laranode-artisan laranode:create-admin
 ```
 
 📖 **[Running Laranode in Docker](docs/DOCKER.md)** covers the settings, the volumes and how upgrades work.
+
+## Backup and Restore
+
+Laranode can create and restore three kinds of backup:
+
+- A complete hosting account, including all website files and databases.
+- The files for one website.
+- One website database.
+
+Backups can be stored locally, in any S3-compatible object store (including DigitalOcean Spaces), or on an SFTP server. Administrators manage and test destinations from **Backup Destinations**, while account owners can back up and restore their own resources.
+
+Run backups manually or schedule them daily, weekly or monthly. Each schedule has its own retention count, and expired archives are pruned automatically by the scheduler. Backup and restore jobs run asynchronously, with live status and failure details in the panel.
+
+Restores require typed confirmation and create a seven-day safety snapshot before changing live data. A failed restore can be retried up to three times; completed backups otherwise remain available for future restores.
+
+Local archives use this layout:
+
+```text
+/var/lib/laranode/backups/{system_username}/{backup_id}/
+├── manifest.json
+├── account.tar.gz
+├── files/{domain}.tar.gz
+└── databases/{database}.sql.gz
+```
+
+The root path can be changed with `LARANODE_BACKUP_PATH`. Docker installations persist local archives in the dedicated `laranode-backups` volume.
 
 ## Upgrading
 
@@ -99,10 +127,6 @@ Login with the credentials provided during installation.
 
 ## 1-Click Deployment with DigitalOcean
 [![DigitalOcean Logo](https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg)](https://marketplace.digitalocean.com/apps/laranode-panel?refcode=833110c66c2c&action=deploy)
-
-## Roadmap - Future Release Plans
-
-- 🔹 Backup Manager - backup websites, databases, and files
 
 ## Contributing
 Laranode is open-source and welcomes contributions! Feel free to submit issues, feature requests, or pull requests.

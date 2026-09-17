@@ -16,7 +16,9 @@
     "laravel/reverb": "^1.4",
     "laravel/sanctum": "^4.0",
     "laravel/tinker": "^2.9",
+    "league/flysystem-aws-s3-v3": "^3.35",
     "league/flysystem-memory": "^3.29",
+    "league/flysystem-sftp-v3": "^3.36",
     "league/mime-type-detection": "^1.16",
     "tightenco/ziggy": "^2.0"
   },

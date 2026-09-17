@@ -11,11 +11,11 @@ use App\Models\Database;
 use App\Services\MySQL\CreateDatabaseService;
 use App\Services\MySQL\DeleteDatabaseService;
 use App\Services\MySQL\UpdateDatabaseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 
 class MysqlController extends Controller
 {
@@ -26,6 +26,7 @@ class MysqlController extends Controller
 
         return Inertia::render('Mysql/Index', [
             'databases' => $databases,
+            'websites' => $user->websites()->select('id', 'url')->orderBy('url')->get(),
         ]);
     }
 
@@ -37,7 +38,7 @@ class MysqlController extends Controller
     public function store(CreateDatabaseRequest $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         (new CreateDatabaseService($request->validated(), $user))->handle();
 
         session()->flash('success', 'Database created successfully!');

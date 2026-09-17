@@ -3,9 +3,10 @@
 namespace App\Services\Accounts;
 
 use App\Models\User;
+use App\Services\MySQL\DeleteDatabaseService;
 use App\Services\Websites\DeleteWebsiteService;
-use Illuminate\Support\Facades\Process;
 use Exception;
+use Illuminate\Support\Facades\Process;
 
 class DeleteAccountException extends Exception {}
 
@@ -33,6 +34,8 @@ class DeleteAccountService
         // delete all user websites
         $this->deleteWebsites();
 
+        $this->deleteDatabases();
+
         // remove user from database
         User::findOrFail($this->user->id)->delete();
     }
@@ -41,13 +44,13 @@ class DeleteAccountService
     {
         $deleteUser = Process::run([
             'sudo',
-            $this->laranodeBinPath . '/laranode-user-manager.sh',
+            $this->laranodeBinPath.'/laranode-user-manager.sh',
             'delete',
             $this->user->systemUsername,
         ]);
 
         if ($deleteUser->failed()) {
-            throw new DeleteAccountException('Failed to delete system user: ' . $deleteUser->errorOutput());
+            throw new DeleteAccountException('Failed to delete system user: '.$deleteUser->errorOutput());
         }
     }
 
@@ -55,12 +58,12 @@ class DeleteAccountService
     {
         $deletePhpFpmPool = Process::run([
             'sudo',
-            $this->laranodeBinPath . '/laranode-remove-all-user-php-fpm-pools.sh',
+            $this->laranodeBinPath.'/laranode-remove-all-user-php-fpm-pools.sh',
             $this->user->systemUsername,
         ]);
 
         if ($deletePhpFpmPool->failed()) {
-            throw new DeleteAccountException('Failed to delete PHP-FPM pool: ' . $deletePhpFpmPool->errorOutput());
+            throw new DeleteAccountException('Failed to delete PHP-FPM pool: '.$deletePhpFpmPool->errorOutput());
         }
     }
 
@@ -73,6 +76,10 @@ class DeleteAccountService
         }
     }
 
-    // @TODO: implement delete all DB's of this user
-    private function deleteDatabases(): void {}
+    private function deleteDatabases(): void
+    {
+        foreach ($this->user->databases()->get() as $database) {
+            (new DeleteDatabaseService($database))->handle();
+        }
+    }
 }

@@ -1,14 +1,17 @@
 <?php
 
 use App\Http\Controllers\AccountsController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BackupDestinationController;
+use App\Http\Controllers\BackupScheduleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FilemanagerController;
 use App\Http\Controllers\FirewallController;
+use App\Http\Controllers\MysqlController;
 use App\Http\Controllers\PHPManagerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatsHistoryController;
 use App\Http\Controllers\WebsiteController;
-use App\Http\Controllers\MysqlController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +25,6 @@ Route::get('/dashboard/admin', [DashboardController::class, 'admin'])->middlewar
 Route::get('/dashboard/admin/get/top-sort', [DashboardController::class, 'getTopSort'])->middleware(['auth', AdminMiddleware::class])->name('dashboard.admin.getTopSort');
 Route::patch('/dashboard/admin/set/top-sort', [DashboardController::class, 'setTopSort'])->middleware(['auth', AdminMiddleware::class])->name('dashboard.admin.setTopSort');
 Route::get('/dashboard/user', [DashboardController::class, 'user'])->middleware(['auth'])->name('dashboard.user');
-
 
 // Accounts [Admin]
 Route::resource('/accounts', AccountsController::class)->middleware(['auth', AdminMiddleware::class])->except(['create', 'edit', 'show']);
@@ -43,14 +45,27 @@ Route::delete('/php/uninstall', [PHPManagerController::class, 'uninstall'])->mid
 Route::post('/php/service/toggle', [PHPManagerController::class, 'toggleService'])->middleware(['auth', AdminMiddleware::class])->name('php.service.toggle');
 Route::post('/php/service/restart', [PHPManagerController::class, 'restartService'])->middleware(['auth', AdminMiddleware::class])->name('php.service.restart');
 
-
-
 // MySQL management [Admin | User]
 Route::get('/mysql', [MysqlController::class, 'index'])->middleware(['auth'])->name('mysql.index');
 Route::get('/mysql/charsets-collations', [MysqlController::class, 'getCharsetsAndCollations'])->middleware(['auth'])->name('mysql.charsets-collations');
 Route::post('/mysql', [MysqlController::class, 'store'])->middleware(['auth'])->name('mysql.store');
 Route::patch('/mysql', [MysqlController::class, 'update'])->middleware(['auth'])->name('mysql.update');
 Route::delete('/mysql', [MysqlController::class, 'destroy'])->middleware(['auth'])->name('mysql.destroy');
+
+// Backups [Admin | User]
+Route::get('/backups', [BackupController::class, 'index'])->middleware(['auth'])->name('backups.index');
+Route::post('/backups', [BackupController::class, 'store'])->middleware(['auth'])->name('backups.store');
+Route::get('/backups/statuses', [BackupController::class, 'statuses'])->middleware(['auth'])->name('backups.statuses');
+Route::get('/backups/{backup}/download', [BackupController::class, 'download'])->middleware(['auth'])->name('backups.download');
+Route::post('/backups/{backup}/restore', [BackupController::class, 'restore'])->middleware(['auth'])->name('backups.restore');
+Route::delete('/backups/{backup}', [BackupController::class, 'destroy'])->middleware(['auth'])->name('backups.destroy');
+
+// Backup schedules [Admin | User]
+Route::resource('/backup-schedules', BackupScheduleController::class)->middleware(['auth'])->except(['create', 'edit', 'show']);
+
+// Backup destinations [Admin]
+Route::resource('/admin/backup-destinations', BackupDestinationController::class)->middleware(['auth', AdminMiddleware::class])->except(['create', 'edit', 'show']);
+Route::post('/admin/backup-destinations/{backup_destination}/test', [BackupDestinationController::class, 'test'])->middleware(['auth', AdminMiddleware::class])->name('backup-destinations.test');
 
 // Firewall [Admin]
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
@@ -71,7 +86,6 @@ Route::patch('/filemanager/paste-files', [FilemanagerController::class, 'pasteFi
 Route::post('/filemanager/delete-files', [FilemanagerController::class, 'deleteFiles'])->middleware(['auth'])->name('filemanager.deleteFiles');
 Route::post('/filemanager/upload-file', [FilemanagerController::class, 'uploadFile'])->middleware(['auth'])->name('filemanager.uploadFile');
 
-
 // Stats History [Admin]
 Route::get('/stats/history', [StatsHistoryController::class, 'cpuAndMemory'])->middleware(['auth', AdminMiddleware::class])->name('stats.history');
 
@@ -82,4 +96,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

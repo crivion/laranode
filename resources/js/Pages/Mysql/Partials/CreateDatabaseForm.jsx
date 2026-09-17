@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { TbDatabase } from 'react-icons/tb';
 import axios from 'axios';
 
-export default function CreateDatabaseForm() {
+export default function CreateDatabaseForm({ websites = [] }) {
     const { auth } = usePage().props;
     const [showModal, setShowModal] = useState(false);
     const [charsets, setCharsets] = useState([]);
@@ -24,6 +24,7 @@ export default function CreateDatabaseForm() {
         db_pass: '',
         charset: 'utf8mb4',
         collation: 'utf8mb4_unicode_ci',
+        website_id: '',
     });
 
     useEffect(() => {
@@ -150,6 +151,14 @@ export default function CreateDatabaseForm() {
                             <InputError message={errors.db_pass} className="mt-2" />
                         </div>
                         <div>
+                            <InputLabel htmlFor="website_id" value="Website (optional)" className='my-2' />
+                            <select id="website_id" value={data.website_id} onChange={(e) => setData('website_id', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                <option value="">Unassigned</option>
+                                {websites.map((website) => <option key={website.id} value={website.id}>{website.url}</option>)}
+                            </select>
+                            <InputError message={errors.website_id} className="mt-2" />
+                        </div>
+                        <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />
                             <select
                                 id="charset"
@@ -189,5 +198,4 @@ export default function CreateDatabaseForm() {
         </>
     );
 }
-
 

@@ -11,7 +11,7 @@ import { TbDatabase } from 'react-icons/tb';
 import { FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 
-export default function EditDatabaseForm({ database }) {
+export default function EditDatabaseForm({ database, websites = [] }) {
     const { auth } = usePage().props;
     const [showModal, setShowModal] = useState(false);
     const [charsets, setCharsets] = useState([]);
@@ -24,6 +24,7 @@ export default function EditDatabaseForm({ database }) {
         charset: database.charset || 'utf8mb4',
         collation: database.collation || 'utf8mb4_unicode_ci',
         db_password: '',
+        website_id: database.website_id || '',
     });
 
     useEffect(() => {
@@ -83,6 +84,8 @@ export default function EditDatabaseForm({ database }) {
             name: database.name,
             charset: database.charset || 'utf8mb4',
             collation: database.collation || 'utf8mb4_unicode_ci',
+            db_password: '',
+            website_id: database.website_id || '',
         });
     };
 
@@ -142,6 +145,14 @@ export default function EditDatabaseForm({ database }) {
                                 placeholder="Enter new password or leave blank"
                             />
                             <InputError message={errors.db_password} className="mt-2" />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="website_id" value="Website (optional)" className='my-2' />
+                            <select id="website_id" value={data.website_id} onChange={(e) => setData('website_id', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                <option value="">Unassigned</option>
+                                {websites.map((website) => <option key={website.id} value={website.id}>{website.url}</option>)}
+                            </select>
+                            <InputError message={errors.website_id} className="mt-2" />
                         </div>
                         <div>
                             <InputLabel htmlFor="charset" value="Charset" className='my-2' />

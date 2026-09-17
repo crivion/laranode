@@ -28,13 +28,13 @@ class UpdateDatabaseService
         try {
             DB::statement("ALTER DATABASE `$name` CHARACTER SET $charset COLLATE $collation");
         } catch (Exception $e) {
-            throw new UpdateDatabaseException('Failed to update MySQL database charset/collation: ' . $e->getMessage());
+            throw new UpdateDatabaseException('Failed to update MySQL database charset/collation: '.$e->getMessage());
         }
     }
 
     private function updateMySQLUserPassword(): void
     {
-        if (!isset($this->validated['db_password']) || empty($this->validated['db_password'])) {
+        if (! isset($this->validated['db_password']) || empty($this->validated['db_password'])) {
             return;
         }
 
@@ -43,9 +43,9 @@ class UpdateDatabaseService
 
         try {
             DB::statement("ALTER USER `$dbUser`@'localhost' IDENTIFIED BY '$newPassword'");
-            DB::statement("FLUSH PRIVILEGES");
+            DB::statement('FLUSH PRIVILEGES');
         } catch (Exception $e) {
-            throw new UpdateDatabaseException('Failed to update MySQL user password: ' . $e->getMessage());
+            throw new UpdateDatabaseException('Failed to update MySQL user password: '.$e->getMessage());
         }
     }
 
@@ -54,9 +54,10 @@ class UpdateDatabaseService
         $updateData = [
             'charset' => $this->validated['charset'],
             'collation' => $this->validated['collation'],
+            'website_id' => $this->validated['website_id'] ?? null,
         ];
 
-        if (isset($this->validated['db_password']) && !empty($this->validated['db_password'])) {
+        if (isset($this->validated['db_password']) && ! empty($this->validated['db_password'])) {
             $updateData['db_password'] = $this->validated['db_password'];
         }
 

@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Database extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'db_user',
@@ -16,6 +19,7 @@ class Database extends Model
         'charset',
         'collation',
         'user_id',
+        'website_id',
     ];
 
     protected $casts = [
@@ -30,25 +34,20 @@ class Database extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the decrypted database password.
-     */
-    public function getDecryptedPasswordAttribute(): string
+    public function website(): BelongsTo
     {
-        return decrypt($this->db_password);
+        return $this->belongsTo(Website::class);
     }
 
-    /**
-     * Set the encrypted database password.
-     */
-    public function setPasswordAttribute(string $password): void
+    public function backups(): HasMany
     {
-        $this->attributes['db_password'] = encrypt($password);
+        return $this->hasMany(Backup::class);
     }
 
     public function scopeMine(Builder $query): Builder
     {
         $user = auth()->user();
-        return $query->when($user && !$user->isAdmin(), fn($query) => $query->where('user_id', $user->id));
+
+        return $query->when($user && ! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id));
     }
 }

@@ -46,6 +46,7 @@ services:
         volumes:
             # panel .env and snapshot of system users, vhosts, PHP-FPM pools and firewall rules
             - laranode-state:/var/lib/laranode
+            - laranode-backups:/var/lib/laranode/backups
             - laranode-storage:/opt/laranode/storage
             # hosting accounts (websites, logs)
             - laranode-home:/home
@@ -56,6 +57,7 @@ services:
 
 volumes:
     laranode-state:
+    laranode-backups:
     laranode-storage:
     laranode-home:
     laranode-mysql:

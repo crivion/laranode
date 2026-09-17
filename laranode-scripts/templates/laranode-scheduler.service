@@ -1,0 +1,11 @@
+[Unit]
+Description=Laranode Scheduler
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/home/laranode_ln/panel
+ExecStart=/usr/bin/php /home/laranode_ln/panel/artisan schedule:run
