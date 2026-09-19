@@ -5,6 +5,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupDestinationController;
 use App\Http\Controllers\BackupScheduleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DemoSessionController;
 use App\Http\Controllers\FilemanagerController;
 use App\Http\Controllers\FirewallController;
 use App\Http\Controllers\MysqlController;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/dashboard');
 });
+
+Route::post('/demo', [DemoSessionController::class, 'store'])->middleware(['guest', 'throttle:10,1'])->name('demo.login');
 
 // Dashboards [Admin | User]
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');

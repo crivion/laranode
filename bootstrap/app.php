@@ -15,13 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\SimulateDemoActions::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         $middleware->trustProxies(at: '*');
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('laranode:run-backup-schedules')->everyMinute()->withoutOverlapping();
+        if (! config('laranode.demo.enabled')) {
+            $schedule->command('laranode:run-backup-schedules')->everyMinute()->withoutOverlapping();
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

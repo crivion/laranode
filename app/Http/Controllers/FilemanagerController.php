@@ -4,33 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Actions\Filemanager\CreateFileAction;
 use App\Actions\Filemanager\DeleteFilesAction;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Actions\Filemanager\GetDirectoryContentsAction;
 use App\Actions\Filemanager\GetFileContentsAction;
 use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
 use App\Actions\Filemanager\UploadFileAction;
+use App\Support\DemoData;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FilemanagerController extends Controller
 {
-
     public function index(): \Inertia\Response
     {
         return Inertia::render('Filemanager/Filemanager');
     }
 
-    public function getDirectoryContents(GetDirectoryContentsAction $getDirectoryContents, Request $r): StreamedResponse|JsonResponse
+    public function getDirectoryContents(Request $r): StreamedResponse|JsonResponse
     {
-        return $getDirectoryContents->execute($r->path);
+        if (config('laranode.demo.enabled')) {
+            return response()->json(DemoData::files($r->path));
+        }
+
+        return app(GetDirectoryContentsAction::class)->execute($r->path);
     }
 
-    public function getFileContents(GetFileContentsAction $getFileContents, Request $r)
+    public function getFileContents(Request $r)
     {
-        return $getFileContents->execute($r);
+        if (config('laranode.demo.enabled')) {
+            $r->validate(['file' => 'required|string']);
+
+            return response(DemoData::file((string) $r->string('file')))->header('Content-Type', 'text/plain');
+        }
+
+        return app(GetFileContentsAction::class)->execute($r);
     }
 
     public function createFile(CreateFileAction $createFile, Request $r)

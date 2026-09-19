@@ -14,13 +14,16 @@ class MessageReceivedListener
      */
     public function handle(MessageReceived $event)
     {
+        if (config('laranode.demo.enabled')) {
+            return;
+        }
 
         $msg = json_decode($event->message);
 
         if ($msg->event == 'client-typing') {
             match ($msg->channel) {
-                'private-systemstats' => (new SystemStatsEvent())->dispatch(),
-                'private-topstats' => (new TopStatsEvent())->dispatch(),
+                'private-systemstats' => (new SystemStatsEvent)->dispatch(),
+                'private-topstats' => (new TopStatsEvent)->dispatch(),
                 default => ''
             };
         }

@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'demo' => [
+        'enabled' => (bool) env('LARANODE_DEMO_MODE', false),
+        'email' => env('LARANODE_DEMO_EMAIL', 'demo@laranode.test'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Laranode User Manager

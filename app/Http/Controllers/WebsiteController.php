@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SSL\CheckWebsiteSslStatusAction;
+use App\Actions\SSL\GenerateWebsiteSslAction;
+use App\Actions\SSL\RemoveWebsiteSslAction;
 use App\Http\Requests\CreateWebsiteRequest;
 use App\Http\Requests\UpdateWebsitePHPVersionRequest;
 use App\Models\Website;
-use App\Models\PhpVersion;
 use App\Services\Websites\CreateWebsiteService;
 use App\Services\Websites\DeleteWebsiteService;
 use App\Services\Websites\UpdateWebsitePHPVersionService;
-use App\Actions\SSL\GenerateWebsiteSslAction;
-use App\Actions\SSL\RemoveWebsiteSslAction;
-use App\Actions\SSL\CheckWebsiteSslStatusAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
@@ -26,10 +25,14 @@ class WebsiteController extends Controller
     {
         $websites = Website::mine()->with(['user', 'phpVersion'])->orderBy('url')->get();
 
-        try {
-            $serverIp = Http::get('https://api.ipify.org')->body();
-        } catch (\Exception $exception) {
-            $serverIp = 'N/A';
+        if (config('laranode.demo.enabled')) {
+            $serverIp = '203.0.113.42';
+        } else {
+            try {
+                $serverIp = Http::get('https://api.ipify.org')->body();
+            } catch (\Exception $exception) {
+                $serverIp = 'N/A';
+            }
         }
 
         return Inertia::render('Websites/Index', compact('websites', 'serverIp'));
@@ -48,7 +51,6 @@ class WebsiteController extends Controller
 
         return redirect()->route('websites.index');
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -92,23 +94,25 @@ class WebsiteController extends Controller
         Gate::authorize('update', $website);
 
         $request->validate([
-            'enabled' => 'required|boolean'
+            'enabled' => 'required|boolean',
         ]);
 
         try {
             if ($request->enabled) {
                 // Generate SSL certificate
-                (new GenerateWebsiteSslAction())->execute($website, $request->user()->email);
+                (new GenerateWebsiteSslAction)->execute($website, $request->user()->email);
             } else {
                 // Remove SSL certificate
-                (new RemoveWebsiteSslAction())->execute($website);
+                (new RemoveWebsiteSslAction)->execute($website);
             }
 
             session()->flash('success', $request->enabled ? 'SSL certificate generated successfully' : 'SSL certificate removed successfully');
+
             return redirect()->route('websites.index');
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to ' . ($request->enabled ? 'generate' : 'remove') . ' SSL certificate: ' . $e->getMessage());
+            session()->flash('error', 'Failed to '.($request->enabled ? 'generate' : 'remove').' SSL certificate: '.$e->getMessage());
+
             return redirect()->back();
         }
     }
@@ -120,20 +124,29 @@ class WebsiteController extends Controller
     {
         Gate::authorize('view', $website);
 
+        if (config('laranode.demo.enabled')) {
+            return response()->json([
+                'success' => true,
+                'ssl_status' => $website->ssl_status,
+                'ssl_enabled' => $website->ssl_enabled,
+                'status_text' => $website->getSslStatusText(),
+            ]);
+        }
+
         try {
-            $result = (new CheckWebsiteSslStatusAction())->execute($website);
+            $result = (new CheckWebsiteSslStatusAction)->execute($website);
 
             return response()->json([
                 'success' => true,
                 'ssl_status' => $result['ssl_status'],
                 'ssl_enabled' => $result['ssl_enabled'],
-                'status_text' => $website->getSslStatusText()
+                'status_text' => $website->getSslStatusText(),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to check SSL status: ' . $e->getMessage()
+                'message' => 'Failed to check SSL status: '.$e->getMessage(),
             ], 500);
         }
     }

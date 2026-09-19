@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\PhpVersion;
+use App\Support\DemoData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PHPManagerController extends Controller
 {
-
     public function getVersions(): JsonResponse
     {
         $versions = PhpVersion::active()->get();
@@ -29,6 +29,10 @@ class PHPManagerController extends Controller
      */
     public function list(): JsonResponse
     {
+        if (config('laranode.demo.enabled')) {
+            return response()->json(DemoData::phpVersions());
+        }
+
         $scriptPath = base_path('laranode-scripts/bin/laranode-php-list.sh');
         $output = shell_exec("sudo {$scriptPath}");
 
@@ -64,14 +68,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} installed successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to install PHP {$version}",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -100,14 +104,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version} uninstalled successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to uninstall PHP {$version}",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -135,14 +139,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version}-FPM service {$action}d successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to {$action} PHP {$version}-FPM service",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 
@@ -166,14 +170,14 @@ class PHPManagerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "PHP {$version}-FPM service restarted successfully",
-                'output' => $output
+                'output' => $output,
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => "Failed to restart PHP {$version}-FPM service",
-            'output' => $output
+            'output' => $output,
         ], 500);
     }
 }

@@ -9,9 +9,13 @@ import ConfirmationButton from '@/Components/ConfirmationButton';
 import { useEffect, useState } from 'react';
 
 export default function PHPIndex() {
-    const { auth } = usePage().props;
+    const { auth, demo } = usePage().props;
     const [phpVersions, setPhpVersions] = useState([]);
-    const [liveStats, setLiveStats] = useState({});
+    const [liveStats, setLiveStats] = useState(demo?.enabled ? {
+        '8.4': { memory: '126 MB', cpuTime: '6m 18s', uptime: '12 days' },
+        '8.3': { memory: '74 MB', cpuTime: '3m 04s', uptime: '8 days' },
+        '8.2': { memory: '--', cpuTime: '--', uptime: '--' },
+    } : {});
     const [loading, setLoading] = useState(true);
 
     const echo = window.Echo;
@@ -38,6 +42,8 @@ export default function PHPIndex() {
         fetchPhpVersions();
 
         // Subscribe to live stats
+        if (demo?.enabled || !echo) return;
+
         const dashboardChannel = echo.private("systemstats");
 
         dashboardChannel.listen("SystemStatsEvent", (data) => {
@@ -54,7 +60,7 @@ export default function PHPIndex() {
             clearInterval(whisperInterval);
             echo.leave("systemstats");
         };
-    }, []);
+    }, [demo?.enabled]);
 
     // these endpoints answer with json, so they are called with axios rather than
     // an inertia visit, which would reject the response

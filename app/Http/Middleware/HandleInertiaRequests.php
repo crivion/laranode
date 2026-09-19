@@ -39,6 +39,10 @@ class HandleInertiaRequests extends Middleware
                 'host' => parse_url(config('app.url'), PHP_URL_HOST) ?: $request->getHost(),
                 'port' => (int) config('laranode.ssh_port'),
             ],
+            'demo' => [
+                'enabled' => (bool) config('laranode.demo.enabled'),
+                'message' => 'Limited public demo — actions are simulated. No server, files, firewall, backups, or external services are changed.',
+            ],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),

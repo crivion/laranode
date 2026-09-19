@@ -11,6 +11,7 @@ use App\Models\Database;
 use App\Services\MySQL\CreateDatabaseService;
 use App\Services\MySQL\DeleteDatabaseService;
 use App\Services\MySQL\UpdateDatabaseService;
+use App\Support\DemoData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,20 @@ class MysqlController extends Controller
     public function index(Request $request): \Inertia\Response
     {
         $user = $request->user();
-        $databases = (new GetDatabasesWithStatsAction($user))->execute();
+        $databases = config('laranode.demo.enabled')
+            ? Database::with('website:id,url')->where('user_id', $user->id)->get()->map(fn (Database $database) => [
+                'id' => $database->id,
+                'name' => $database->name,
+                'user' => $user->username,
+                'db_user' => $database->db_user,
+                'tables' => 24,
+                'sizeMb' => 18.7,
+                'charset' => $database->charset,
+                'collation' => $database->collation,
+                'website_id' => $database->website_id,
+                'website_url' => $database->website?->url,
+            ])->all()
+            : (new GetDatabasesWithStatsAction($user))->execute();
 
         return Inertia::render('Mysql/Index', [
             'databases' => $databases,
@@ -32,6 +46,10 @@ class MysqlController extends Controller
 
     public function getCharsetsAndCollations(GetCharsetsAndCollationsAction $action): JsonResponse
     {
+        if (config('laranode.demo.enabled')) {
+            return response()->json(DemoData::charsets());
+        }
+
         return response()->json($action->execute());
     }
 

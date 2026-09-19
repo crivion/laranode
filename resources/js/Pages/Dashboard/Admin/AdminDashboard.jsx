@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { RiDashboard3Fill } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import TopProcesses from './Components/TopProcesses';
@@ -13,11 +13,25 @@ import PHPFPMLive from './Components/PHPFPMLive';
 
 export default function Dashboard() {
 
-    const [liveStats, setLiveStats] = useState([]);
+    const { demo } = usePage().props;
+    const demoStats = {
+        cpuStats: { usage: 17.4, loadTimes: '0.42 0.38 0.31', processCount: 146, uptime: '12 days, 4 hours' },
+        memoryStats: { total: 3840, used: 1624, buffcache: 912, free: 1304 },
+        diskStats: { percent: '31%', used: '12.4 GB', free: '27.6 GB', size: '40 GB' },
+        network: [{ interface: 'eth0', rx: 8.6, tx: 2.1 }],
+        mysql: { memory: '284 MB', cpuTime: '18m 42s', uptime: '12 days' },
+        phpFpm: {
+            'PHP 8.4': { memory: '126 MB', cpuTime: '6m 18s', uptime: '12 days' },
+            'PHP 8.3': { memory: '74 MB', cpuTime: '3m 04s', uptime: '8 days' },
+        },
+    };
+    const [liveStats, setLiveStats] = useState(demo?.enabled ? demoStats : []);
 
     const echo = window.Echo;
 
     useEffect(() => {
+
+        if (demo?.enabled || !echo) return;
 
         const dashboardChannel = echo.private("systemstats");
 
@@ -33,7 +47,7 @@ export default function Dashboard() {
             clearInterval(whisperInterval);
             echo.leave("systemstats");
         };
-    }, []);
+    }, [demo?.enabled]);
 
     return (
         <AuthenticatedLayout

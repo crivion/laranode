@@ -2,9 +2,11 @@
 
 Laranode is a simple but powerful open-source alternative to cPanel and Plesk, designed to simplify VPS and dedicated server management. With an intuitive interface and robust features, Laranode makes it easy to deploy and manage websites, databases, SSL certificates, and more.
 
-**[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Backups](#backup-and-restore)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
+**[Limited Live Demo](https://demo.laranode.com)** · **[Features](#features)** · **[Install](#installation)** · **[Docker](docs/DOCKER.md)** · **[Backups](#backup-and-restore)** · **[Upgrading](#upgrading)** · **[Screenshots](#screenshots)**
 
 ---
+
+> **[Try the limited live demo →](https://demo.laranode.com)** — Explore Laranode with representative sample data. Actions are safely simulated and do not change a real server, filesystem, firewall, backup destination, or external service.
 
 ## Features
 
@@ -57,6 +59,17 @@ docker compose exec laranode laranode-artisan laranode:create-admin
 ```
 
 📖 **[Running Laranode in Docker](docs/DOCKER.md)** covers the settings, the volumes and how upgrades work.
+
+### Safe public demo mode
+
+**[Open the hosted limited demo](https://demo.laranode.com)**, or deploy your own showcase: Laranode includes an opt-in simulated mode that uses seeded sample data, replaces host reads with fixtures, simulates all changes, disables scheduled backups, and clearly labels every authenticated page as a **Limited public demo**. It must be deployed separately from a real control-panel installation.
+
+```dotenv
+LARANODE_DEMO_MODE=true
+LARANODE_DEMO_EMAIL=demo@laranode.test
+```
+
+After migrating and building the assets, visitors can use the **Enter limited demo** button on the login screen. The first visit creates or refreshes the representative demo data. Do not enable demo mode on a server that manages real websites or accounts.
 
 ## Backup and Restore
 

@@ -2,16 +2,30 @@ import { Tooltip } from 'react-tooltip'
 import { useEffect, useState } from "react";
 import { FaSitemap, FaArrowDown91 } from 'react-icons/fa6';
 import { ImSpinner9 } from "react-icons/im";
+import { usePage } from '@inertiajs/react';
 
 
 const TopProcesses = () => {
-    const [topStats, setTopStats] = useState([]);
+    const { demo } = usePage().props;
+    const demoProcesses = [
+        { pid: 1842, cpu: 4.8, mem: 3.1, user: 'mysql', mainCmd: 'mysqld', restOfCmd: ['--defaults-file=/etc/mysql/my.cnf'] },
+        { pid: 2201, cpu: 2.7, mem: 1.8, user: 'www-data', mainCmd: 'php-fpm8.4', restOfCmd: ['pool', 'demo'] },
+        { pid: 976, cpu: 1.2, mem: 0.9, user: 'www-data', mainCmd: 'apache2', restOfCmd: ['-k', 'start'] },
+        { pid: 2410, cpu: 0.6, mem: 1.1, user: 'laranode', mainCmd: 'reverb', restOfCmd: ['artisan', 'reverb:start'] },
+    ];
+    const [topStats, setTopStats] = useState(demo?.enabled ? demoProcesses : []);
     const [sortBy, setSortBy] = useState("cpu");
     const [spinner, showSpinner] = useState(false);
 
     const echo = window.Echo;
 
     const setSortPreferrence = (sortBy) => {
+        if (demo?.enabled) {
+            setSortBy(sortBy);
+            setTopStats([...demoProcesses].sort((a, b) => b[sortBy === 'memory' ? 'mem' : 'cpu'] - a[sortBy === 'memory' ? 'mem' : 'cpu']));
+            return;
+        }
+
         window.axios.patch("/dashboard/admin/set/top-sort", { sortBy }).then((response) => {
             setSortBy(response.data.sortBy);
             showSpinner(true);
@@ -19,6 +33,8 @@ const TopProcesses = () => {
     }
 
     useEffect(() => {
+
+        if (demo?.enabled || !echo) return;
 
         const topStatsChannel = echo.private("topstats");
 
@@ -41,7 +57,7 @@ const TopProcesses = () => {
             clearInterval(whisperInterval);
             echo.leave("topstats");
         };
-    }, []);
+    }, [demo?.enabled]);
 
 
     { topStats?.error && <ShowError error={topStats?.error} /> }
