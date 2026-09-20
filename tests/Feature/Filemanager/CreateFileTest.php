@@ -1,31 +1,33 @@
 <?php
 
-use App\Models\User;
-use Illuminate\Support\Facades\Config;
-
 use App\Actions\Filemanager\CreateFileAction;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Process;
 use League\Flysystem\Filesystem;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 
 beforeEach(function () {
-    $this->filesystem = new Filesystem(new InMemoryFilesystemAdapter());
+    Process::fake();
+    $this->actingAs(User::factory()->create());
+    $this->filesystem = new Filesystem(new InMemoryFilesystemAdapter);
     $this->action = new CreateFileAction($this->filesystem);
 });
 
 test('user path for the filemanager is correct', function () {
     $user = User::factory()->create();
 
-    Config::set('laranode.user_base_path', '/home/' . $user->username);
+    Config::set('laranode.user_base_path', '/home/'.$user->username);
 
-    $this->assertSame('/home/' . $user->username, Config::get('laranode.user_base_path'));
+    $this->assertSame('/home/'.$user->username, Config::get('laranode.user_base_path'));
 });
 
 test('it can create a new file', function () {
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'file',
-        'fileName' => 'example.txt'
+        'fileName' => 'example.txt',
     ]);
 
     $response = $this->action->execute($request);
@@ -39,7 +41,7 @@ test('it can create a new directory', function () {
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'directory',
-        'fileName' => 'new-folder'
+        'fileName' => 'new-folder',
     ]);
 
     $response = $this->action->execute($request);
@@ -55,7 +57,7 @@ test('it fails when file already exists', function () {
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'file',
-        'fileName' => 'existing.txt'
+        'fileName' => 'existing.txt',
     ]);
 
     $response = $this->action->execute($request);
@@ -70,7 +72,7 @@ test('it fails when directory already exists', function () {
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'directory',
-        'fileName' => 'existing-dir'
+        'fileName' => 'existing-dir',
     ]);
 
     $response = $this->action->execute($request);
@@ -82,15 +84,15 @@ test('it fails when directory already exists', function () {
 test('it validates required fields', function () {
     $request = Request::create('', 'POST', []);
 
-    expect(fn() => $this->action->execute($request))
+    expect(fn () => $this->action->execute($request))
         ->toThrow(Illuminate\Validation\ValidationException::class);
 
     $request = Request::create('', 'POST', [
         'path' => '/test',
         'fileType' => 'invalid-type',
-        'fileName' => 'test.txt'
+        'fileName' => 'test.txt',
     ]);
 
-    expect(fn() => $this->action->execute($request))
+    expect(fn () => $this->action->execute($request))
         ->toThrow(Illuminate\Validation\ValidationException::class);
 });

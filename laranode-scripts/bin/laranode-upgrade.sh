@@ -11,7 +11,6 @@ export DEBIAN_FRONTEND=noninteractive
 
 PANEL_PATH=${PANEL_PATH:-/home/laranode_ln/panel}
 PANEL_USER=${PANEL_USER:-laranode_ln}
-SUDOERS_LINE="www-data ALL=(ALL) NOPASSWD: $PANEL_PATH/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf, /usr/sbin/ufw"
 
 step() {
     echo -e "\033[34m"
@@ -55,24 +54,9 @@ npm run build
 
 step "Updating sudoers rules for www-data"
 
-# older installs are missing ufw, which the firewall page needs
-if grep -q "laranode-scripts/bin" /etc/sudoers; then
-    TMP_SUDOERS=$(mktemp)
-    cp /etc/sudoers "$TMP_SUDOERS"
-    sed -i "s|^www-data ALL=.*laranode-scripts/bin.*$|$SUDOERS_LINE|" "$TMP_SUDOERS"
-
-    if visudo -cf "$TMP_SUDOERS" > /dev/null; then
-        cat "$TMP_SUDOERS" > /etc/sudoers
-        echo "Sudoers rules updated"
-    else
-        echo "Refusing to write invalid sudoers file, leaving the current one untouched"
-    fi
-
-    rm -f "$TMP_SUDOERS"
-else
-    echo "$SUDOERS_LINE" >> /etc/sudoers
-    echo "Sudoers rules added"
-fi
+# replaces the old appended bin/*.sh wildcard with an explicit allowlist in
+# /etc/sudoers.d, and removes the legacy line - see laranode-sudoers.sh
+bash "$PANEL_PATH/laranode-scripts/bin/laranode-sudoers.sh" "$PANEL_PATH"
 
 step "Relaxing PHP-FPM systemd sandbox so the panel can administer the system"
 
@@ -81,9 +65,24 @@ bash "$PANEL_PATH/laranode-scripts/bin/laranode-fpm-sandbox.sh"
 step "Fixing ownership and permissions"
 
 chown -R "$PANEL_USER:$PANEL_USER" "$PANEL_PATH"
+# www-data is in the panel user's group so it can READ the panel it serves, but
+# it must never be able to WRITE it: group-write here would mean any path bug in
+# the panel lets the web process drop a PHP file into the panel's own
+# DocumentRoot, and www-data holds NOPASSWD sudo. Group gets r-x / r-- only.
+# Older installs were left group-writable, so this tightens them on upgrade.
+find "$PANEL_PATH" -type d -exec chmod 750 {} +
+find "$PANEL_PATH" -type f -exec chmod 640 {} +
+# root-only execute: www-data runs these through sudo, it never reads or writes them
 find "$PANEL_PATH/laranode-scripts/bin" -type f -exec chmod 100 {} +
-find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod 775 {} +
-find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type f -exec chmod 664 {} +
+# the only two trees Laravel writes at runtime, so the only two www-data may write
+find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod 770 {} +
+find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type f -exec chmod 660 {} +
+# setgid so files www-data creates here stay in the panel user's group: both
+# write this tree (www-data serves, laranode_ln runs artisan during upgrades)
+# and without it the group drifts to www-data and locks the other one out
+find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod g+s {} +
+# the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
+chmod ug+x "$PANEL_PATH"/node_modules/.bin/* "$PANEL_PATH"/vendor/bin/* 2>/dev/null
 
 step "Restarting services"
 

@@ -1,2 +1,0 @@
-# Same privileges the installer grants on a VPS, pointed at the panel path inside the image.
-www-data ALL=(ALL) NOPASSWD: /opt/laranode/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /usr/bin/rm /etc/apache2/sites-available/*.conf, /usr/sbin/ufw

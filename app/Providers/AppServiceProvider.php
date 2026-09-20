@@ -9,13 +9,12 @@ use App\Actions\Filemanager\GetFileContentsAction;
 use App\Actions\Filemanager\PasteFilesAction;
 use App\Actions\Filemanager\RenameFileAction;
 use App\Actions\Filemanager\UpdateFileContentsAction;
+use App\Filesystem\SymlinkSafeLocalAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,13 +37,28 @@ class AppServiceProvider extends ServiceProvider
         $this->app->when($laranodeFileManagerClasses)
             ->needs(Filesystem::class)
             ->give(function () {
-                if (!Auth::check()) return null;
+                if (! Auth::check()) {
+                    return null;
+                }
 
                 $userHome = Auth::user()->homedir;
 
                 Config::set('laranode.user_base_path', $userHome);
 
-                $adapter = new LocalFilesystemAdapter($userHome, null, LOCK_EX, LocalFilesystemAdapter::DISALLOW_LINKS);
+                // writes must not follow a symlink out of the home - see the adapter.
+                // SKIP_LINKS omits symlinks from a listing; DISALLOW_LINKS threw
+                // instead, so a single link made the whole directory unbrowsable
+                // (a tenant's own public/storage link was enough). Containment no
+                // longer rests on this flag - every mutation goes through the
+                // O_NOFOLLOW helper, which refuses a link whether it is listed or not.
+                $adapter = new SymlinkSafeLocalAdapter(
+                    $userHome,
+                    LOCK_EX,
+                    SymlinkSafeLocalAdapter::SKIP_LINKS,
+                    Auth::user()->systemUsername,
+                    config('laranode.laranode_bin_path'),
+                );
+
                 return new Filesystem($adapter);
             });
     }

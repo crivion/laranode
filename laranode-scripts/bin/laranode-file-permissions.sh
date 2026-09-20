@@ -5,29 +5,8 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
-SYSTEM_USER=$2
-# Automatically append _ln to $USERNAME if not already present
-if echo "$SYSTEM_USER" | grep -qv '_ln$'; then
-    SYSTEM_USER+="_ln"
-fi
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-TARGET_PATH="/home/$SYSTEM_USER/$1"
-# remove duplicate slashes
-TARGET_PATH=$(echo "$TARGET_PATH" | tr -s '/')
-
-echo "Setting permissions for $TARGET_PATH"
-
-# Set file permissions
-if [ -f "$TARGET_PATH" ]; then
-    echo "$1 is a file. Doing 660"
-    chmod 660 "$TARGET_PATH"
-fi
-
-# Set directory permissions
-if [ -d "$TARGET_PATH" ]; then
-    echo "$1 is a directory. Doing 770"
-    chmod 770 "$TARGET_PATH"
-fi
-
-# Change owner to system user
-chown "$SYSTEM_USER:$SYSTEM_USER" "$TARGET_PATH"
+# The helper walks from an open home-directory descriptor with O_NOFOLLOW and
+# mutates the opened file descriptor. No validation/use race remains.
+exec "$SCRIPT_DIR/laranode-safe-file.sh" permissions "$2" - "$1"
