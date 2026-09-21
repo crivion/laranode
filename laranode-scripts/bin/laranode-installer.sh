@@ -226,7 +226,53 @@ cd /home/laranode_ln/panel
 composer install
 cp .env.example .env
 sed -i "s#DB_PASSWORD=.*#DB_PASSWORD=\"$LARANODE_RANDOM_PASS\"#" ".env"
-sed -i "s#APP_URL=.*#APP_URL=\"http://$(curl icanhazip.com)\"#" ".env"
+
+# Work out the address the panel is reached on.
+#
+# This used to be a bare "curl icanhazip.com". On a host with IPv6 connectivity
+# that resolves over IPv6 and returns a bare IPv6 address, which is not a valid
+# URI host unless bracketed - so APP_URL became http://2001:db8::1 and every
+# artisan command then died with "Invalid URI: Host is malformed", including the
+# create-admin step. Asking for IPv4 explicitly avoids the whole problem.
+detect_panel_host() {
+  local ip
+
+  for endpoint in https://icanhazip.com https://ifconfig.me/ip; do
+    ip=$(curl -4 -fsS --max-time 10 "$endpoint" 2>/dev/null | tr -d '[:space:]')
+    if echo "$ip" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
+      echo "$ip"
+      return
+    fi
+  done
+
+  # no reachable echo service - fall back to whichever address this host would
+  # route out of, which is right for a NAT'd or firewalled box too
+  ip=$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p')
+  if echo "$ip" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$'; then
+    echo "$ip"
+    return
+  fi
+
+  echo ""
+}
+
+PANEL_HOST=$(detect_panel_host)
+
+if [ -z "$PANEL_HOST" ]; then
+  PANEL_HOST="127.0.0.1"
+  echo -e "\033[33m"
+  echo "--------------------------------------------------------------------------------"
+  echo "Could not determine an IPv4 address for this machine (IPv6-only host?)."
+  echo ""
+  echo "Falling back to 127.0.0.1 so the install can finish. The panel will work on the"
+  echo "machine itself but not over the network until you set APP_URL, REVERB_HOST and"
+  echo "VITE_REVERB_HOST in /home/laranode_ln/panel/.env to the address you reach this"
+  echo "server on, then run: npm run build"
+  echo "--------------------------------------------------------------------------------"
+  echo -e "\033[0m"
+fi
+
+sed -i "s#APP_URL=.*#APP_URL=\"http://$PANEL_HOST\"#" ".env"
 
 php artisan key:generate
 php artisan migrate
@@ -234,8 +280,10 @@ php artisan db:seed
 php artisan storage:link
 php artisan reverb:install
 
-sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=$(curl icanhazip.com)#" ".env"
-sed -i "s#REVERB_HOST=.*#REVERB_HOST=$(curl icanhazip.com)#" ".env"
+# reuse the address resolved above rather than asking again - three separate
+# lookups could each return something different
+sed -i "s#VITE_REVERB_HOST=.*#VITE_REVERB_HOST=$PANEL_HOST#" ".env"
+sed -i "s#REVERB_HOST=.*#REVERB_HOST=$PANEL_HOST#" ".env"
 
 cp /home/laranode_ln/panel/laranode-scripts/templates/apache2-default.template /etc/apache2/sites-available/000-default.conf
 
