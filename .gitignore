@@ -25,3 +25,5 @@ yarn-error.log
 package-lock.json
 *.DS_Store*
 *.php-cs-fixer.cache*
+# scratch output from test runs and verification bundles
+/artifacts
