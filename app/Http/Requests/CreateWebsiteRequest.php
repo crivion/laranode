@@ -25,11 +25,18 @@ class CreateWebsiteRequest extends FormRequest
      */
     public function rules(): array
     {
-        $domainRegex = 'regex:/^(?!:\/\/)(?=.{1,255}$)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([a-zA-Z]{2,})$/';
+        // The D modifier stops $ from matching before a trailing newline.
+        $domainRegex = 'regex:/^(?!:\/\/)(?=.{1,255}$)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([a-zA-Z]{2,})$/D';
+
+        // document_root ends up in an Apache vhost and in root-run helpers, so
+        // only allow "/" or a plain relative path such as "/public" or "/web/dist/".
+        // Segments may not start with a dot, which rules out "." and "..".
+        $segment = '[a-zA-Z0-9_-][a-zA-Z0-9._-]*';
+        $documentRootRegex = 'regex:/^\/(?:'.$segment.'(?:\/'.$segment.')*\/?)?$/D';
 
         return [
             'url' => ['required', 'string', 'max:255', 'unique:websites,url', $domainRegex],
-            'document_root' => ['required', 'string', 'max:255'],
+            'document_root' => ['required', 'string', 'max:255', $documentRootRegex],
             'php_version_id' => ['required', 'integer', 'exists:php_versions,id'],
         ];
     }

@@ -9,6 +9,18 @@ DOMAIN=$1
 CURRENT_PHP_VERSION=$2
 NEW_PHP_VERSION=$3
 
+# These values are interpolated into sed programs below, so only allow
+# plain domains and "X.Y" versions.
+if [[ ! $DOMAIN =~ ^([A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$ ]]; then
+  echo "Invalid domain" >&2
+  exit 1
+fi
+
+if [[ ! $CURRENT_PHP_VERSION =~ ^[0-9]+\.[0-9]+$ || ! $NEW_PHP_VERSION =~ ^[0-9]+\.[0-9]+$ ]]; then
+  echo "Invalid PHP version" >&2
+  exit 1
+fi
+
 # read vhost file
 VHOST_FILE="/etc/apache2/sites-available/$DOMAIN.conf"
 VHOST_FILE=$(cat "$VHOST_FILE")
