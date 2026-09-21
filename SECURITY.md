@@ -11,8 +11,7 @@ Use GitHub's private vulnerability reporting:
 That thread is private between you and the maintainers, and it lets us credit you
 and publish an advisory from the same place once a fix is out.
 
-If you would rather not use GitHub, email **contact@crivion.com** instead. If you
-get no acknowledgement within a few days, please open a public issue saying only
+ If you get no acknowledgement within a few days, please open a public issue saying only
 that you are waiting on a security response — no details — so we know to look.
 
 ## What helps
