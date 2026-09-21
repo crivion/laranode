@@ -22,6 +22,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | Sessions here hold nothing but the authenticated user id and string flash
+    | messages, so there is no reason to let PHP unserialize objects out of them.
+    | Serializing as JSON removes deserialization gadget chains as a way to turn
+    | a leaked APP_KEY into code execution.
+    |
+    | Supported: "php", "json"
+    |
+    */
+
+    'serialization' => env('SESSION_SERIALIZATION', 'json'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Session Lifetime
     |--------------------------------------------------------------------------
     |
