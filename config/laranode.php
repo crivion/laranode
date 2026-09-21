@@ -57,9 +57,11 @@ return [
     | Laranode File Manager - Editable Mime Types
     |--------------------------------------------------------------------------
     |
-    | This option allows you to specify the mime types that can be edited
-    | in the file manager.
+    | The largest file the editor will open (in bytes), and the mime types
+    | that can be edited in the file manager.
     */
+    'max_editable_file_size' => 10 * 1024 * 1024,
+
     'editable_mime_types' => [
         'text/plain',              // .txt, .log, .ini, .env, .conf, .md, .sh, .bash, .zsh
         'text/html',               // .html, .htm
