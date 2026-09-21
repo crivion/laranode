@@ -12,7 +12,7 @@ echo "--------------------------------------------------------------------------
 echo -e "\033[0m"
 
 apt update
-apt install -y software-properties-common git
+apt install -y software-properties-common git python3
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
@@ -165,14 +165,6 @@ systemctl restart apache2
 
 echo -e "\033[34m"
 echo "--------------------------------------------------------------------------------"
-echo "Adding www-data to sudoers and allowing to run laranode scripts"
-echo "--------------------------------------------------------------------------------"
-echo -e "\033[0m"
-
-echo "www-data ALL=(ALL) NOPASSWD: /home/laranode_ln/panel/laranode-scripts/bin/*.sh, /usr/sbin/a2dissite, /bin/rm /etc/apache2/sites-available/*.conf, /usr/sbin/ufw" >> /etc/sudoers
-
-echo -e "\033[34m"
-echo "--------------------------------------------------------------------------------"
 echo "Installing Composer"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
@@ -212,6 +204,15 @@ echo "Relaxing PHP-FPM systemd sandbox so the panel can administer the system"
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[0m"
 bash /home/laranode_ln/panel/laranode-scripts/bin/laranode-fpm-sandbox.sh 8.4
+
+echo -e "\033[34m"
+echo "--------------------------------------------------------------------------------"
+echo "Adding www-data to sudoers and allowing to run laranode scripts"
+echo "--------------------------------------------------------------------------------"
+echo -e "\033[0m"
+
+# named scripts rather than a bin/*.sh glob - see laranode-sudoers.sh
+bash /home/laranode_ln/panel/laranode-scripts/bin/laranode-sudoers.sh /home/laranode_ln/panel
 
 
 
@@ -280,11 +281,22 @@ echo "--------------------------------------------------------------------------
 echo -e "\033[0m"
 mkdir -p /home/laranode_ln/logs
 chown -R laranode_ln:laranode_ln /home/laranode_ln
+# www-data is in the laranode_ln group so it can READ the panel it serves, but
+# it must never be able to WRITE it: group-write here would mean any path bug in
+# the panel lets the web process drop a PHP file into the panel's own
+# DocumentRoot, and www-data holds NOPASSWD sudo. Group gets r-x / r-- only.
 # "+" passes many files to one chmod, "\;" would spawn one process per file
-find /home/laranode_ln -type d -exec chmod 770 {} +
-find /home/laranode_ln -type f -exec chmod 660 {} +
+find /home/laranode_ln -type d -exec chmod 750 {} +
+find /home/laranode_ln -type f -exec chmod 640 {} +
+# root-only execute: www-data runs these through sudo, it never reads or writes them
 find /home/laranode_ln/panel/laranode-scripts/bin -type f -exec chmod 100 {} +
-find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap -type d -exec chmod 775 {} +
+# the only two trees Laravel writes at runtime, so the only two www-data may write
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap/cache -type d -exec chmod 770 {} +
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap/cache -type f -exec chmod 660 {} +
+# setgid so files www-data creates here stay in the panel user's group: both
+# write this tree (www-data serves, laranode_ln runs artisan during upgrades)
+# and without it the group drifts to www-data and locks the other one out
+find /home/laranode_ln/panel/storage /home/laranode_ln/panel/bootstrap/cache -type d -exec chmod g+s {} +
 # the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
 # globbed, not -R: these are symlinks and chmod only follows them when named directly
 chmod ug+x /home/laranode_ln/panel/node_modules/.bin/* /home/laranode_ln/panel/vendor/bin/* 2>/dev/null

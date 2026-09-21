@@ -23,6 +23,9 @@ RUN apt-get update \
         systemd systemd-sysv dbus ca-certificates curl gnupg software-properties-common \
         sudo git unzip openssl procps iproute2 iptables ufw less nano tzdata \
         openssh-server apache2 mysql-server sysstat certbot python3-certbot-apache \
+        # app/Filesystem/safe_file.py performs every file manager mutation, so the
+        # interpreter is a hard requirement, not just a certbot dependency
+        python3 \
     && add-apt-repository -y ppa:ondrej/php \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
     && apt-get install -y --no-install-recommends \
@@ -63,8 +66,10 @@ RUN a2enmod proxy_fcgi rewrite setenvif headers ssl \
 
 COPY docker/rootfs/ /
 
-RUN chmod 440 /etc/sudoers.d/laranode \
-    && chmod 755 /usr/local/sbin/laranode-* /usr/local/bin/laranode-artisan \
+# /etc/sudoers.d/laranode is not shipped in rootfs: it is generated further down by
+# laranode-sudoers.sh, once the panel is on disk, so the image and a VPS install get
+# the same explicit allowlist instead of two copies of a wildcard drifting apart
+RUN chmod 755 /usr/local/sbin/laranode-* /usr/local/bin/laranode-artisan \
     && systemctl enable \
         apache2.service mysql.service php${PHP_VERSION}-fpm.service sysstat.service \
         ssh.service ufw.service certbot.timer \
@@ -93,6 +98,9 @@ RUN composer dump-autoload --optimize \
     && mkdir -p storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache \
+    # the same allowlist the installer writes on a VPS, pointed at the image's panel
+    # path - naming each script keeps a writable bin/ from becoming a root shell
+    && bash laranode-scripts/bin/laranode-sudoers.sh ${LARANODE_PATH} \
     && chmod 700 laranode-scripts/bin/*.sh
 
 EXPOSE 80 443 8080 22

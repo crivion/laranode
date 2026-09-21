@@ -4,6 +4,7 @@ namespace App\Services\Accounts;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Exception;
 
@@ -34,8 +35,43 @@ class CreateAccountService
 
         // notify user if requested
         // TODO: implement notification (mail)
-        if ($this->validated['notify']) {
-            \Illuminate\Support\Facades\Log::info('Would notify ' . $user->email);
+        // 'notify' is nullable in CreateAccountRequest, so validated() omits it
+        // entirely when the form does not send it
+        if ($this->validated['notify'] ?? false) {
+            Log::info('Would notify ' . $user->email);
+        }
+
+        // last, because it takes the web process down with it shortly after
+        $this->reloadWebProcessGroups();
+    }
+
+    /**
+     * laranode-user-manager.sh adds www-data to the new user's group so the panel
+     * can reach their home, but a process's supplementary groups are fixed when it
+     * starts - usermod does not reach the PHP-FPM workers already running. Until
+     * they are replaced the new account's 770 homedir is unreadable to the panel,
+     * and the file manager shows an empty directory rather than an error.
+     */
+    private function reloadWebProcessGroups(): void
+    {
+        // the pool serving this request is the one that needs the new group, and
+        // it is the one running this code - so ask PHP which version it is rather
+        // than guessing at a configured default
+        $phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+
+        // the script backgrounds the restart behind a short sleep, so the response
+        // to this request still gets out
+        $restart = Process::run([
+            'sudo',
+            $this->laranodeBinPath . '/laranode-restart-php-fpm.sh',
+            $phpVersion,
+        ]);
+
+        if ($restart->failed()) {
+            // the account exists and works once PHP-FPM restarts by any means, so
+            // this is worth a warning rather than failing the creation
+            Log::warning('Created the account but could not restart php' . $phpVersion . '-fpm; its home '
+                . 'stays unreadable to the panel until PHP-FPM restarts: ' . $restart->errorOutput());
         }
     }
 
