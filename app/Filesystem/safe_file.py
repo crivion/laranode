@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import errno
+import json
 import os
 import pwd
 import secrets
@@ -320,6 +322,124 @@ def permissions(root_fd: int, path: str, owner) -> None:
         os.close(parent)
 
 
+def open_directory(root_fd: int, path: str) -> int:
+    # Flysystem addresses the tenant home itself as ""
+    if path == "":
+        return os.dup(root_fd)
+
+    parent, name = open_parent(root_fd, path, False, None)
+    try:
+        return os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+    finally:
+        os.close(parent)
+
+
+def describe(details: os.stat_result) -> dict:
+    if stat.S_ISLNK(details.st_mode):
+        kind = "link"
+    elif stat.S_ISDIR(details.st_mode):
+        kind = "dir"
+    else:
+        kind = "file"
+
+    return {
+        "type": kind,
+        "size": details.st_size,
+        "mtime": int(details.st_mtime),
+        "mode": stat.S_IMODE(details.st_mode),
+    }
+
+
+def stat_path(root_fd: int, path: str) -> None:
+    # Reads run as www-data, which can read every tenant home, so nothing may
+    # be reached through a symlink. A link anywhere in the path reads as "not
+    # there" rather than as what it points at.
+    try:
+        if path == "":
+            details = os.fstat(root_fd)
+        else:
+            parent, name = open_parent(root_fd, path, False, None)
+            try:
+                details = os.stat(name, dir_fd=parent, follow_symlinks=False)
+            finally:
+                os.close(parent)
+    except OSError as error:
+        if error.errno in (errno.ENOENT, errno.ENOTDIR, errno.ELOOP):
+            print("null")
+            return
+        raise
+
+    print(json.dumps(describe(details)))
+
+
+def read_file(root_fd: int, path: str, limit: str) -> None:
+    parent, name = open_parent(root_fd, path, False, None)
+    handle = None
+
+    try:
+        # O_NONBLOCK so a planted FIFO can't hang the request; it has no effect
+        # on the regular files that get past the check below
+        handle = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+        details = os.fstat(handle)
+        if not stat.S_ISREG(details.st_mode):
+            fail("Not a regular file")
+
+        maximum = None if limit == "-" else int(limit)
+        if maximum is not None and details.st_size > maximum:
+            fail(f"File is larger than {maximum} bytes")
+
+        remaining = maximum
+        output = sys.stdout.buffer
+        while True:
+            chunk = os.read(handle, 1024 * 1024)
+            if not chunk:
+                break
+            if remaining is not None:
+                # the file may have grown since fstat()
+                remaining -= len(chunk)
+                if remaining < 0:
+                    fail(f"File is larger than {maximum} bytes")
+            output.write(chunk)
+        output.flush()
+    finally:
+        if handle is not None:
+            os.close(handle)
+        os.close(parent)
+
+
+def list_directory(root_fd: int, path: str, recursive: bool) -> None:
+    handle = open_directory(root_fd, path)
+
+    try:
+        list_entries(handle, path, recursive)
+    finally:
+        os.close(handle)
+
+
+def list_entries(dir_fd: int, prefix: str, recursive: bool) -> None:
+    for entry in sorted(os.listdir(dir_fd)):
+        try:
+            entry.encode("utf-8")
+        except UnicodeEncodeError:
+            # not valid UTF-8, so it could not be sent back as JSON anyway
+            continue
+
+        details = os.stat(entry, dir_fd=dir_fd, follow_symlinks=False)
+        if stat.S_ISLNK(details.st_mode):
+            # listed as SKIP_LINKS did before: links are left out, not followed
+            continue
+
+        relative = f"{prefix}/{entry}" if prefix else entry
+        print(json.dumps({"path": relative, **describe(details)}))
+
+        if recursive and stat.S_ISDIR(details.st_mode):
+            child = os.open(entry, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=dir_fd)
+            try:
+                list_entries(child, relative, True)
+            finally:
+                os.close(child)
+
+
 def main() -> None:
     if len(sys.argv) < 7:
         fail("Usage: safe_file.py operation root owner input-root input-name path [additional path]")
@@ -361,6 +481,12 @@ def main() -> None:
             rename_path(root_fd, arguments[0], arguments[1], owner)
         elif operation == "remove" and len(arguments) == 2:
             remove(root_fd, arguments[0], owner, arguments[1] == "recursive")
+        elif operation == "stat" and len(arguments) == 1:
+            stat_path(root_fd, arguments[0])
+        elif operation == "read" and len(arguments) == 2:
+            read_file(root_fd, arguments[0], arguments[1])
+        elif operation == "list" and len(arguments) == 2:
+            list_directory(root_fd, arguments[0], arguments[1] == "recursive")
         else:
             fail("Invalid secure filesystem operation")
     except OSError as error:

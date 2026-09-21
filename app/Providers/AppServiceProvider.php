@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
                     SymlinkSafeLocalAdapter::SKIP_LINKS,
                     Auth::user()->systemUsername,
                     config('laranode.laranode_bin_path'),
+                    config('laranode.max_editable_file_size'),
                 );
 
                 return new Filesystem($adapter);

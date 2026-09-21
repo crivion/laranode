@@ -4,50 +4,40 @@ namespace App\Actions\Filemanager;
 
 use finfo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use League\Flysystem\Filesystem;
 
 class GetFileContentsAction
 {
-    private $path;
-
-    public function __construct(private Filesystem $filesystem)
-    {
-        $this->path = Config::get('laranode.user_base_path');
-    }
+    public function __construct(private Filesystem $filesystem) {}
 
     public function execute(Request $r)
     {
-        $r->validate(['file' => 'required']);
-
-        $filesystem = $this->filesystem;
+        $r->validate(['file' => 'required|string']);
 
         $editableMimeTypes = config('laranode.editable_mime_types');
 
         try {
+            // read through the adapter, which refuses symlinks anywhere in the
+            // path, and detect the type from what was actually read rather
+            // than from a path that could point somewhere else
+            $contents = $this->filesystem->read($r->file);
+            $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($contents);
 
-            $finfo = new finfo();
-            $mimeType = $finfo->file($this->path . '/' . $r->path . '/' . $r->file, FILEINFO_MIME_TYPE);
-
-            if (!in_array($mimeType, $editableMimeTypes, true)) {
-                throw new \Exception('File of type "' . $mimeType . '" is not editable');
+            if (! in_array($mimeType, $editableMimeTypes, true)) {
+                throw new \Exception('File of type "'.$mimeType.'" is not editable');
             }
 
-            $stream = $filesystem->readStream($r->file);
-
-            if (!$stream) {
-                return response()->json(['error' => 'Failed to open file stream'], 500);
-            }
-
-            return response()->stream(function () use ($stream) {
-                fpassthru($stream); // Output the stream content
-                fclose($stream); // Close the stream after outputting
-            });
+            // plain text, so opening the URL directly never renders a tenant's
+            // file as HTML on the panel's own origin
+            return response($contents, 200, [
+                'Content-Type' => 'text/plain; charset=UTF-8',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
         } catch (\Exception $exception) {
 
             return response()->json([
                 'error' => $exception->getMessage(),
             ], 500);
-        };
+        }
     }
 }

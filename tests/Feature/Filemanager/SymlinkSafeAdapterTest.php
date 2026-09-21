@@ -289,3 +289,99 @@ test('a skipped symlink is still refused as a write target', function () {
 
     expect(File::exists($this->root.'/victim_ln/domains/victim-site/public_html/evil.php'))->toBeFalse();
 });
+
+// Reads (GHSA-4j2j-vpcj-ffxv). The panel reads as www-data, which is in every
+// tenant's group, so a link in one home must not reach another tenant's files.
+
+function plantVictimSecret(): string
+{
+    $secret = test()->root.'/victim_ln/secret.txt';
+    File::put($secret, 'victim-secret');
+
+    return $secret;
+}
+
+test('read refuses a symlinked file instead of returning its target', function () {
+    symlink(plantVictimSecret(), $this->attackerHome.'/leak.txt');
+
+    expect(fn () => $this->filesystem->read('leak.txt'))->toThrow(League\Flysystem\UnableToReadFile::class)
+        ->and(fn () => $this->filesystem->readStream('leak.txt'))->toThrow(League\Flysystem\UnableToReadFile::class);
+});
+
+test('read refuses a path through a symlinked directory', function () {
+    plantVictimSecret();
+    symlink($this->root.'/victim_ln', $this->attackerHome.'/victim');
+
+    expect(fn () => $this->filesystem->read('victim/secret.txt'))->toThrow(League\Flysystem\UnableToReadFile::class);
+});
+
+test('listing a symlinked directory is refused', function () {
+    plantVictimSecret();
+    symlink($this->root.'/victim_ln', $this->attackerHome.'/victim');
+
+    expect(fn () => $this->filesystem->listContents('victim')->toArray())
+        ->toThrow(League\Flysystem\UnableToListContents::class);
+});
+
+test('existence and metadata checks do not follow symlinks', function () {
+    symlink(plantVictimSecret(), $this->attackerHome.'/leak.txt');
+    symlink($this->root.'/victim_ln', $this->attackerHome.'/victim');
+
+    expect($this->filesystem->fileExists('leak.txt'))->toBeFalse()
+        ->and($this->filesystem->fileExists('victim/secret.txt'))->toBeFalse()
+        ->and($this->filesystem->directoryExists('victim'))->toBeFalse()
+        ->and(fn () => $this->filesystem->fileSize('leak.txt'))->toThrow(League\Flysystem\UnableToRetrieveMetadata::class)
+        ->and(fn () => $this->filesystem->mimeType('leak.txt'))->toThrow(League\Flysystem\UnableToRetrieveMetadata::class);
+});
+
+test('a FIFO in the home is refused rather than blocking the read', function () {
+    posix_mkfifo($this->attackerHome.'/pipe', 0600);
+
+    expect(fn () => $this->filesystem->read('pipe'))->toThrow(League\Flysystem\UnableToReadFile::class);
+});
+
+test('regular files still read, list and report metadata', function () {
+    $this->filesystem->write('domains/site/public_html/index.php', '<?php echo 1;');
+    $this->filesystem->write('domains/site/public_html/nested/deep.txt', 'deep');
+
+    expect($this->filesystem->read('domains/site/public_html/index.php'))->toBe('<?php echo 1;')
+        ->and(stream_get_contents($this->filesystem->readStream('domains/site/public_html/index.php')))->toBe('<?php echo 1;')
+        ->and($this->filesystem->fileExists('domains/site/public_html/index.php'))->toBeTrue()
+        ->and($this->filesystem->directoryExists('domains/site'))->toBeTrue()
+        ->and($this->filesystem->fileSize('domains/site/public_html/index.php'))->toBe(13)
+        ->and($this->filesystem->mimeType('domains/site/public_html/index.php'))->toBe('text/x-php');
+
+    $flat = collect($this->filesystem->listContents('')->toArray())->map->path()->all();
+    $deep = collect($this->filesystem->listContents('domains', true)->toArray())->map->path()->all();
+
+    expect($flat)->toBe(['domains'])
+        ->and($deep)->toContain('domains/site/public_html/index.php', 'domains/site/public_html/nested/deep.txt');
+});
+
+test('read enforces the size limit', function () {
+    $filesystem = new Filesystem(new SymlinkSafeLocalAdapter($this->attackerHome, LOCK_EX, SymlinkSafeLocalAdapter::SKIP_LINKS, maxReadBytes: 4));
+    File::put($this->attackerHome.'/big.txt', 'too long');
+    File::put($this->attackerHome.'/small.txt', 'ok');
+
+    expect($filesystem->read('small.txt'))->toBe('ok')
+        ->and(fn () => $filesystem->read('big.txt'))->toThrow(League\Flysystem\UnableToReadFile::class);
+});
+
+test('the editor endpoint does not return a symlinked file', function () {
+    config()->set('app.key', str_repeat('a', 32));
+    symlink(plantVictimSecret(), $this->attackerHome.'/leak.txt');
+    $this->app->instance(App\Actions\Filemanager\GetFileContentsAction::class, new App\Actions\Filemanager\GetFileContentsAction($this->filesystem));
+
+    $this->actingAs(App\Models\User::factory()->create())
+        ->get(route('filemanager.getFileContents', ['path' => '', 'file' => 'leak.txt']))
+        ->assertStatus(500)
+        ->assertDontSee('victim-secret');
+
+    File::put($this->attackerHome.'/mine.txt', 'my notes');
+
+    $this->actingAs(App\Models\User::factory()->create())
+        ->get(route('filemanager.getFileContents', ['file' => 'mine.txt']))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('my notes');
+});

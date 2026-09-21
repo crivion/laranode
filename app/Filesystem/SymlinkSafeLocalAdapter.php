@@ -2,13 +2,23 @@
 
 namespace App\Filesystem;
 
+use finfo;
 use League\Flysystem\Config;
+use League\Flysystem\DirectoryAttributes;
+use League\Flysystem\FileAttributes;
 use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Flysystem\UnableToCheckDirectoryExistence;
+use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCreateDirectory;
 use League\Flysystem\UnableToDeleteDirectory;
 use League\Flysystem\UnableToDeleteFile;
+use League\Flysystem\UnableToListContents;
 use League\Flysystem\UnableToMoveFile;
+use League\Flysystem\UnableToProvideChecksum;
+use League\Flysystem\UnableToReadFile;
+use League\Flysystem\UnableToRetrieveMetadata;
 use League\Flysystem\UnableToWriteFile;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use RuntimeException;
 
 /**
@@ -25,6 +35,12 @@ use RuntimeException;
  * Mutations are delegated to a helper that walks from an open tenant-home file
  * descriptor using O_NOFOLLOW. The operation therefore stays anchored to the
  * validated tree even if a tenant concurrently swaps a path component.
+ *
+ * Reads go through the same walk. The stock read(), readStream(), listing and
+ * metadata calls are plain fopen()/stat()/DirectoryIterator on the joined path,
+ * and they follow a link anywhere in it. The panel runs as www-data, which is in
+ * every tenant's group, so a link in one home could read another tenant's files.
+ * Reads need no privileges, so they run the helper as www-data without sudo.
  */
 class SymlinkSafeLocalAdapter extends LocalFilesystemAdapter
 {
@@ -34,8 +50,105 @@ class SymlinkSafeLocalAdapter extends LocalFilesystemAdapter
         int $linkHandling = self::DISALLOW_LINKS,
         private ?string $systemUser = null,
         private ?string $binPath = null,
+        private ?int $maxReadBytes = null,
     ) {
         parent::__construct($location, null, $writeFlags, $linkHandling);
+    }
+
+    public function fileExists(string $location): bool
+    {
+        try {
+            return ($this->statWithoutFollowing($location)['type'] ?? null) === 'file';
+        } catch (RuntimeException $exception) {
+            throw UnableToCheckFileExistence::forLocation($location, $exception);
+        }
+    }
+
+    public function directoryExists(string $location): bool
+    {
+        try {
+            return ($this->statWithoutFollowing($location)['type'] ?? null) === 'dir';
+        } catch (RuntimeException $exception) {
+            throw UnableToCheckDirectoryExistence::forLocation($location, $exception);
+        }
+    }
+
+    public function read(string $path): string
+    {
+        try {
+            return SafeFileProcess::run('read', $this->location, [$path, $this->maxReadBytes ?? '-']);
+        } catch (RuntimeException $exception) {
+            throw UnableToReadFile::fromLocation($path, $exception->getMessage(), $exception);
+        }
+    }
+
+    public function readStream(string $path)
+    {
+        $stream = fopen('php://temp', 'w+b');
+        fwrite($stream, $this->read($path));
+        rewind($stream);
+
+        return $stream;
+    }
+
+    public function listContents(string $path, bool $deep): iterable
+    {
+        try {
+            $output = SafeFileProcess::run('list', $this->location, [trim($path, '/'), $deep ? 'recursive' : 'flat']);
+        } catch (RuntimeException $exception) {
+            throw UnableToListContents::atLocation($path, $deep, $exception);
+        }
+
+        $visibility = new PortableVisibilityConverter;
+
+        foreach (explode("\n", trim($output)) as $line) {
+            if ($line === '') {
+                continue;
+            }
+
+            $entry = json_decode($line, true, flags: JSON_THROW_ON_ERROR);
+
+            yield $entry['type'] === 'dir'
+                ? new DirectoryAttributes($entry['path'], $visibility->inverseForDirectory($entry['mode']), $entry['mtime'])
+                : new FileAttributes($entry['path'], $entry['size'], $visibility->inverseForFile($entry['mode']), $entry['mtime']);
+        }
+    }
+
+    public function fileSize(string $path): FileAttributes
+    {
+        return new FileAttributes($path, $this->fileMetadata($path, 'fileSize')['size']);
+    }
+
+    public function lastModified(string $path): FileAttributes
+    {
+        return new FileAttributes($path, lastModified: $this->fileMetadata($path, 'lastModified')['mtime']);
+    }
+
+    public function visibility(string $path): FileAttributes
+    {
+        $mode = $this->fileMetadata($path, 'visibility')['mode'];
+
+        return new FileAttributes($path, visibility: (new PortableVisibilityConverter)->inverseForFile($mode));
+    }
+
+    public function mimeType(string $path): FileAttributes
+    {
+        try {
+            $mimeType = (new finfo(FILEINFO_MIME_TYPE))->buffer($this->read($path));
+        } catch (UnableToReadFile $exception) {
+            throw UnableToRetrieveMetadata::mimeType($path, $exception->getMessage(), $exception);
+        }
+
+        return new FileAttributes($path, mimeType: $mimeType ?: null);
+    }
+
+    public function checksum(string $path, Config $config): string
+    {
+        try {
+            return hash((string) $config->get('checksum_algo', 'md5'), $this->read($path));
+        } catch (UnableToReadFile $exception) {
+            throw new UnableToProvideChecksum($exception->getMessage(), $path, $exception);
+        }
     }
 
     public function write(string $path, string $contents, Config $config): void
@@ -148,6 +261,28 @@ class SymlinkSafeLocalAdapter extends LocalFilesystemAdapter
         } catch (RuntimeException $exception) {
             throw UnableToDeleteDirectory::atLocation($path, $exception->getMessage());
         }
+    }
+
+    /** @return array{type: string, size: int, mtime: int, mode: int}|null */
+    private function statWithoutFollowing(string $path): ?array
+    {
+        return json_decode(SafeFileProcess::run('stat', $this->location, [trim($path, '/')]), true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /** @return array{type: string, size: int, mtime: int, mode: int} */
+    private function fileMetadata(string $path, string $type): array
+    {
+        try {
+            $details = $this->statWithoutFollowing($path);
+        } catch (RuntimeException $exception) {
+            throw UnableToRetrieveMetadata::create($path, $type, $exception->getMessage(), $exception);
+        }
+
+        if (($details['type'] ?? null) !== 'file') {
+            throw UnableToRetrieveMetadata::create($path, $type, 'Not a regular file');
+        }
+
+        return $details;
     }
 
     /**
