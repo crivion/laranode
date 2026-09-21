@@ -39,10 +39,12 @@ class UpdateDatabaseService
         }
 
         $dbUser = $this->database->db_user;
-        $newPassword = $this->validated['db_password'];
+        // ALTER USER can't take a bound parameter, so quote the password as a
+        // proper string literal instead of interpolating it into the SQL.
+        $newPassword = DB::getPdo()->quote($this->validated['db_password']);
 
         try {
-            DB::statement("ALTER USER `$dbUser`@'localhost' IDENTIFIED BY '$newPassword'");
+            DB::statement("ALTER USER `$dbUser`@'localhost' IDENTIFIED BY $newPassword");
             DB::statement('FLUSH PRIVILEGES');
         } catch (Exception $e) {
             throw new UpdateDatabaseException('Failed to update MySQL user password: '.$e->getMessage());

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Database;
 use App\Models\Website;
+use App\Rules\SupportedCollation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateDatabaseRequest extends FormRequest
@@ -57,18 +58,18 @@ class CreateDatabaseRequest extends FormRequest
                 'required',
                 'string',
                 'max:64',
-                'regex:/^'.preg_quote($prefix).'[a-zA-Z0-9_]+$/',
+                'regex:/^'.preg_quote($prefix).'[a-zA-Z0-9_]+$/D',
                 'unique:'.Database::class.',name',
             ],
             'db_user' => [
                 'required',
                 'string',
                 'max:32',
-                'regex:/^'.preg_quote($prefix).'[a-zA-Z0-9_]+$/',
+                'regex:/^'.preg_quote($prefix).'[a-zA-Z0-9_]+$/D',
             ],
             'db_pass' => ['required', 'string', 'min:8'],
-            'charset' => ['required', 'string'],
-            'collation' => ['required', 'string'],
+            'charset' => ['required', 'string', 'regex:/^[a-zA-Z0-9_]+$/D'],
+            'collation' => ['required', 'string', 'regex:/^[a-zA-Z0-9_]+$/D', new SupportedCollation($this->input('charset'))],
             'website_id' => ['nullable', 'integer', 'exists:websites,id'],
         ];
     }

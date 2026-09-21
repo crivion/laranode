@@ -37,11 +37,13 @@ class CreateDatabaseService
     private function createMySQLUser(): void
     {
         $dbUser = $this->validated['db_user'];
-        $dbPass = $this->validated['db_pass'];
+        // CREATE USER can't take a bound parameter, so quote the password as a
+        // proper string literal instead of interpolating it into the SQL.
+        $dbPass = DB::getPdo()->quote($this->validated['db_pass']);
         $name = $this->validated['name'];
 
         try {
-            DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY '$dbPass'");
+            DB::statement("CREATE USER IF NOT EXISTS `$dbUser`@'localhost' IDENTIFIED BY $dbPass");
             DB::statement("GRANT ALL PRIVILEGES ON `$name`.* TO `$dbUser`@'localhost'");
             DB::statement('FLUSH PRIVILEGES');
         } catch (Exception $e) {

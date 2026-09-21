@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Website;
+use App\Rules\SupportedCollation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDatabaseRequest extends FormRequest
@@ -24,8 +25,8 @@ class UpdateDatabaseRequest extends FormRequest
     {
         return [
             'id' => ['required', 'integer'],
-            'charset' => ['required', 'string'],
-            'collation' => ['required', 'string'],
+            'charset' => ['required', 'string', 'regex:/^[a-zA-Z0-9_]+$/D'],
+            'collation' => ['required', 'string', 'regex:/^[a-zA-Z0-9_]+$/D', new SupportedCollation($this->input('charset'))],
             'db_password' => ['nullable', 'string', 'min:8'],
             'website_id' => ['nullable', 'integer', 'exists:websites,id'],
         ];
