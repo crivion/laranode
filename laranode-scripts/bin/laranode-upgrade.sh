@@ -38,24 +38,24 @@ fi
 
 step "Checking prerequisites"
 
-# Laravel 13 requires PHP 8.3. Checked before the pull, not after: the panel runs
-# on whichever PHP serves it, and pulling a release it cannot run leaves the
-# install broken with the new code already on disk.
-REQUIRED_PHP_MAJOR=8
-REQUIRED_PHP_MINOR=3
-PHP_MAJOR=$(php -r 'echo PHP_MAJOR_VERSION;' 2>/dev/null)
-PHP_MINOR=$(php -r 'echo PHP_MINOR_VERSION;' 2>/dev/null)
+# The locked dependencies (Symfony 8.1, pulled in by Laravel 13) need PHP 8.4.1.
+# Checked before the pull, not after: the panel runs on whichever PHP serves it,
+# and pulling a release it cannot run leaves the install broken with the new
+# code already on disk.
+REQUIRED_PHP_VERSION=8.4.1
+REQUIRED_PHP_VERSION_ID=80401
+PHP_VERSION_ID=$(php -r 'echo PHP_VERSION_ID;' 2>/dev/null)
+PHP_VERSION=$(php -r 'echo PHP_VERSION;' 2>/dev/null)
 
-if [ -z "$PHP_MAJOR" ]; then
+if [ -z "$PHP_VERSION_ID" ]; then
     echo "Could not determine the PHP version - is php on PATH?"
     exit 1
 fi
 
-if [ "$PHP_MAJOR" -lt "$REQUIRED_PHP_MAJOR" ] ||
-   { [ "$PHP_MAJOR" -eq "$REQUIRED_PHP_MAJOR" ] && [ "$PHP_MINOR" -lt "$REQUIRED_PHP_MINOR" ]; }; then
+if [ "$PHP_VERSION_ID" -lt "$REQUIRED_PHP_VERSION_ID" ]; then
     echo -e "\033[31m"
     echo "--------------------------------------------------------------------------------"
-    echo "This release needs PHP ${REQUIRED_PHP_MAJOR}.${REQUIRED_PHP_MINOR} or newer; this machine runs ${PHP_MAJOR}.${PHP_MINOR}."
+    echo "This release needs PHP ${REQUIRED_PHP_VERSION} or newer; this machine runs ${PHP_VERSION}."
     echo ""
     echo "Nothing has been changed. Install a newer PHP and point the panel at it, then"
     echo "run this again. Your sites keep running on whatever PHP version they are"
@@ -65,7 +65,7 @@ if [ "$PHP_MAJOR" -lt "$REQUIRED_PHP_MAJOR" ] ||
     exit 1
 fi
 
-echo "PHP ${PHP_MAJOR}.${PHP_MINOR} - ok"
+echo "PHP ${PHP_VERSION} - ok"
 
 step "Pulling the latest Laranode release"
 
