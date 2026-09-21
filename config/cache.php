@@ -19,6 +19,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Serializable Cache Classes
+    |--------------------------------------------------------------------------
+    |
+    | Nothing here caches PHP objects - cached values are arrays and scalars - so
+    | no class is allowed back out of the cache. This is the same hardening as the
+    | session serialization option: it stops a leaked APP_KEY from being turned
+    | into code execution through a deserialization gadget chain.
+    |
+    | If something later needs to cache an object, list its class here rather
+    | than setting this back to true.
+    |
+    */
+
+    'serializable_classes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
