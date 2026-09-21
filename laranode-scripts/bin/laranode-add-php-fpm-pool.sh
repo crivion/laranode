@@ -15,16 +15,33 @@ if echo "$SYSTEM_USER" | grep -qv '_ln$'; then
     SYSTEM_USER+="_ln"
 fi
 
+# This runs as root, so validate the arguments before touching anything.
+if [[ ! $SYSTEM_USER =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "Invalid system user" >&2
+  exit 1
+fi
+
+if [[ ! $PHP_VERSION =~ ^[0-9]+\.[0-9]+$ ]]; then
+  echo "Invalid PHP version" >&2
+  exit 1
+fi
+
+if [ ! -f "$TEMPLATE_FILE_PATH" ]; then
+  echo "Template file not found" >&2
+  exit 1
+fi
+
 # read template file
 TEMPLATE_FILE=$(cat "$TEMPLATE_FILE_PATH")
 
-# replace {user} and {version} in template file
-TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{user}#$SYSTEM_USER#g")
-TEMPLATE_FILE=$(echo "$TEMPLATE_FILE" | sed "s#{version}#$PHP_VERSION#g")
+# replace {user} and {version} in template file; quoted replacements are
+# always literal, unlike values interpolated into a sed program
+TEMPLATE_FILE=${TEMPLATE_FILE//'{user}'/"$SYSTEM_USER"}
+TEMPLATE_FILE=${TEMPLATE_FILE//'{version}'/"$PHP_VERSION"}
 
 
 # write template file to /etc/php/{version}/fpm/pool.d/pool-{systemUser}.conf
-echo "$TEMPLATE_FILE" > "/etc/php/$PHP_VERSION/fpm/pool.d/$SYSTEM_USER.conf"
+printf '%s\n' "$TEMPLATE_FILE" > "/etc/php/$PHP_VERSION/fpm/pool.d/$SYSTEM_USER.conf"
 
 # Get the PID of PHP-FPM based on PHP version
 PID_FILE="/var/run/php/php${PHP_VERSION}-fpm.pid"
