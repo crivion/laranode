@@ -12,8 +12,8 @@
 	</FilesMatch>
 
 	<Directory /home/{user}/domains/{domain}{document_root}>
-		Options Indexes FollowSymLinks
-		AllowOverride All
+		Options Indexes SymLinksIfOwnerMatch
+		AllowOverride AuthConfig FileInfo Indexes Limit Options=Indexes,MultiViews,SymLinksIfOwnerMatch
 		Require all granted
 	</Directory>
 

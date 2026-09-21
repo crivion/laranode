@@ -140,6 +140,13 @@ find "$PANEL_PATH/storage" "$PANEL_PATH/bootstrap/cache" -type d -exec chmod g+s
 # the blanket chmod above drops the executable bit the tooling needs (vite, pint, ...)
 chmod ug+x "$PANEL_PATH"/node_modules/.bin/* "$PANEL_PATH"/vendor/bin/* 2>/dev/null
 
+step "Hardening tenant Apache vhosts"
+
+# older vhosts let tenants symlink files outside their home into their document
+# root; apache2 is reloaded below, which applies the rewrite
+bash "$PANEL_PATH/laranode-scripts/bin/laranode-harden-vhosts.sh" ||
+    echo "Tenant vhosts were left unchanged; check the message above."
+
 step "Restarting services"
 
 cp "$PANEL_PATH/laranode-scripts/templates/laranode-queue-worker.service" /etc/systemd/system/laranode-queue-worker.service
