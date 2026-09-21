@@ -68,6 +68,10 @@ restore() {
             tar -xzpf "$STATE_DIR/config.tar.gz" -C /
         fi
 
+        # snapshots taken by older images hold vhosts that let tenants serve
+        # symlinked files from outside their home; bring them up to date
+        "$BIN/laranode-harden-vhosts.sh" || echo "Tenant vhosts were left unchanged"
+
         echo "Laranode system state restored"
     fi
 
