@@ -5,6 +5,7 @@ namespace App\Services\Backups;
 use App\Actions\Backups\BuildDefaultsFileAction;
 use App\Models\Backup;
 use App\Models\User;
+use App\Models\Website;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
 use RuntimeException;
@@ -24,14 +25,60 @@ class RestoreBackupService
         $this->materialize($source);
 
         $manifest = $source->manifest;
+        $phpVersions = [];
         foreach ($manifest['websites'] ?? [] as $website) {
             $this->restoreWebsite($source, $website);
+            $phpVersions[] = $this->servingPhpVersion($source, $website);
         }
         foreach ($manifest['databases'] ?? [] as $database) {
             $this->restoreDatabase($source, $database);
         }
 
         $source->update(['restored_at' => now(), 'restored_by' => $actor->id]);
+
+        $this->reloadPhpFpm($phpVersions);
+    }
+
+    /**
+     * The PHP version that serves the site now. The manifest records the
+     * version at backup time, which is stale if the site has been switched
+     * since - reloading that FPM would leave the real one serving cached code.
+     */
+    private function servingPhpVersion(Backup $backup, array $website): ?string
+    {
+        $live = Website::where('user_id', $backup->user_id)
+            ->where('url', $website['url'])
+            ->with('phpVersion')
+            ->first()
+            ?->phpVersion?->version;
+
+        return $live ?? $website['php_version'] ?? null;
+    }
+
+    /**
+     * Restored files keep their paths, so with opcache.validate_timestamps=0
+     * FPM would keep serving the previously compiled code until reloaded.
+     */
+    private function reloadPhpFpm(array $versions): void
+    {
+        $failed = [];
+        foreach (array_unique(array_filter($versions)) as $version) {
+            if (! preg_match('/^\d+\.\d+$/', $version)) {
+                $failed[] = $version;
+
+                continue;
+            }
+            $result = Process::run([
+                'sudo', config('laranode.laranode_bin_path').'/laranode-php-service.sh', 'reload', $version,
+            ]);
+            if ($result->failed()) {
+                $failed[] = $version;
+            }
+        }
+
+        if ($failed) {
+            throw new RuntimeException('Files were restored, but reloading PHP-FPM failed for PHP '.implode(', ', $failed).'; the site may serve cached code until it is reloaded.');
+        }
     }
 
     private function createSafetySnapshot(Backup $source): void
