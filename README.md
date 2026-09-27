@@ -141,6 +141,9 @@ Login with the credentials provided during installation.
 ## 1-Click Deployment with DigitalOcean
 [![DigitalOcean Logo](https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg)](https://marketplace.digitalocean.com/apps/laranode-panel?refcode=833110c66c2c&action=deploy)
 
+## 1-Click Deployment with RepoCloud
+[![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/Laranode/)
+
 ## Contributing
 Laranode is open-source and welcomes contributions! Feel free to submit issues, feature requests, or pull requests.
 
