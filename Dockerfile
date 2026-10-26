@@ -35,6 +35,10 @@ RUN apt-get update \
         php${PHP_VERSION}-gd php${PHP_VERSION}-imagick php${PHP_VERSION}-intl php${PHP_VERSION}-readline \
         php${PHP_VERSION}-soap php${PHP_VERSION}-opcache \
         nodejs \
+    # fail the build rather than ship a PHP without the October 2026 RCE fixes
+    # (CVE-2026-109618, CVE-2026-109619), e.g. when a cached layer or a lagging
+    # mirror serves an older patch release
+    && php -r '$fixed = ["8.5" => "8.5.12", "8.4" => "8.4.27", "8.3" => "8.3.36", "8.2" => "8.2.35"][PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION] ?? null; exit($fixed !== null && version_compare(PHP_VERSION, $fixed, ">=") ? 0 : 1);' \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

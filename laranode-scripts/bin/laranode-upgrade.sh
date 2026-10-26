@@ -147,6 +147,49 @@ step "Hardening tenant Apache vhosts"
 bash "$PANEL_PATH/laranode-scripts/bin/laranode-harden-vhosts.sh" ||
     echo "Tenant vhosts were left unchanged; check the message above."
 
+step "Applying PHP security updates"
+
+# PHP comes from ppa:ondrej/php, which unattended-upgrades leaves alone, so an install
+# stays on the patch release it was set up with - October 2026's unauthenticated RCEs
+# (CVE-2026-109618, CVE-2026-109619) stay open until something upgrades it. Upgrade
+# every installed PHP version in place, keeping php.ini and the pool configs as they
+# are. The package scripts restart each php-fpm; the queue worker and reverb are
+# restarted below, so the long-running CLI processes pick up the new binary too.
+PHP_PACKAGES=$(dpkg-query -W -f='${Package} ${db:Status-Status}\n' 'php[0-9]*' 2>/dev/null |
+    awk '$2 == "installed" { print $1 }')
+
+if [ -n "$PHP_PACKAGES" ]; then
+    apt-get update -qq
+    # shellcheck disable=SC2086
+    apt-get install --only-upgrade -y -o Dpkg::Options::="--force-confold" $PHP_PACKAGES ||
+        echo "Some PHP packages could not be upgraded; check the message above."
+fi
+
+# the first package revision carrying both fixes; 8.1 and older are past end of life
+# and only got these as backports, so their version number does not move
+for PHP_FPM_PACKAGE in $(dpkg-query -W -f='${Package} ${db:Status-Status}\n' 'php*-fpm' 2>/dev/null |
+    awk '$2 == "installed" { print $1 }'); do
+    case "$PHP_FPM_PACKAGE" in
+        php8.5-fpm) FIXED=8.5.12 ;;
+        php8.4-fpm) FIXED=8.4.27 ;;
+        php8.3-fpm) FIXED=8.3.36 ;;
+        php8.2-fpm) FIXED=8.2.35 ;;
+        php8.1-fpm) FIXED=8.1.34-9 ;;
+        php8.0-fpm) FIXED=1:8.0.30-25 ;;
+        php7.4-fpm) FIXED=1:7.4.33-31 ;;
+        *) continue ;;
+    esac
+
+    INSTALLED=$(dpkg-query -W -f='${Version}' "$PHP_FPM_PACKAGE")
+
+    if dpkg --compare-versions "$INSTALLED" lt "$FIXED"; then
+        echo -e "\033[31m$PHP_FPM_PACKAGE $INSTALLED is still vulnerable to CVE-2026-109618 and CVE-2026-109619 (fixed in $FIXED)."
+        echo -e "The PPA may not carry the fix yet: run this upgrade again later.\033[0m"
+    else
+        echo "$PHP_FPM_PACKAGE $INSTALLED - ok"
+    fi
+done
+
 step "Restarting services"
 
 cp "$PANEL_PATH/laranode-scripts/templates/laranode-queue-worker.service" /etc/systemd/system/laranode-queue-worker.service
